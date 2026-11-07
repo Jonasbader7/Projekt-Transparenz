@@ -1,0 +1,1 @@
+"""Hilfsfunktionen: Zeit, Logging, Hashing."""

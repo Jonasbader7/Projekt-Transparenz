@@ -1,0 +1,105 @@
+# Konfigurierte Datenquellen für das Update-System.
+# Aktuell sind AUSSCHLIESSLICH fiktive Beispielquellen aktiv. Echte Quellen werden
+# erst nach Lizenzprüfung ergänzt (siehe docs/DATA_SOURCES.md).
+#
+# kind:     holdings | entities | evidence | coverage
+# fetcher:  local (Pfad relativ zum Projektordner) | http (URL)
+# format:   json | csv
+# commercial_use: ja | nein | unklar
+
+[defaults]
+max_attempts = 3
+backoff_seconds = 2.0
+http_timeout_seconds = 30.0
+
+[[source]]
+key = "fiktiv_etf"
+name = "Fiktiver ETF «Muster Nachhaltigkeit Welt» – Positionen"
+kind = "holdings"
+publisher = "Fiktiver ETF-Anbieter (Demo)"
+fetcher = "local"
+format = "csv"
+location = "data/sample/fiktiv_etf_positionen.csv"
+interval_hours = 24
+max_age_days = 45
+license = "Fiktive Demodaten, frei verwendbar"
+commercial_use = "ja"
+is_fictional = true
+description = "Klar fiktive Fondspositionen zur Demonstration. Keine realen Unternehmen."
+
+[[source]]
+key = "fiktiv_stammdaten"
+name = "Fiktive Stammdaten (Unternehmen, Wertpapiere, Konzernbeziehungen)"
+kind = "entities"
+publisher = "Projekt Transparenz (Demo)"
+fetcher = "local"
+format = "json"
+location = "data/sample/fiktiv_stammdaten.json"
+interval_hours = 24
+max_age_days = 90
+license = "Fiktive Demodaten, frei verwendbar"
+commercial_use = "ja"
+is_fictional = true
+description = "Ersatz für GLEIF/OpenFIGI, bis die echte Anbindung geprüft ist."
+
+[[source]]
+key = "fiktiv_ausschlussliste"
+name = "Fiktive Ausschlussliste «Fiktiver Ethikrat für Anlagen»"
+kind = "evidence"
+publisher = "Fiktiver Ethikrat für Anlagen"
+fetcher = "local"
+format = "csv"
+location = "data/sample/fiktiv_ausschlussliste.csv"
+interval_hours = 168
+max_age_days = 120
+license = "Fiktive Demodaten, frei verwendbar"
+commercial_use = "ja"
+is_fictional = true
+description = "Modelliert eine institutionelle Ausschlussliste (Vorbild: Listen wie jene des norwegischen Staatsfonds)."
+
+[[source]]
+key = "fiktiv_ausschlussliste_abdeckung"
+name = "Abdeckung der fiktiven Ausschlussliste"
+kind = "coverage"
+publisher = "Fiktiver Ethikrat für Anlagen"
+coverage_of = "fiktiv_ausschlussliste"
+fetcher = "local"
+format = "csv"
+location = "data/sample/fiktiv_ausschlussliste_abdeckung.csv"
+interval_hours = 168
+max_age_days = 120
+license = "Fiktive Demodaten, frei verwendbar"
+commercial_use = "ja"
+is_fictional = true
+description = "Welche Unternehmen der Ethikrat für welche Kriterien geprüft hat. Ohne Abdeckung gilt «unbekannt»."
+
+[[source]]
+key = "fiktiv_belegsammlung"
+name = "Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien)"
+kind = "evidence"
+publisher = "Projekt Transparenz (Demo-Recherche)"
+fetcher = "local"
+format = "csv"
+location = "data/sample/fiktiv_belegsammlung.csv"
+interval_hours = 168
+max_age_days = 180
+license = "Fiktive Demodaten, frei verwendbar"
+commercial_use = "ja"
+is_fictional = true
+description = "Kuratierte, fiktive Sachverhalte aus verschiedenen fiktiven Herausgebern."
+
+[[source]]
+key = "fiktiv_belegsammlung_abdeckung"
+name = "Recherche-Abdeckung der fiktiven Belegsammlung"
+kind = "coverage"
+publisher = "Projekt Transparenz (Demo-Recherche)"
+coverage_of = "fiktiv_belegsammlung"
+fetcher = "local"
+format = "csv"
+location = "data/sample/fiktiv_belegsammlung_abdeckung.csv"
+interval_hours = 168
+max_age_days = 180
+license = "Fiktive Demodaten, frei verwendbar"
+commercial_use = "ja"
+is_fictional = true
+description = "Welche Unternehmen für welche Kriterien recherchiert wurden."

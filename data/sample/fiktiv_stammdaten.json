@@ -1,0 +1,263 @@
+{
+  "_hinweis": "FIKTIVE DEMODATEN – alle Unternehmen und Kennungen sind erfunden.",
+  "companies": [
+    {
+      "company_key": "C01",
+      "name": "Alpenstrom Muster AG",
+      "lei": "FIKT00ALPENSTROM0114",
+      "country": "CH"
+    },
+    {
+      "company_key": "C02",
+      "name": "Nordkohle Beispiel plc",
+      "lei": "FIKT00NORDKOHLE00117",
+      "country": "GB"
+    },
+    {
+      "company_key": "C03",
+      "name": "Tiefsee Öl & Gas Beispiel SA",
+      "lei": "FIKT00TIEFSEEOEL0139",
+      "country": "NO"
+    },
+    {
+      "company_key": "C04",
+      "name": "Muster Textil Gruppe AG",
+      "lei": "FIKT00MUSTERTEX00125",
+      "country": "DE"
+    },
+    {
+      "company_key": "C05",
+      "name": "Waldland Agrar Beispiel Ltd",
+      "lei": "FIKT00WALDLAND000127",
+      "country": "BR"
+    },
+    {
+      "company_key": "C06",
+      "name": "Präzisionstechnik Beispiel AG",
+      "lei": "FIKT00PRAEZISIO00197",
+      "country": "CH"
+    },
+    {
+      "company_key": "C07",
+      "name": "Wehrtechnik Beispiel Holding AG",
+      "lei": "FIKT00WEHRTECH000143",
+      "country": "DE"
+    },
+    {
+      "company_key": "C08",
+      "name": "Sonnenpark Beispiel AG",
+      "lei": "FIKT00SONNENPARK0138",
+      "country": "CH"
+    },
+    {
+      "company_key": "C09",
+      "name": "Grüne Logistik Beispiel AG",
+      "lei": "FIKT00GRUENELOG00113",
+      "country": "AT"
+    },
+    {
+      "company_key": "C10",
+      "name": "Fernost Handel Beispiel Corp",
+      "lei": "FIKT00FERNOSTHA00130",
+      "country": "SG"
+    },
+    {
+      "company_key": "C11",
+      "name": "Medizinal Beispiel AG",
+      "lei": "FIKT00MEDIZINAL00161",
+      "country": "CH"
+    },
+    {
+      "company_key": "C12",
+      "name": "Datenwolke Beispiel Inc",
+      "lei": "FIKT00DATENWOLK00172",
+      "country": "US"
+    },
+    {
+      "company_key": "C13",
+      "name": "Kakao Handel Beispiel SA",
+      "lei": "FIKT00KAKAOHAND00187",
+      "country": "CI"
+    },
+    {
+      "company_key": "C14",
+      "name": "Bergbau Vielfalt Beispiel Ltd",
+      "lei": "FIKT00BERGBAU0000126",
+      "country": "AU"
+    },
+    {
+      "company_key": "C15",
+      "name": "Versicherung Beispiel AG",
+      "lei": "FIKT00VERSICHER00111",
+      "country": "CH"
+    },
+    {
+      "company_key": "C16",
+      "name": "Bauchemie Beispiel AG",
+      "lei": null,
+      "country": "CH"
+    },
+    {
+      "company_key": "C17",
+      "name": "Bahnbau Beispiel AG",
+      "lei": "FIKT00BAHNBAU0000138",
+      "country": "CH"
+    }
+  ],
+  "securities": [
+    {
+      "isin": "ZZALPSTR0014",
+      "name": "Alpenstrom Muster AG Namenaktie",
+      "issuer_company_key": "C01",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZNRDKHL0015",
+      "name": "Nordkohle Beispiel plc Namenaktie",
+      "issuer_company_key": "C02",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZTFSOEL0015",
+      "name": "Tiefsee Öl & Gas Beispiel SA Namenaktie",
+      "issuer_company_key": "C03",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZMSTTXT0010",
+      "name": "Muster Textil Gruppe AG Namenaktie",
+      "issuer_company_key": "C04",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZWLDAGR0017",
+      "name": "Waldland Agrar Beispiel Ltd Namenaktie",
+      "issuer_company_key": "C05",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZPRZTCH0019",
+      "name": "Präzisionstechnik Beispiel AG Namenaktie",
+      "issuer_company_key": "C06",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZWHRTCH0012",
+      "name": "Wehrtechnik Beispiel Holding AG Namenaktie",
+      "issuer_company_key": "C07",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZSNNPRK0016",
+      "name": "Sonnenpark Beispiel AG Namenaktie",
+      "issuer_company_key": "C08",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZGRNLGS0015",
+      "name": "Grüne Logistik Beispiel AG Namenaktie",
+      "issuer_company_key": "C09",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZMDZNAL0010",
+      "name": "Medizinal Beispiel AG Namenaktie",
+      "issuer_company_key": "C11",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZDTNWLK0014",
+      "name": "Datenwolke Beispiel Inc Namenaktie",
+      "issuer_company_key": "C12",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZKKOHDL0011",
+      "name": "Kakao Handel Beispiel SA Namenaktie",
+      "issuer_company_key": "C13",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZBRGBAU0013",
+      "name": "Bergbau Vielfalt Beispiel Ltd Namenaktie",
+      "issuer_company_key": "C14",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZVRSCHR0012",
+      "name": "Versicherung Beispiel AG Namenaktie",
+      "issuer_company_key": "C15",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    },
+    {
+      "isin": "ZZBCHEMI0018",
+      "name": "Bauchemie Beispiel AG Namenaktie",
+      "issuer_company_key": "C16",
+      "mapping_method": "manuell",
+      "mapping_confidence": "mittel",
+      "mapping_source": "Manuelle Zuordnung anhand Fiktiv-Factsheet"
+    },
+    {
+      "isin": "ZZBHNBAU0016",
+      "name": "Bahnbau Beispiel AG Namenaktie",
+      "issuer_company_key": "C17",
+      "mapping_method": "name",
+      "mapping_confidence": "tief",
+      "mapping_source": "Nur Namensähnlichkeit, nicht bestätigt"
+    },
+    {
+      "isin": "ZZALPSTRB012",
+      "name": "Alpenstrom Muster AG 1.5 % 2031",
+      "issuer_company_key": "C01",
+      "mapping_method": "register",
+      "mapping_confidence": "hoch",
+      "mapping_source": "Fiktives Wertpapierregister (Demo)"
+    }
+  ],
+  "relationships": [
+    {
+      "parent_key": "C07",
+      "child_key": "C06",
+      "relationship_type": "direkte_mutter",
+      "verified": true,
+      "ownership_pct": 100.0,
+      "source": "Fiktiver Geschäftsbericht 2025 der Wehrtechnik Beispiel Holding AG"
+    },
+    {
+      "parent_key": "C10",
+      "child_key": "C09",
+      "relationship_type": "direkte_mutter",
+      "verified": false,
+      "ownership_pct": 51.0,
+      "source": "Fiktiver Medienbericht – Beteiligung nicht bestätigt"
+    }
+  ]
+}

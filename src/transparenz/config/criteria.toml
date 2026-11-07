@@ -1,0 +1,46 @@
+# Ausschlusskriterien (Startliste).
+# Schwellenwerte sind bewusst NICHT gesetzt: Sie werden vom Projektteam festgelegt
+# (siehe docs/methodik/ausschlusskriterien.md). Solange ein Schwellenwert fehlt,
+# wird eine gemeldete Kennzahl angezeigt, aber nicht gegen eine Grenze bewertet.
+#
+# severity: "schwer"  = Verstoss gegen grundlegende Rechte/Verbote
+#           "hoch"    = erhebliche Umwelt-/Klimawirkung
+# Es gibt keine Verrechnung zwischen Kriterien und keinen Gesamtscore.
+
+[[criterion]]
+key = "kohle"
+name = "Kohle"
+description = "Abbau von Kraftwerkskohle oder Stromerzeugung aus Kohle, inkl. Ausbau neuer Kohlekapazitäten."
+severity = "hoch"
+metric = "umsatzanteil_kohle"
+metric_unit = "%"
+# threshold = 5.0   # offen – vom Projektteam festzulegen
+threshold_note = "Schwellenwert für Umsatzanteil offen (Platzhalter in ausschlusskriterien.md)."
+
+[[criterion]]
+key = "oel_gas_expansion"
+name = "Öl-/Gas-Expansion"
+description = "Erschliessung neuer Öl- oder Gasfelder bzw. Ausbau fossiler Förderkapazitäten."
+severity = "hoch"
+threshold_note = "Definition «Expansion» und Stichtag offen."
+
+[[criterion]]
+key = "geaechtete_waffen"
+name = "Geächtete Waffen"
+description = "Herstellung oder Schlüsselkomponenten von Streumunition, Antipersonenminen, biologischen oder chemischen Waffen."
+severity = "schwer"
+threshold_note = "Kein Umsatz-Schwellenwert vorgesehen (Null-Toleranz-Vorschlag, zu bestätigen)."
+
+[[criterion]]
+key = "zwangs_kinderarbeit"
+name = "Zwangs- und Kinderarbeit"
+description = "Zwangsarbeit oder ausbeuterische Kinderarbeit im eigenen Betrieb oder in der Lieferkette."
+severity = "schwer"
+threshold_note = "Abgrenzung eigene Tätigkeit vs. Lieferkette offen."
+
+[[criterion]]
+key = "entwaldung"
+name = "Entwaldung"
+description = "Beteiligung an Entwaldung oder Umwandlung natürlicher Ökosysteme, inkl. Lieferkette (z. B. Soja, Palmöl, Rind, Kakao)."
+severity = "hoch"
+threshold_note = "Stichtag (Cut-off-Datum) und Lieferketten-Tiefe offen."

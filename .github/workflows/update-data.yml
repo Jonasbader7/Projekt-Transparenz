@@ -1,0 +1,60 @@
+# Datenaktualisierung – VORBEREITET, nur manuell auslösbar.
+#
+# Wichtig: Ein GitHub-Runner ist temporär. Die hier erzeugte Datenbank wird nur als
+# Artefakt (7 Tage) aufbewahrt und ist KEIN dauerhafter Speicher. Solange kein
+# dauerhafter Speicher (z. B. verwaltete PostgreSQL-Datenbank oder Objektspeicher)
+# eingerichtet ist, läuft die produktive Aktualisierung lokal:
+#   python -m transparenz update
+# Siehe docs/ARCHITECTURE.md, Abschnitt «Update-System».
+#
+# Ein Zeitplan (schedule/cron) ist bewusst NICHT aktiv.
+
+name: Datenaktualisierung (vorbereitet)
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Quellen-Schlüssel (leer = alle Quellen)"
+        required: false
+        default: ""
+      force:
+        description: "Intervall ignorieren"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Pakete installieren
+        run: python -m pip install -e .
+      - name: Aktualisierung ausführen
+        env:
+          SOURCE: ${{ inputs.source }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          args=(update --trigger ci)
+          if [ -n "$SOURCE" ]; then args+=(--source "$SOURCE"); fi
+          if [ "$FORCE" = "true" ]; then args+=(--force); fi
+          python -m transparenz "${args[@]}"
+      - name: Status anzeigen
+        if: always()
+        run: python -m transparenz status
+      - name: Ergebnis als Artefakt sichern (temporär)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-ergebnis
+          path: |
+            data/processed/
+            data/raw/
+          retention-days: 7

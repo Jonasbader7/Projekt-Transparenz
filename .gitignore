@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Secrets und lokale Konfiguration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Daten: nur fiktive Beispieldaten gehören ins Repo
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+*.sqlite
+*.sqlite3
+*.db
+
+# Lizenzierte Daten, die nicht veröffentlicht werden dürfen
+data/licensed/
+
+# Kundengespräche: Notizen und Kontakte bleiben lokal
+docs/kundengespraeche/notizen/*
+!docs/kundengespraeche/notizen/README.md
+kontakte*
+*kontakte*.csv
+
+# Persönliche Finanzdaten (Depotauszüge etc.)
+privat/
+*depotauszug*
+
+# Lokale Werkzeug-Konfiguration (maschinenspezifische Pfade)
+.claude/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Streamlit-Secrets
+.streamlit/secrets.toml
