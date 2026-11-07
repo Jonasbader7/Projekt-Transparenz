@@ -2,6 +2,27 @@
 
 Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst innerhalb einer Session.
 
+## 07.11.2026 – Session 2 (Website online, Besuchszählung)
+
+### D-024 Website zählt Besuche mit dem BORS/Portfolio-Tracker, inkl. IP-Sicherheitsprotokoll
+- **Entscheid (Jonas):** Den Tracker von BORS auch auf dieser Website einsetzen, mit gleicher
+  Erfassung wie BORS (zusammengefasste Zähler **und** Sicherheitsprotokoll mit voller IP, 14 Tage).
+  Website und Tracker gehen zusammen online.
+- **Umsetzung:** `src/transparenz/site/static/analytics-{config,client}.js` werden von `build-site`
+  nach `site/` kopiert und in jeder Seite eingebunden (`data-analytics-site="transparenz"`);
+  Datenschutz-Link im Fuss. Gegenüber BORS zählt der Client **nur auf
+  `https://jonasbader7.github.io`** (lokal, Doppelklick, Tests: nichts gesendet). Worker
+  (`Portfoliopage/analytics/backend/src/worker.js`) akzeptiert `site: "transparenz"`;
+  Datenschutzseite im Portfolio nennt das Projekt.
+- **Abweichung von D-021:** Die Seiten laden jetzt zwei lokale Skripte und senden Zähldaten an
+  einen externen Dienst (Cloudflare). Anzeige und Inhalte bleiben ohne JavaScript vollständig.
+  Test prüft: nur diese zwei lokalen Skripte, kein Token in der Konfiguration.
+- **Grenzen:** keine Unterscheidung nach Unterseite (Worker nimmt bei Seitenaufrufen kein Detail
+  an); Zahlen sind Ereignisse, keine Personen. IP-Protokoll = Personendaten, nicht rechtlich
+  geprüft (`docs/recht/datenschutz.md`).
+- **Alternativen:** nur Zähler ohne IP-Protokoll (vorgeschlagen, nicht gewählt); kein Tracking;
+  Drittanbieter (GoatCounter, Plausible) – nicht nötig, eigener Worker existiert.
+
 ## 07.11.2026 – Session 1 (Projektaufbau)
 
 ### D-023 Ein öffentliches GitHub-Repo, vorerst ohne Lizenz

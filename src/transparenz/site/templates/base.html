@@ -92,8 +92,11 @@ label.filter { display: inline-flex; gap: 8px; align-items: center; margin: 8px 
   <div class="wrap">
     Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
     Statischer Schnappschuss, erzeugt am {{ format_datetime(built_at) }}. Aktualisieren:
-    <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.
+    <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.<br>
+    Cookielose, zusammengefasste Besuchszählung: <a href="{{ privacy_url }}">Datenschutz &amp; Analytics</a>
   </div>
 </footer>
+<script src="analytics-config.js"></script>
+<script src="analytics-client.js" data-analytics-site="transparenz"></script>
 </body>
 </html>

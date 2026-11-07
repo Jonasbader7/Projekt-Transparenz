@@ -10,6 +10,11 @@ optionaler Filter). Dadurch:
 Seiten: ``index.html`` (Übersicht), ``fonds-<isin>.html`` (Fondsanalyse),
 ``methodik.html``, ``datenquellen.html``; dazu je Fonds ``bericht-<isin>.md`` und
 ``belege-<isin>.csv``.
+
+Dazu kommen die zwei lokalen Dateien der cookielosen Besuchszählung
+(``analytics-config.js``, ``analytics-client.js`` aus ``site/static``, D-024). Sie zählen nur
+auf ``https://jonasbader7.github.io``; lokal geöffnet senden sie nichts. Die Seiten selbst
+funktionieren ohne JavaScript vollständig.
 """
 
 from __future__ import annotations
@@ -42,6 +47,10 @@ METHODOLOGY_DOCS = (
     ("quellen-hierarchie.md", "Quellen-Hierarchie"),
     ("ausschlusskriterien.md", "Ausschlusskriterien"),
 )
+
+STATIC_DIR = Path(__file__).parent / "static"
+STATIC_FILES = ("analytics-config.js", "analytics-client.js")
+PRIVACY_URL = "https://jonasbader7.github.io/Portfoliopage/analytics/datenschutz.html"
 
 
 class SiteBuildError(RuntimeError):
@@ -129,6 +138,7 @@ def build_site(ctx: AppContext, out_dir: Path, as_of: date | None = None) -> Bui
         "built_at": built_at,
         "funds": funds,
         "data_versions": versions,
+        "privacy_url": PRIVACY_URL,
     }
     result_files: list[Path] = []
 
@@ -193,5 +203,10 @@ def build_site(ctx: AppContext, out_dir: Path, as_of: date | None = None) -> Bui
             freshness=freshness, runs=runs,
         ),
     )
+    for name in STATIC_FILES:
+        source = STATIC_DIR / name
+        if not source.exists():
+            raise SiteBuildError(f"Statische Datei fehlt: {source}")
+        write(name, source.read_bytes())
     log.info("Website mit %d Dateien erzeugt in %s", len(result_files), out_dir)
     return BuildResult(out_dir, result_files)

@@ -2,6 +2,26 @@
 
 Neueste Einträge oben.
 
+## 07.11.2026 – Session 2: Umgebung, Besuchszählung, Vorbereitung Pages
+
+**Erledigt**
+- Python-Umgebung neu eingerichtet (`scripts/setup.ps1`, `.venv` im Projektordner); 109 Tests grün
+- BORS/Portfolio-Tracker auf die Website erweitert (D-024): lokale Skripte in
+  `src/transparenz/site/static/`, Einbindung in `base.html`, Datenschutz-Link; Client zählt nur auf
+  `jonasbader7.github.io`. In `Portfoliopage` (lokal, nicht committet): Worker akzeptiert
+  `transparenz`, Datenschutzseite und Analytics-README ergänzt
+- Tests angepasst: statt «keine Skripte» nur die zwei lokalen Tracker-Skripte, kein Token,
+  Schutz gegen lokales Zählen; 110 Tests grün, ruff sauber
+- Geprüft: lokal im Browser (Skripte geladen, keine Anfrage an den Worker, keine Konsolenfehler);
+  Client und Worker in Node simuliert
+- `docs/recht/datenschutz.md` aktualisiert (IP-Protokoll = Personendaten, offen)
+- Datenquellen-Recherche (SEC N-PORT, GLEIF, OFAC) in eigene Session ausgelagert
+
+**Offen:** Worker-Deploy (Jonas), Push beider Repos (Zustimmung), Pages einschalten, online prüfen.
+
+**Nicht ausgeführt:** echter Aufruf gegen den produktiven Worker (wäre eine echte Zählung; erst
+nach dem Deploy online prüfen).
+
 ## 07.11.2026 – Session 1, Teil 3: GitHub
 
 **Erledigt**

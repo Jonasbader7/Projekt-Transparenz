@@ -10,11 +10,12 @@ import pytest
 from transparenz.cli import main as cli_main
 from transparenz.entities.enums import UpdateStatus
 from transparenz.services.context import create_context
-from transparenz.site.builder import SiteBuildError, build_site, fund_slug
+from transparenz.site.builder import PRIVACY_URL, SiteBuildError, build_site, fund_slug
 
 from conftest import FUND_ISIN
 
 SLUG = fund_slug(FUND_ISIN)
+ANALYTICS_FILES = ("analytics-config.js", "analytics-client.js")
 
 
 @pytest.fixture
@@ -34,7 +35,8 @@ def read(out: Path, name: str) -> str:
 def test_all_pages_and_downloads_exist(site) -> None:  # type: ignore[no-untyped-def]
     out, result = site
     expected = {"index.html", "methodik.html", "datenquellen.html", f"fonds-{SLUG}.html",
-                f"bericht-{SLUG}.md", f"belege-{SLUG}.csv"}
+                f"bericht-{SLUG}.md", f"belege-{SLUG}.csv",
+                "analytics-config.js", "analytics-client.js"}
     assert expected == {p.name for p in result.files}
     assert all((out / name).stat().st_size > 0 for name in expected)
 
@@ -60,12 +62,31 @@ def test_pages_are_self_contained_and_links_resolve(site) -> None:  # type: igno
     out, _ = site
     for page in out.glob("*.html"):
         html = page.read_text(encoding="utf-8")
-        assert "<script src" not in html
+        # Nur die zwei lokalen Dateien der Besuchszählung, keine fremden Skripte
+        assert re.findall(r'<script src="([^"]+)"', html) == list(ANALYTICS_FILES)
         assert not re.search(r'<link[^>]+href="https?://', html)
         for href in re.findall(r'href="([^"]+)"', html):
             if href.startswith(("http://", "https://", "#")):
                 continue
             assert (out / href.split("#")[0]).exists(), (page.name, href)
+
+
+def test_analytics_is_documented_local_and_free_of_secrets(site) -> None:  # type: ignore[no-untyped-def]
+    out, _ = site
+    for page in out.glob("*.html"):
+        html = page.read_text(encoding="utf-8")
+        assert 'data-analytics-site="transparenz"' in html
+        assert f'href="{PRIVACY_URL}"' in html
+    config = read(out, "analytics-config.js")
+    endpoints = re.findall(r'endpoint:\s*"([^"]*)"', config)
+    assert len(endpoints) == 1
+    assert endpoints[0] == "" or re.fullmatch(r"https://[a-z0-9.-]+/collect", endpoints[0])
+    assert not re.search(r"token|secret|bearer|password", config, flags=re.I)
+    client = read(out, "analytics-client.js")
+    # Lokal (Doppelklick, localhost, Tests) wird nichts gesendet
+    assert 'location.hostname !== "jonasbader7.github.io"' in client
+    assert "localStorage" not in client and "sessionStorage" not in client
+    assert "document.cookie" not in client
 
 
 def test_methodology_is_rendered_from_docs(site) -> None:  # type: ignore[no-untyped-def]
