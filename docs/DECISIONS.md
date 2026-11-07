@@ -4,6 +4,15 @@ Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst inne
 
 ## 07.11.2026 – Session 1 (Projektaufbau)
 
+### D-023 Ein öffentliches GitHub-Repo, vorerst ohne Lizenz
+- **Entscheid (Jonas):** ein einziges, öffentliches Repo `Jonasbader7/Projekt-Transparenz`.
+- **Begründung:** kostenlose GitHub Pages, sichtbar im Profil, offene Methodik passt zum
+  Kernversprechen. Inhalte sind fiktiv; Strategie-Dokumente sind als Annahmen markiert.
+- **Lizenz:** bewusst noch keine (= alle Rechte vorbehalten); später MIT oder AGPL prüfen.
+- **Alternativen:** privates Repo + separates öffentliches Demo-Repo nur mit `site/`
+  (mehr Aufwand, Strategie bliebe privat) – nicht gewählt.
+- **Grenze:** Interviewnotizen, Kontakte und echte Fondsanalysen nie ungeprüft ins Repo.
+
 ### D-022 Projektordner: `OneDrive\Desktop\Projekt Transparenz`
 - **Entscheid (Jonas):** dauerhafter Ort des Projekts. Git-Verlauf wurde mitübernommen.
 - **Hinweis:** OneDrive synchronisiert auch eine lokale `.venv`; bei Problemen die Umgebung

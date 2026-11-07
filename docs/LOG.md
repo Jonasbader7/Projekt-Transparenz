@@ -2,6 +2,17 @@
 
 Neueste Einträge oben.
 
+## 07.11.2026 – Session 1, Teil 3: GitHub
+
+**Erledigt**
+- Repo https://github.com/Jonasbader7/Projekt-Transparenz verbunden; GitHub-Initialcommit
+  (nur `.gitattributes`) zusammengeführt, ohne Überschreiben
+- Nach Zustimmung von Jonas gepusht; Repo ist öffentlich (D-023); Workflow «Tests» lief grün
+- STATUS.md für die nächste Session aufbereitet (Übersicht, Hinweise zur Umgebung)
+
+**Offen:** GitHub Pages einschalten und Website-Workflow starten (nur Jonas kann die
+Repo-Einstellung ändern).
+
 ## 07.11.2026 – Session 1, Teil 2: Umzug und statische Website
 
 **Erledigt**

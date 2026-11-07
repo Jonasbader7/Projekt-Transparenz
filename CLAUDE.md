@@ -72,6 +72,10 @@ Speicher.
 Projektordner: `C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz` (OneDrive). Jonas arbeitet
 mit Windows PowerShell; Anleitungen immer mit `cd "…\Projekt Transparenz"` beginnen.
 Veröffentlichen (GitHub-Push, Pages) nur nach ausdrücklicher Zustimmung.
+GitHub: https://github.com/Jonasbader7/Projekt-Transparenz (öffentlich, `origin`, Branch `main`).
+Python-Umgebung fehlt zu Beginn einer neuen Session ggf.: `scripts\setup.ps1` (bei langen
+Temp-Pfaden kann pip an der Windows-Pfadgrenze scheitern → `-VenvPath` mit kurzem Pfad).
+Git Bash: bei `git show <ref>:<pfad>` `MSYS_NO_PATHCONV=1` setzen.
 
 ## Grenzen
 Nur fiktive Daten · nicht rechtlich geprüft · keine Anlageberatung · Schwellenwerte offen ·
