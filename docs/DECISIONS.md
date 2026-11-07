@@ -4,6 +4,16 @@ Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst inne
 
 ## 07.11.2026 – Session 1 (Projektaufbau)
 
+### D-020 Erste Zielgruppe: Privatanleger:innen
+- **Entscheid (Jonas):** Die ersten Interviews, Texte und Berichte richten sich an
+  Privatanleger:innen in der Schweiz.
+- **Folgen:** Interviews primär mit Teil A des Leitfadens; Sprache in App und Bericht für Laien
+  prüfen (Nutzertest); FIDLEG-Abgrenzung wird wichtiger, weil Laien Analysen leichter als
+  Empfehlung lesen (R1 in offene-rechtsfragen.md bleibt hohe Priorität); Zahlungsbereitschaft B2C
+  ist die grösste offene Annahme.
+- **Alternativen:** Berater:innen (B2B) – nicht verworfen, Teil B des Leitfadens für 2–3
+  Kontrollgespräche nutzbar.
+
 ### D-019 Musterstrategie, eigener Index und Fonds zurückgestellt
 - **Begründung:** Eine eigene Anlagestrategie neben unabhängigen Fondsanalysen erzeugt einen
   Interessenkonflikt und schwächt die Glaubwürdigkeit (externes Feedback). Fokus: Analyseplattform.

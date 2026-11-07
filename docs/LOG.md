@@ -27,4 +27,6 @@ Validierung → Screening-Engine → Streamlit-App → Update-System → Tests �
 - Windows-Konsole (cp1252) konnte Sonderzeichen nicht ausgeben → CLI schreibt UTF-8.
 - Anzeigetexte kollidierten bei gleichlautenden Enum-Werten («unbekannt») → Schlüssel (Typ, Wert).
 
+**Entscheid am Ende der Session:** Erste Zielgruppe sind Privatanleger:innen (D-020).
+
 **Nicht erledigt / offen:** siehe STATUS.md.

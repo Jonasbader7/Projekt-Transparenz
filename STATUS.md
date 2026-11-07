@@ -35,14 +35,14 @@ versionierte Datenbank → Screening nach Belegmodell → Streamlit-Anzeige und 
 
 ## Nächste 3 Schritte
 
-1. **Erste Zielgruppe entscheiden** und 3–5 Interviews mit dem Leitfaden führen (Phase 1).
+1. **3–5 Interviews mit Privatanleger:innen** (Leitfaden Teil A) führen und in
+   `docs/kundengespraeche/erkenntnisse.md` verdichten (Phase 1). Zielgruppe entschieden (D-020).
 2. **Erste echte Datenquelle** anbinden (Vorschlag: eine echte ETF-Positionsliste lokal + GLEIF
    für die Zuordnung), inkl. Lizenzprüfung und Messung der Zuordnungsquote.
 3. **Schwellenwerte und Definitionen** für die fünf Kriterien festlegen.
 
 ## Offene Fragen an Jonas
 
-- Erste Zielgruppe: Privatanleger:innen oder Berater:innen?
 - Welche echte Datenquelle zuerst?
 - Produktname: «ImpactLens» (Vorschlag aus Feedback) übernehmen oder weiter offen lassen?
 - Lizenz für Code und Methodik (z. B. MIT/AGPL bzw. CC BY), bevor das Repo öffentlich wird?
