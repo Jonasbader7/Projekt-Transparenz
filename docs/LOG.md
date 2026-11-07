@@ -2,14 +2,22 @@
 
 Neueste Einträge oben.
 
-## 07.11.2026 – Session 2: Umgebung, Besuchszählung, Vorbereitung Pages
+## 07.11.2026 – Session 2: Umgebung, Besuchszählung, Website online
 
 **Erledigt**
+- **Website online:** https://jonasbader7.github.io/Projekt-Transparenz/ (Pages war bereits
+  eingeschaltet; Workflow auf `f33bc46` neu gestartet). Online geprüft: Seite und beide
+  Tracker-Skripte laden, Worker nimmt den Seitenaufruf mit 204 an, keine Konsolenfehler
+- Worker bereitgestellt (Version `da476383`). Erster Versuch mit `npx wrangler deploy` scheiterte,
+  weil `wrangler.jsonc` im Repo nur den Platzhalter für die D1-ID enthält → neues Skript
+  `Portfoliopage/analytics/backend/deploy-windows.ps1`. Probe ohne Speicherung: `transparenz`
+  angenommen, fremde Seite abgelehnt
+- Portfoliopage gepusht (`b5b1418`), Projekt Transparenz gepusht (`f33bc46`), Tests auf GitHub grün
 - Python-Umgebung neu eingerichtet (`scripts/setup.ps1`, `.venv` im Projektordner); 109 Tests grün
 - BORS/Portfolio-Tracker auf die Website erweitert (D-024): lokale Skripte in
   `src/transparenz/site/static/`, Einbindung in `base.html`, Datenschutz-Link; Client zählt nur auf
-  `jonasbader7.github.io`. In `Portfoliopage` (lokal, nicht committet): Worker akzeptiert
-  `transparenz`, Datenschutzseite und Analytics-README ergänzt
+  `jonasbader7.github.io`. In `Portfoliopage`: Worker akzeptiert `transparenz`,
+  Datenschutzseite und Analytics-README ergänzt
 - Tests angepasst: statt «keine Skripte» nur die zwei lokalen Tracker-Skripte, kein Token,
   Schutz gegen lokales Zählen; 110 Tests grün, ruff sauber
 - Geprüft: lokal im Browser (Skripte geladen, keine Anfrage an den Worker, keine Konsolenfehler);
@@ -17,10 +25,9 @@ Neueste Einträge oben.
 - `docs/recht/datenschutz.md` aktualisiert (IP-Protokoll = Personendaten, offen)
 - Datenquellen-Recherche (SEC N-PORT, GLEIF, OFAC) in eigene Session ausgelagert
 
-**Offen:** Worker-Deploy (Jonas), Push beider Repos (Zustimmung), Pages einschalten, online prüfen.
+**Hinweis:** Die Online-Prüfung hat einen echten Seitenaufruf gezählt (inkl. IP-Protokoll).
 
-**Nicht ausgeführt:** echter Aufruf gegen den produktiven Worker (wäre eine echte Zählung; erst
-nach dem Deploy online prüfen).
+**Offen:** Repo anpinnen; rechtliche Prüfung des IP-Protokolls (D-024).
 
 ## 07.11.2026 – Session 1, Teil 3: GitHub
 

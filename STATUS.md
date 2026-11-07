@@ -10,11 +10,11 @@
 | Projektordner | `C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz` |
 | GitHub | https://github.com/Jonasbader7/Projekt-Transparenz (**öffentlich**, Branch `main`, keine Lizenz) |
 | Website lokal | `site\index.html` doppelklicken |
-| Website online | geplant: https://jonasbader7.github.io/Projekt-Transparenz/ – **noch nicht aktiv** (Schritte siehe «Nur vorbereitet») |
-| Tests | 110 grün lokal (Session 2); GitHub Actions «Tests» grün (Lauf vom 07.11.2026, Stand Session 1) |
+| Website online | **https://jonasbader7.github.io/Projekt-Transparenz/** – live seit 07.11.2026, Stand Commit `f33bc46` (Workflow «Website veröffentlichen» nach jeder Website-Änderung manuell starten) |
+| Tests | 110 grün lokal und auf GitHub Actions (Commit `f33bc46`) |
 | Daten | ausschliesslich fiktiv |
 | Zielgruppe | Privatanleger:innen (D-020) |
-| Besuchszählung | BORS/Portfolio-Tracker eingebaut (D-024), aktiv erst nach Worker-Deploy und Veröffentlichung |
+| Besuchszählung | aktiv (D-024): BORS/Portfolio-Worker, Seite `transparenz`; auswerten mit `Portfoliopage\analytics\backend\dashboard-windows.ps1` |
 
 ## Fortschritt
 
@@ -38,19 +38,13 @@ dazu Streamlit-App (lokal) und Bericht als Markdown/CSV.
 | Jede angezeigte Feststellung mit Quelle, Datum, Datenstand (Version, Hash, Importzeit) | End-to-End-Test, `tests/test_site.py` |
 | Statische Website: 4 Seiten + Bericht/CSV, ohne externe Ressourcen, Links geprüft, Texte escaped | `tests/test_site.py`; im Browser geprüft (Desktop, Handy, hell/dunkel) |
 | Streamlit: vier Seiten | End-to-End-Test (AppTest) + manuell im Browser |
-| Besuchszählung: nur lokale Skripte, kein Token, zählt nur auf github.io | `tests/test_site.py`; lokal im Browser geprüft (keine Anfrage an den Worker); Client und Worker in Node simuliert (`transparenz` angenommen, fremde Seite abgelehnt) |
+| Besuchszählung: nur lokale Skripte, kein Token, zählt nur auf github.io | `tests/test_site.py`; lokal im Browser geprüft (keine Anfrage an den Worker); online geprüft: Seitenaufruf vom Worker mit 204 angenommen, keine Konsolenfehler |
+| Website online (GitHub Pages) | Workflow «Website veröffentlichen» erfolgreich, Seite live geprüft |
 | Windows-Setup | `scripts/setup.ps1` in Windows PowerShell 5.1 ausgeführt (Exit 0; Session 2: `.venv` im Projektordner) |
 | Tests auf GitHub | Workflow `ci.yml` lief grün |
 
 ### Nur vorbereitet (nicht produktiv)
 
-- **GitHub Pages + Besuchszählung** (zusammen online, D-024). Reihenfolge:
-  1. Worker veröffentlichen: in `Portfoliopage\analytics\backend` `npx wrangler deploy`
-     (Jonas; `worker.js` akzeptiert jetzt `transparenz`, lokal geändert, noch nicht committet)
-  2. Portfoliopage committen und pushen (Datenschutzseite nennt das Projekt)
-  3. Projekt Transparenz pushen
-  4. Settings → Pages → Source «GitHub Actions», Workflow «Website veröffentlichen» starten
-  5. Seite online prüfen, ein Aufruf im Dashboard (`dashboard-windows.ps1`) als `transparenz` sichtbar
 - HTTP-Abruf echter Quellen (gebaut und getestet, keine Quelle angebunden)
 - Update-Workflow auf GitHub nur manuell, ohne dauerhaften Speicher
 - Schwellenwerte (Platzhalter in `docs/methodik/ausschlusskriterien.md`)
@@ -58,7 +52,7 @@ dazu Streamlit-App (lokal) und Bericht als Markdown/CSV.
 
 ## Nächste 3 Schritte
 
-1. **Website mit Besuchszählung online bringen** (Schritte oben) und Repo auf dem Profil anpinnen.
+1. **Repo auf dem GitHub-Profil anpinnen** und den Website-Link im Portfolio/README ergänzen.
 2. **3–5 Interviews mit Privatanleger:innen** (Leitfaden Teil A), die Website als
    Gesprächsgrundlage nutzen; Erkenntnisse in `docs/kundengespraeche/erkenntnisse.md`.
 3. **Erste echte Datenquelle** anbinden: läuft in einer eigenen Session (Vorschlag SEC N-PORT +
