@@ -18,7 +18,21 @@ keine Empfehlungen, nicht rechtlich geprüft. Details: [STATUS.md](STATUS.md).
 
 Kein Gesamtscore, keine Verrechnung zwischen Kriterien. Methodik: [docs/methodik/](docs/methodik/).
 
-## Start unter Windows (PowerShell)
+## Website ansehen (ohne Installation)
+
+Im Explorer den Ordner `site` öffnen und **`index.html` doppelklicken**. Die Website ist ein
+statischer Schnappschuss: Sie braucht weder Python noch Internet und lässt sich später
+unverändert veröffentlichen (z. B. GitHub Pages, Workflow `pages.yml` – nur manuell).
+
+Website nach Datenänderungen neu erzeugen (braucht die Einrichtung unten):
+
+```powershell
+.venv\Scripts\python -m transparenz build-site --update
+```
+
+## Lokale App und Werkzeuge (Windows PowerShell)
+
+Alle Befehle im Projektordner ausführen (vorher `cd "…\Projekt Transparenz"`).
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\setup.ps1

@@ -2,6 +2,21 @@
 
 Neueste Einträge oben.
 
+## 07.11.2026 – Session 1, Teil 2: Umzug und statische Website
+
+**Erledigt**
+- Projekt nach `OneDrive\Desktop\Projekt Transparenz` verschoben, Git-Verlauf übernommen (D-022)
+- Statische Website (`transparenz.site`, `build-site`): Übersicht, Fondsanalyse, Methodik,
+  Datenquellen; Bericht/CSV als Download; heller/dunkler Modus; Handybreite geprüft (D-021)
+- Vorbereiteter, nur manuell auslösbarer GitHub-Pages-Workflow (`pages.yml`)
+- Fehler gefunden und behoben: gleichlautende Aufzählungswerte überschrieben sich in der
+  Bezeichnungstabelle («Verfahren nicht_anwendbar» statt «–»); Test über alle Aufzählungen ergänzt
+- Fehler gefunden und behoben: Methodik-Querverweis auf `validierung.md` war auf der Website tot
+- 109 Tests bestehen, ruff sauber
+
+**Problem:** Jonas konnte die Skripte nicht starten, weil PowerShell in `C:\Windows\System32`
+stand. README erklärt jetzt den Ordnerwechsel; die Website braucht gar keinen Start mehr.
+
 ## 07.11.2026 – Session 1: Projektaufbau und erster Meilenstein (fiktive Daten)
 
 **Plan der Session:** Umgebung prüfen → Struktur/Konfiguration → Datenmodell → Import und

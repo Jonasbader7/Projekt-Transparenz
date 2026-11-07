@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Methodik</h1>
+<p class="lead">Die Methodik ist offen. Diese Seite zeigt dieselben Dokumente, die im Repository
+unter <code>docs/methodik/</code> liegen – es gibt keine zweite, versteckte Version.</p>
+
+<h2>Aktive Ausschlusskriterien</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kriterium</th><th>Beschreibung</th><th>Schwere</th><th>Kennzahl</th><th>Schwellenwert</th><th>Bemerkung</th></tr></thead>
+  <tbody>
+  {% for c in criteria %}
+  <tr><td>{{ c.name }}</td><td>{{ c.description }}</td><td>{{ c.severity }}</td><td>{{ c.metric or "–" }}</td>
+    <td>{% if c.threshold is not none %}{{ c.threshold }} {{ c.metric_unit or "" }}{% else %}offen{% endif %}</td>
+    <td class="caption">{{ c.threshold_note }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<p class="caption">Inhalt:
+{% for title, _ in documents %}<a href="#doc-{{ loop.index }}">{{ title }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+{% for title, html in documents %}
+<section class="prose" id="doc-{{ loop.index }}">
+  <hr>
+  {{ html|safe }}
+</section>
+{% endfor %}
+{% endblock %}

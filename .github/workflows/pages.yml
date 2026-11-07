@@ -1,0 +1,39 @@
+# Website auf GitHub Pages veröffentlichen – VORBEREITET, nur manuell auslösbar.
+#
+# Veröffentlicht den Ordner site/ genau so, wie er im Repository liegt (lokal mit
+# «python -m transparenz build-site» erzeugt und geprüft). Voraussetzungen:
+#   1. Repository auf GitHub (Push nur mit Zustimmung von Jonas)
+#   2. Settings → Pages → Source: «GitHub Actions»
+#   3. Prüfen, dass site/ nur fiktive bzw. veröffentlichbare Daten enthält
+# Kein automatischer Auslöser: Veröffentlichen ist immer ein bewusster Schritt.
+
+name: Website veröffentlichen (GitHub Pages)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Website vorhanden?
+        run: test -f site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ display_name }}</h1>
+<p class="lead">Fondspositionen mit nachvollziehbaren Quellen verbinden – damit Anlegerinnen und
+Anleger selbst beurteilen können, ob ein Fonds zu ihren Wertvorstellungen passt.</p>
+<p class="disclaimer">{{ disclaimer }}</p>
+
+<div class="columns">
+  <div class="card"><strong>Was gezeigt wird</strong>
+    <ul><li>welche Unternehmen in einem Fonds stecken</li>
+    <li>welche Belege es zu Ausschlusskriterien gibt – mit Quelle und Datum</li>
+    <li>wo Informationen fehlen oder unsicher sind</li></ul></div>
+  <div class="card"><strong>Was bewusst nicht passiert</strong>
+    <ul><li>kein Gesamtscore, keine Verrechnung zwischen Kriterien</li>
+    <li>keine eigenen Urteile – nur Wiedergabe von Quellen</li>
+    <li>keine Kauf- oder Verkaufsempfehlungen</li></ul></div>
+</div>
+
+<h2>Fonds</h2>
+{% for snap in funds %}
+{% set r = results[snap.fund.isin] %}
+<div class="card">
+  <h3 style="margin-top:0"><a href="fonds-{{ fund_slug(snap.fund.isin) }}.html">{{ snap.fund.name }}</a></h3>
+  <div class="caption">ISIN {{ snap.fund.isin }} · {{ snap.fund.provider }} · {{ snap.positions|length }} Positionen
+    · Stichtag {{ format_date(snap.fund.as_of_date) }}{% if snap.fund.is_fictional %} · <strong>fiktive Demodaten</strong>{% endif %}</div>
+  <div class="cards">
+    <div class="card"><div class="k">Gewicht mit Belegen</div><div class="v">{{ pct(r.weight_with_finding) }}</div></div>
+    <div class="card"><div class="k">davon festgestellt</div><div class="v">{{ pct(r.weight_with_status(S.FESTGESTELLT)) }}</div></div>
+    <div class="card"><div class="k">Emittent nicht identifiziert</div><div class="v">{{ pct(r.unidentified_weight) }}</div></div>
+  </div>
+  <a href="fonds-{{ fund_slug(snap.fund.isin) }}.html">Zur Fondsanalyse →</a>
+</div>
+{% endfor %}
+
+<h2>Wie Belege eingestuft werden</h2>
+<p class="caption">Massgebend ist die Art des stärksten Belegs – nicht die Anzahl Quellen.
+Details auf der Seite <a href="methodik.html">Methodik</a>.</p>
+<div class="legend">
+{% for s in legend %}
+  <div><span class="chip s-{{ s.value }}">{{ short_status(s) }}</span> <span class="caption">{{ label(s) }}</span></div>
+{% endfor %}
+</div>
+
+<h2>Datenlage</h2>
+<p>{{ data_versions|length }} aktive Datenstände.
+{% if stale %}<span class="notice" style="display:inline-block">Veraltet oder ohne gültigen Stand:
+{% for f in stale %}{{ f.config.name }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+{% else %}Keine Quelle ist veraltet.{% endif %}
+<a href="datenquellen.html">Details zu Quellen und Aktualität</a></p>
+{% endblock %}

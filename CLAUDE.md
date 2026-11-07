@@ -37,7 +37,9 @@ Python-Monolith, Paket `transparenz` (src-Layout):
 | `src/transparenz/config/criteria.toml` | Ausschlusskriterien, Schwellenwerte (offen) |
 | `src/transparenz/screening/engine.py` | Belegstatus-Logik |
 | `src/transparenz/services/update_manager.py` | DataUpdateManager |
-| `app/main.py`, `app/views/` | Streamlit-App |
+| `site/` | **statische Website (Hauptoberfläche)**, erzeugt mit `python -m transparenz build-site`; nach jeder Daten- oder Darstellungsänderung neu erzeugen und mitcommitten |
+| `src/transparenz/site/` | Website-Generator und Jinja2-Vorlagen |
+| `app/main.py`, `app/views/` | Streamlit-App (lokal, z. B. manuelle Updates) |
 | `data/sample/` | fiktive Beispieldaten (erzeugt mit `scripts/generate_sample_data.py`) |
 | `docs/methodik/` | Methodik (wird in der App angezeigt) |
 
@@ -65,6 +67,11 @@ Erstinstallation: `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1`.
 Aktualität». Fehlerhafte Daten werden abgelehnt, der letzte gültige Stand bleibt aktiv; jeder
 Versuch steht in `update_runs`. GitHub-Workflow `update-data.yml` nur manuell, kein dauerhafter
 Speicher.
+
+## Umgebung
+Projektordner: `C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz` (OneDrive). Jonas arbeitet
+mit Windows PowerShell; Anleitungen immer mit `cd "…\Projekt Transparenz"` beginnen.
+Veröffentlichen (GitHub-Push, Pages) nur nach ausdrücklicher Zustimmung.
 
 ## Grenzen
 Nur fiktive Daten · nicht rechtlich geprüft · keine Anlageberatung · Schwellenwerte offen ·

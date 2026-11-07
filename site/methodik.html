@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodik – Projekt Transparenz</title>
+<style>
+:root {
+  --bg: #FBFAF7; --surface: #FFFFFF; --surface-2: #F2F0EA; --text: #1F2421;
+  --muted: #5E6661; --border: #E2DFD6; --primary: #2F5D50; --link: #24564A;
+  --warn-bg: #FBF3D6; --warn-text: #5C4A0E;
+  --s-festgestellt: #F2C4BD; --s-pruefung_ausstehend: #F6D7B0; --s-verfahren_laufend: #F6D7B0;
+  --s-dokumentiert: #DCD3EC; --s-medienbericht: #D3E0EE; --s-zuordnung_unsicher: #F3E9B5;
+  --s-unbekannt: #F3E9B5; --s-keine_hinweise: #E7E5DF; --s-nicht_anwendbar: #F4F3EF;
+  --s-text: #1F2421;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161917; --surface: #1D2120; --surface-2: #252A28; --text: #E6E8E3;
+    --muted: #A2AAA4; --border: #333937; --primary: #8CC3B2; --link: #9ED1C1;
+    --warn-bg: #3A3320; --warn-text: #F1E2AE;
+    --s-festgestellt: #5A2E2A; --s-pruefung_ausstehend: #5A4326; --s-verfahren_laufend: #5A4326;
+    --s-dokumentiert: #3F3756; --s-medienbericht: #2C3D52; --s-zuordnung_unsicher: #4F4721;
+    --s-unbekannt: #4F4721; --s-keine_hinweise: #343836; --s-nicht_anwendbar: #2A2E2C;
+    --s-text: #F0F1EC;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--link); }
+header.site { background: var(--surface); border-bottom: 1px solid var(--border); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+header.site .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-top: 14px; padding-bottom: 14px; }
+.brand { font-weight: 700; color: var(--text); text-decoration: none; font-size: 1.1rem; }
+nav a { color: var(--muted); text-decoration: none; margin-right: 18px; white-space: nowrap; }
+nav a.active, nav a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
+main { padding: 28px 0 48px; }
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 6px; }
+h2 { font-size: 1.35rem; margin: 40px 0 10px; }
+h3 { font-size: 1.1rem; margin: 22px 0 6px; }
+.lead { font-size: 1.1rem; max-width: 760px; }
+.muted, .caption { color: var(--muted); }
+.caption { font-size: .9rem; }
+.notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 8px; padding: 12px 16px; margin: 14px 0; }
+.disclaimer { font-size: .88rem; color: var(--muted); border-left: 3px solid var(--border); padding-left: 12px; margin: 14px 0; max-width: 860px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 18px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card .k { color: var(--muted); font-size: .88rem; }
+.card .v { font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--s-text); }
+.s-festgestellt { background: var(--s-festgestellt); }
+.s-pruefung_ausstehend { background: var(--s-pruefung_ausstehend); }
+.s-verfahren_laufend { background: var(--s-verfahren_laufend); }
+.s-dokumentiert { background: var(--s-dokumentiert); }
+.s-medienbericht { background: var(--s-medienbericht); }
+.s-zuordnung_unsicher { background: var(--s-zuordnung_unsicher); }
+.s-keine_hinweise { background: var(--s-keine_hinweise); }
+.s-unbekannt { background: var(--s-unbekannt); }
+.s-nicht_anwendbar { background: var(--s-nicht_anwendbar); }
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; }
+details > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+details > .body { padding: 0 16px 14px; }
+.evidence { border-left: 3px solid var(--border); padding: 4px 0 4px 12px; margin: 10px 0; }
+.evidence .role { font-weight: 600; }
+ul.flags { margin: 6px 0; padding-left: 20px; color: var(--muted); font-size: .9rem; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px 16px; margin: 10px 0; }
+.columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.prose { max-width: 860px; }
+.prose table { margin: 10px 0; display: block; overflow-x: auto; }
+footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; padding: 18px 0 32px; }
+label.filter { display: inline-flex; gap: 8px; align-items: center; margin: 8px 0; cursor: pointer; }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">Projekt Transparenz</a>
+    <nav aria-label="Hauptnavigation">
+      <a href="index.html" >Übersicht</a>
+      <a href="fonds-zzfiketf0019.html" >Fondsanalyse</a>
+      <a href="methodik.html" class="active">Methodik</a>
+      <a href="datenquellen.html" >Datenquellen &amp; Aktualität</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+<h1>Methodik</h1>
+<p class="lead">Die Methodik ist offen. Diese Seite zeigt dieselben Dokumente, die im Repository
+unter <code>docs/methodik/</code> liegen – es gibt keine zweite, versteckte Version.</p>
+
+<h2>Aktive Ausschlusskriterien</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kriterium</th><th>Beschreibung</th><th>Schwere</th><th>Kennzahl</th><th>Schwellenwert</th><th>Bemerkung</th></tr></thead>
+  <tbody>
+  <tr><td>Kohle</td><td>Abbau von Kraftwerkskohle oder Stromerzeugung aus Kohle, inkl. Ausbau neuer Kohlekapazitäten.</td><td>hoch</td><td>umsatzanteil_kohle</td>
+    <td>offen</td>
+    <td class="caption">Schwellenwert für Umsatzanteil offen (Platzhalter in ausschlusskriterien.md).</td></tr>
+  <tr><td>Öl-/Gas-Expansion</td><td>Erschliessung neuer Öl- oder Gasfelder bzw. Ausbau fossiler Förderkapazitäten.</td><td>hoch</td><td>–</td>
+    <td>offen</td>
+    <td class="caption">Definition «Expansion» und Stichtag offen.</td></tr>
+  <tr><td>Geächtete Waffen</td><td>Herstellung oder Schlüsselkomponenten von Streumunition, Antipersonenminen, biologischen oder chemischen Waffen.</td><td>schwer</td><td>–</td>
+    <td>offen</td>
+    <td class="caption">Kein Umsatz-Schwellenwert vorgesehen (Null-Toleranz-Vorschlag, zu bestätigen).</td></tr>
+  <tr><td>Zwangs- und Kinderarbeit</td><td>Zwangsarbeit oder ausbeuterische Kinderarbeit im eigenen Betrieb oder in der Lieferkette.</td><td>schwer</td><td>–</td>
+    <td>offen</td>
+    <td class="caption">Abgrenzung eigene Tätigkeit vs. Lieferkette offen.</td></tr>
+  <tr><td>Entwaldung</td><td>Beteiligung an Entwaldung oder Umwandlung natürlicher Ökosysteme, inkl. Lieferkette (z. B. Soja, Palmöl, Rind, Kakao).</td><td>hoch</td><td>–</td>
+    <td>offen</td>
+    <td class="caption">Stichtag (Cut-off-Datum) und Lieferketten-Tiefe offen.</td></tr>
+  </tbody>
+</table></div>
+
+<p class="caption">Inhalt:
+<a href="#doc-1">Belegmodell und Validierung</a> · <a href="#doc-2">Quellen-Hierarchie</a> · <a href="#doc-3">Ausschlusskriterien</a></p>
+<section class="prose" id="doc-1">
+  <hr>
+  <h1>Belegmodell und Validierung</h1>
+<p><em>Version 0.2 vom 07.11.2026 – Entwurf, nicht extern geprüft.</em></p>
+<h2>Grundidee</h2>
+<p>Wir vergeben <strong>keinen Nachhaltigkeits-Score</strong>. Für jedes Unternehmen in einem Fonds und jedes
+Ausschlusskriterium zeigen wir, <strong>welche Belege es gibt, von wem sie stammen und wie belastbar
+sie sind</strong>. Das Urteil, ob ein Fonds zu den eigenen Werten passt, treffen die Nutzerinnen und
+Nutzer selbst.</p>
+<h2>Der Sachverhalt (ein Datensatz)</h2>
+<p>Jeder Beleg ist ein nachvollziehbarer Datensatz mit:</p>
+<table>
+<thead>
+<tr>
+<th>Feld</th>
+<th>Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unternehmen, Kennung</td>
+<td>Name wie in der Quelle, LEI und/oder ISIN, falls angegeben</td>
+</tr>
+<tr>
+<td>Kriterium</td>
+<td>z. B. Kohle, Entwaldung</td>
+</tr>
+<tr>
+<td>Beschreibung</td>
+<td>was die Quelle sagt – keine eigene Wertung</td>
+</tr>
+<tr>
+<td>Art</td>
+<td>Vorwurf · behördliche Feststellung · Gerichtsurteil · Ausschlussentscheid einer Institution · Unternehmensstellungnahme · Abhilfemassnahme</td>
+</tr>
+<tr>
+<td>Verfahrensstatus</td>
+<td>laufend · abgeschlossen (rechtskräftig) · unbekannt · nicht anwendbar</td>
+</tr>
+<tr>
+<td>Herausgeber, Herausgebertyp</td>
+<td>wer es veröffentlicht hat (Gericht, Behörde, NGO, Institution, Medien, Unternehmen)</td>
+</tr>
+<tr>
+<td>Quelle, URL</td>
+<td>Titel und Link des Originaldokuments</td>
+</tr>
+<tr>
+<td>Veröffentlichungs- und Ereignisdatum</td>
+<td>wann publiziert, wann passiert</td>
+</tr>
+<tr>
+<td>Importzeitpunkt, Datenstand</td>
+<td>wann und aus welcher Version unserer Datenquelle importiert</td>
+</tr>
+<tr>
+<td>Verifizierungsgrad</td>
+<td>ungeprüft (nur importiert) · Quelle gesichtet · Dokument geprüft</td>
+</tr>
+<tr>
+<td>Letzte Überprüfung</td>
+<td>wann wir den Datensatz zuletzt kontrolliert haben</td>
+</tr>
+<tr>
+<td>Kennzahl (optional)</td>
+<td>z. B. Umsatzanteil Kohle in %</td>
+</tr>
+</tbody>
+</table>
+<h2>Belegstatus: Beweisstatus statt Quellenanzahl</h2>
+<p>Massgebend ist der <strong>stärkste sicher zugeordnete Beleg</strong> – nicht, wie viele Quellen dasselbe
+berichten. Zwei Zeitungsartikel, die denselben unbelegten Vorwurf wiederholen, sind kein Beweis.
+Ein rechtskräftiges Gerichtsurteil kann dagegen allein genügen, um eine gerichtliche
+Feststellung wiederzugeben.</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Bedingung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gerichtlich/behördlich festgestellt</strong></td>
+<td>Gerichtsurteil oder behördliche Feststellung, Verfahren rechtskräftig abgeschlossen, <strong>Originaldokument von uns geprüft</strong></td>
+</tr>
+<tr>
+<td><strong>Entscheid gemeldet – Prüfung ausstehend</strong></td>
+<td>wie oben, aber unsere Dokumentprüfung fehlt noch</td>
+</tr>
+<tr>
+<td><strong>Verfahren laufend</strong></td>
+<td>Gericht/Behörde, Verfahren nicht abgeschlossen oder Status unbekannt; auch Anklagen und Untersuchungen</td>
+</tr>
+<tr>
+<td><strong>Dokumentiert durch NGO/Institution</strong></td>
+<td>Recherche einer NGO mit Belegen oder Ausschlussentscheid einer Institution</td>
+</tr>
+<tr>
+<td><strong>Nur Medienberichte</strong></td>
+<td>ausschliesslich Medienberichte – auch mehrere heben die Stufe nicht an</td>
+</tr>
+<tr>
+<td><strong>Beleg vorhanden, Zuordnung unsicher</strong></td>
+<td>Belege existieren, aber die Zuordnung zum Unternehmen bzw. Wertpapier ist nicht sicher genug</td>
+</tr>
+<tr>
+<td><strong>Keine Hinweise in geprüften Quellen</strong></td>
+<td>eine Quelle hat das Unternehmen für dieses Kriterium nachweislich geprüft und nichts gefunden</td>
+</tr>
+<tr>
+<td><strong>Unbekannt</strong></td>
+<td>keine Quelle deckt das Unternehmen ab, oder der Emittent ist nicht identifiziert</td>
+</tr>
+<tr>
+<td><strong>Nicht anwendbar</strong></td>
+<td>z. B. Barmittel, Devisentermingeschäfte</td>
+</tr>
+</tbody>
+</table>
+<p>Wie viele <strong>verschiedene Herausgeber</strong> berichten, wird als Kontext angezeigt, ändert die Stufe
+aber nicht.</p>
+<h2>Regeln</h2>
+<ol>
+<li><strong>Kein Gesamtwert, keine Verrechnung.</strong> Jedes Kriterium steht für sich. Ein schwerer
+   Befund (z. B. Zwangsarbeit) wird nie durch gute Werte anderswo (z. B. CO₂) ausgeglichen.</li>
+<li><strong>Ein Vorwurf ist kein bewiesener Verstoss.</strong> Texte nennen immer Art, Herausgeber und Datum
+   («Laut Gerichtsurteil … vom …», «Vorwurf laut NGO … – nicht bestätigt»).</li>
+<li><strong>Automatisierung bestätigt nichts.</strong> Neu importierte Datensätze sind «ungeprüft».
+   «Festgestellt» setzt eine menschliche Prüfung des Originaldokuments voraus.</li>
+<li><strong>Fehlende Daten sind kein Nachhaltigkeitsnachweis.</strong> «Keine Hinweise» gibt es nur mit
+   nachgewiesener Abdeckung, sonst «unbekannt».</li>
+<li><strong>Stellungnahmen und Abhilfe</strong> werden neben dem Befund gezeigt, entkräften ihn aber nicht.</li>
+<li><strong>Selbstauskünfte</strong> der Unternehmen begründen keinen Befund (weder belastend noch entlastend).</li>
+<li><strong>Konzernstrukturen:</strong> Belege zur Muttergesellschaft werden nur über <strong>verifizierte</strong>
+   Beziehungen übernommen. Unverifizierte Beziehungen werden angezeigt, aber nicht übernommen.</li>
+<li><strong>Schwellenwerte:</strong> Solange ein Schwellenwert nicht festgelegt ist, wird eine gemeldete
+   Kennzahl angezeigt und als Beleg behandelt (mit Hinweis). Liegt sie unter einem
+   festgelegten Schwellenwert, zählt sie nicht als Befund.</li>
+</ol>
+<h2>Zuordnung zu Unternehmen</h2>
+<p>ISIN (Wertpapier) und LEI (Rechtsträger) werden strikt getrennt. Zuordnungen haben eine
+Methode und ein Vertrauen:</p>
+<table>
+<thead>
+<tr>
+<th>Methode</th>
+<th>Vertrauen</th>
+<th>zählt für Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LEI-Treffer</td>
+<td>hoch</td>
+<td>ja</td>
+</tr>
+<tr>
+<td>ISIN → Wertpapier → Emittent</td>
+<td>Vertrauen der Wertpapier-Zuordnung</td>
+<td>ab «mittel»</td>
+</tr>
+<tr>
+<td>nur Namensabgleich</td>
+<td>tief</td>
+<td>nein → «Zuordnung unsicher»</td>
+</tr>
+<tr>
+<td>Name gleich, LEI widerspricht</td>
+<td>–</td>
+<td>keine Zuordnung (anderer Rechtsträger)</td>
+</tr>
+<tr>
+<td>mehrdeutiger Name</td>
+<td>–</td>
+<td>keine Zuordnung</td>
+</tr>
+</tbody>
+</table>
+<p>Nicht zuordenbare Sachverhalte werden in der Analyse separat aufgelistet.</p>
+<h2>Datenqualität beim Import</h2>
+<ul>
+<li>Pflichtfelder, Formate, ISIN- und LEI-Prüfziffern, gültige Kriterien, keine Zukunftsdaten</li>
+<li>Gerichtsurteile nur von Gerichten, behördliche Feststellungen nur von Behörden</li>
+<li>Fondsgewichte: Summe muss zwischen 95 und 105 % liegen (Warnung ausserhalb 99,5–100,5 %)</li>
+<li>Duplikate: exakte Duplikate werden entfernt (Warnung), widersprüchliche Einträge mit
+  gleichem Schlüssel lehnen die Datei ab, inhaltliche Duplikate werden gemeldet</li>
+<li><strong>Ein einziger Fehler lehnt den gesamten neuen Datenstand ab.</strong> Der letzte gültige Stand
+  bleibt aktiv. Abgelehnte Rohdaten werden zur Nachvollziehbarkeit aufbewahrt.</li>
+</ul>
+<h2>Bekannte Grenzen der Methodik</h2>
+<ul>
+<li>Ob zwei Berichte unabhängig recherchiert sind, kann das System nicht erkennen. Es zählt
+  Herausgeber, nicht unabhängige Recherchen. Deshalb hebt die Anzahl die Stufe nicht an.</li>
+<li>Freisprüche oder aufgehobene Urteile sind noch nicht als eigene Art modelliert.</li>
+<li>Die Abdeckung einer Quelle wird pro Unternehmen und Kriterium erfasst. Für echte Quellen
+  muss das Abdeckungsuniversum pro Quelle sorgfältig dokumentiert werden.</li>
+</ul>
+</section>
+<section class="prose" id="doc-2">
+  <hr>
+  <h1>Quellen-Hierarchie</h1>
+<p>Die Hierarchie beschreibt, <strong>wie belastbar</strong> eine Quelle typischerweise ist. Sie bestimmt
+zusammen mit Art und Verfahrensstatus des Sachverhalts den Belegstatus
+(siehe <a href="#doc-1">validierung.md</a>).</p>
+<table>
+<thead>
+<tr>
+<th>Stufe</th>
+<th>Herausgeber</th>
+<th>Beispiele</th>
+<th>Typische Arten</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Gericht, Behörde</td>
+<td>Urteile, Verfügungen, Bussen, Exportkontrollentscheide, Aufsichtsbehörden, OECD-Kontaktstellen (Schlusserklärungen)</td>
+<td>Gerichtsurteil, behördliche Feststellung; laufende Verfahren</td>
+</tr>
+<tr>
+<td>2</td>
+<td>NGO mit Belegen, Institution</td>
+<td>dokumentierte Recherchen, Ausschlussentscheide institutioneller Anleger mit Begründung</td>
+<td>Vorwurf (dokumentiert), Ausschlussentscheid</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Medien</td>
+<td>Zeitungen, Nachrichtenportale</td>
+<td>Vorwurf</td>
+</tr>
+<tr>
+<td>–</td>
+<td>Unternehmen selbst</td>
+<td>Stellungnahmen, Nachhaltigkeitsberichte</td>
+<td>Stellungnahme, Abhilfe (Kontext, kein Befund)</td>
+</tr>
+</tbody>
+</table>
+<h2>Hinweise</h2>
+<ul>
+<li><strong>Stufe 1 ist nicht automatisch «festgestellt».</strong> Laufende Verfahren und Anklagen sind
+  «Verfahren laufend». Nur rechtskräftig abgeschlossene Entscheide, deren Originaldokument wir
+  geprüft haben, gelten als «festgestellt».</li>
+<li><strong>Stufe 2 ist kein Urteil.</strong> Auch gut belegte NGO-Recherchen bleiben Vorwürfe. Die Qualität
+  einer NGO-Quelle wird beim Onboarding der Quelle dokumentiert (Methodik, Belege, Gegendarstellung).</li>
+<li><strong>Stufe 3 wird nie aufgewertet</strong>, auch nicht durch mehrere Artikel.</li>
+<li><strong>Eigene Prüfung</strong> (Verifizierungsgrad) ist unabhängig von der Stufe: Auch Stufe-1-Quellen
+  müssen gesichtet und für «festgestellt» inhaltlich geprüft werden.</li>
+</ul>
+<h2>Offene Punkte</h2>
+<ul>
+<li>Kriterien für die Aufnahme einer NGO als Stufe-2-Quelle (Transparenz der Methodik,
+  Gegendarstellung, Korrekturpraxis) – Entwurf folgt mit der ersten echten NGO-Quelle.</li>
+<li>Umgang mit ausländischen Gerichten und Behörden mit eingeschränkter Unabhängigkeit.</li>
+</ul>
+</section>
+<section class="prose" id="doc-3">
+  <hr>
+  <h1>Ausschlusskriterien (Startliste)</h1>
+<p><em>Die Schwellenwerte legt Jonas fest. Bis dahin sind sie bewusst offen: gemeldete Kennzahlen
+werden angezeigt, aber nicht gegen eine Grenze bewertet.</em> Technische Quelle der Kriterien:
+<code>src/transparenz/config/criteria.toml</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Kriterium</th>
+<th>Schwere</th>
+<th>Kennzahl</th>
+<th>Schwellenwert</th>
+<th>Offene Definitionsfragen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kohle</td>
+<td>hoch</td>
+<td>Umsatzanteil Kohle (%)</td>
+<td><code>[OFFEN: z. B. 0 %, 5 %, 10 %?]</code></td>
+<td>Abbau und Verstromung getrennt? Ausbaupläne unabhängig vom Umsatz ausschliessen?</td>
+</tr>
+<tr>
+<td>Öl-/Gas-Expansion</td>
+<td>hoch</td>
+<td>–</td>
+<td><code>[OFFEN]</code></td>
+<td>Was gilt als «Expansion» (neue Felder, neue Lizenzen, Investitionen)? Stichtag?</td>
+</tr>
+<tr>
+<td>Geächtete Waffen</td>
+<td>schwer</td>
+<td>–</td>
+<td><code>[OFFEN: Vorschlag Null-Toleranz]</code></td>
+<td>Umfang: Streumunition, Antipersonenminen, B- und C-Waffen; Atomwaffen? Schlüsselkomponenten?</td>
+</tr>
+<tr>
+<td>Zwangs- und Kinderarbeit</td>
+<td>schwer</td>
+<td>–</td>
+<td><code>[OFFEN]</code></td>
+<td>Eigene Tätigkeit vs. Lieferkette; wie tief in der Lieferkette?</td>
+</tr>
+<tr>
+<td>Entwaldung</td>
+<td>hoch</td>
+<td>–</td>
+<td><code>[OFFEN]</code></td>
+<td>Cut-off-Datum; Rohstoffe (Soja, Palmöl, Rind, Kakao, Holz); Lieferkette?</td>
+</tr>
+</tbody>
+</table>
+<h2>Grundsätze</h2>
+<ul>
+<li>Kriterien werden <strong>einzeln</strong> beurteilt; es gibt keine Gewichtung untereinander.</li>
+<li>«Schwer» heisst: Grundrechte oder internationale Verbote betroffen. Auch das führt nicht zu
+  einem Score – es dient der Priorisierung in der Recherche und Darstellung.</li>
+<li>Ein Schwellenwert gilt als <strong>erreicht ab</strong> dem festgelegten Wert (≥).</li>
+<li>Änderungen an Kriterien und Schwellenwerten werden in <code>docs/DECISIONS.md</code> begründet.</li>
+</ul>
+<h2>Später zu prüfen (nicht Teil des ersten Meilensteins)</h2>
+<p>Tabak, konventionelle Waffen, Atomwaffen, Glücksspiel, Fracking/Ölsand, Menschenrechte allgemein
+(z. B. Landrechte, Gewerkschaftsfreiheit), Korruption, Biodiversität.</p>
+</section>
+</main>
+<footer>
+  <div class="wrap">
+    Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
+    Statischer Schnappschuss, erzeugt am 07.11.2026 21:37 UTC. Aktualisieren:
+    <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.
+  </div>
+</footer>
+</body>
+</html>

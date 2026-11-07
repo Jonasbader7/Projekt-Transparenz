@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muster Nachhaltigkeit Welt ETF (fiktiv) – Projekt Transparenz</title>
+<style>
+:root {
+  --bg: #FBFAF7; --surface: #FFFFFF; --surface-2: #F2F0EA; --text: #1F2421;
+  --muted: #5E6661; --border: #E2DFD6; --primary: #2F5D50; --link: #24564A;
+  --warn-bg: #FBF3D6; --warn-text: #5C4A0E;
+  --s-festgestellt: #F2C4BD; --s-pruefung_ausstehend: #F6D7B0; --s-verfahren_laufend: #F6D7B0;
+  --s-dokumentiert: #DCD3EC; --s-medienbericht: #D3E0EE; --s-zuordnung_unsicher: #F3E9B5;
+  --s-unbekannt: #F3E9B5; --s-keine_hinweise: #E7E5DF; --s-nicht_anwendbar: #F4F3EF;
+  --s-text: #1F2421;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161917; --surface: #1D2120; --surface-2: #252A28; --text: #E6E8E3;
+    --muted: #A2AAA4; --border: #333937; --primary: #8CC3B2; --link: #9ED1C1;
+    --warn-bg: #3A3320; --warn-text: #F1E2AE;
+    --s-festgestellt: #5A2E2A; --s-pruefung_ausstehend: #5A4326; --s-verfahren_laufend: #5A4326;
+    --s-dokumentiert: #3F3756; --s-medienbericht: #2C3D52; --s-zuordnung_unsicher: #4F4721;
+    --s-unbekannt: #4F4721; --s-keine_hinweise: #343836; --s-nicht_anwendbar: #2A2E2C;
+    --s-text: #F0F1EC;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--link); }
+header.site { background: var(--surface); border-bottom: 1px solid var(--border); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+header.site .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-top: 14px; padding-bottom: 14px; }
+.brand { font-weight: 700; color: var(--text); text-decoration: none; font-size: 1.1rem; }
+nav a { color: var(--muted); text-decoration: none; margin-right: 18px; white-space: nowrap; }
+nav a.active, nav a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
+main { padding: 28px 0 48px; }
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 6px; }
+h2 { font-size: 1.35rem; margin: 40px 0 10px; }
+h3 { font-size: 1.1rem; margin: 22px 0 6px; }
+.lead { font-size: 1.1rem; max-width: 760px; }
+.muted, .caption { color: var(--muted); }
+.caption { font-size: .9rem; }
+.notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 8px; padding: 12px 16px; margin: 14px 0; }
+.disclaimer { font-size: .88rem; color: var(--muted); border-left: 3px solid var(--border); padding-left: 12px; margin: 14px 0; max-width: 860px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 18px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card .k { color: var(--muted); font-size: .88rem; }
+.card .v { font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--s-text); }
+.s-festgestellt { background: var(--s-festgestellt); }
+.s-pruefung_ausstehend { background: var(--s-pruefung_ausstehend); }
+.s-verfahren_laufend { background: var(--s-verfahren_laufend); }
+.s-dokumentiert { background: var(--s-dokumentiert); }
+.s-medienbericht { background: var(--s-medienbericht); }
+.s-zuordnung_unsicher { background: var(--s-zuordnung_unsicher); }
+.s-keine_hinweise { background: var(--s-keine_hinweise); }
+.s-unbekannt { background: var(--s-unbekannt); }
+.s-nicht_anwendbar { background: var(--s-nicht_anwendbar); }
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; }
+details > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+details > .body { padding: 0 16px 14px; }
+.evidence { border-left: 3px solid var(--border); padding: 4px 0 4px 12px; margin: 10px 0; }
+.evidence .role { font-weight: 600; }
+ul.flags { margin: 6px 0; padding-left: 20px; color: var(--muted); font-size: .9rem; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px 16px; margin: 10px 0; }
+.columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.prose { max-width: 860px; }
+.prose table { margin: 10px 0; display: block; overflow-x: auto; }
+footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; padding: 18px 0 32px; }
+label.filter { display: inline-flex; gap: 8px; align-items: center; margin: 8px 0; cursor: pointer; }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">Projekt Transparenz</a>
+    <nav aria-label="Hauptnavigation">
+      <a href="index.html" >Übersicht</a>
+      <a href="fonds-zzfiketf0019.html" class="active">Fondsanalyse</a>
+      <a href="methodik.html" >Methodik</a>
+      <a href="datenquellen.html" >Datenquellen &amp; Aktualität</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+<h1>Muster Nachhaltigkeit Welt ETF (fiktiv)</h1>
+<div class="caption">ISIN ZZFIKETF0019 · Fiktiver ETF-Anbieter (Demo) · Positionen per 30.09.2026
+  · Auswertung per 07.11.2026</div>
+<div class="notice"><strong>Fiktive Demodaten.</strong> Fonds, Unternehmen, Kennungen und Quellen sind erfunden.
+Ähnlichkeiten mit realen Unternehmen sind nicht beabsichtigt.</div>
+<p class="disclaimer">Diese Auswertung ist eine Informations- und Analysehilfe. Sie gibt wieder, was die genannten Quellen berichten oder festgestellt haben, und enthält keine Empfehlung zum Kauf, Verkauf oder Halten von Finanzinstrumenten. Vorwürfe sind keine bewiesenen Verstösse. «Unbekannt» bedeutet fehlende Daten, nicht Unbedenklichkeit.</p>
+
+<div class="cards">
+  <div class="card"><div class="k">Positionen</div><div class="v">19</div></div>
+  <div class="card"><div class="k">Gewicht mit Belegen</div><div class="v">42.0 %</div></div>
+  <div class="card"><div class="k">davon gerichtlich/behördlich festgestellt</div><div class="v">9.5 %</div></div>
+  <div class="card"><div class="k">Emittent nicht identifiziert</div><div class="v">3.0 %</div></div>
+</div>
+
+<h2>Überblick pro Kriterium</h2>
+<p class="caption">Anteil am Fondsgewicht je Belegstatus. Jedes Kriterium steht für sich – es gibt keinen Gesamtwert.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Belegstatus</th><th class="num">Kohle</th><th class="num">Öl-/Gas-Expansion</th><th class="num">Geächtete Waffen</th><th class="num">Zwangs- und Kinderarbeit</th><th class="num">Entwaldung</th></tr></thead>
+  <tbody>
+  <tr><td><span class="chip s-festgestellt">Festgestellt</span></td><td class="num">0.0 %</td><td class="num">5.5 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">4.0 %</td></tr>
+  <tr><td><span class="chip s-pruefung_ausstehend">Prüfung ausstehend</span></td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">5.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td></tr>
+  <tr><td><span class="chip s-verfahren_laufend">Verfahren laufend</span></td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">4.5 %</td><td class="num">0.0 %</td></tr>
+  <tr><td><span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></td><td class="num">15.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td></tr>
+  <tr><td><span class="chip s-medienbericht">Medienbericht</span></td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td></tr>
+  <tr><td><span class="chip s-zuordnung_unsicher">Zuordnung unsicher</span></td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">0.0 %</td><td class="num">8.0 %</td><td class="num">0.0 %</td></tr>
+  <tr><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td class="num">65.0 %</td><td class="num">57.0 %</td><td class="num">75.0 %</td><td class="num">54.5 %</td><td class="num">58.5 %</td></tr>
+  <tr><td><span class="chip s-unbekannt">Unbekannt</span></td><td class="num">15.0 %</td><td class="num">32.5 %</td><td class="num">15.0 %</td><td class="num">28.0 %</td><td class="num">32.5 %</td></tr>
+  </tbody>
+</table></div>
+<p class="caption">Nicht nach Emittent prüfbar (Barmittel, Derivate): 5.0 % – in allen Kriterien gleich.</p>
+<h2>Positionen</h2>
+<label class="filter" hidden id="filter-label"><input type="checkbox" id="only-findings"> Nur Positionen mit Belegen anzeigen</label>
+<div class="table-wrap"><table id="positions">
+  <thead><tr><th>Position</th><th class="num">Gewicht</th>
+<th>Kohle</th><th>Öl-/Gas-Expansion</th><th>Geächtete Waffen</th><th>Zwangs- und Kinderarbeit</th><th>Entwaldung</th>    <th>Emittent</th><th>Zuordnung</th><th>ISIN</th></tr></thead>
+  <tbody>
+  <tr data-finding="ja">
+    <td>Tiefsee Öl &amp; Gas Beispiel SA</td>
+    <td class="num">5.50 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-festgestellt">Festgestellt</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Tiefsee Öl &amp; Gas Beispiel SA</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZTFSOEL0015</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Waldland Agrar Beispiel Ltd</td>
+    <td class="num">4.00 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-festgestellt">Festgestellt</span></td>    <td>Waldland Agrar Beispiel Ltd</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZWLDAGR0017</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Präzisionstechnik Beispiel AG</td>
+    <td class="num">5.00 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-pruefung_ausstehend">Prüfung ausstehend</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td>    <td>Präzisionstechnik Beispiel AG</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZPRZTCH0019</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Muster Textil Gruppe AG</td>
+    <td class="num">4.50 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-verfahren_laufend">Verfahren laufend</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Muster Textil Gruppe AG</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZMSTTXT0010</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Alpenstrom Muster AG</td>
+    <td class="num">6.00 %</td>
+<td><span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Alpenstrom Muster AG</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZALPSTR0014</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Bergbau Vielfalt Beispiel Ltd</td>
+    <td class="num">4.00 %</td>
+<td><span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Bergbau Vielfalt Beispiel Ltd</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZBRGBAU0013</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Nordkohle Beispiel plc</td>
+    <td class="num">3.00 %</td>
+<td><span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td>    <td>Nordkohle Beispiel plc</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZNRDKHL0015</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Alpenstrom Muster AG 1.5 % 2031</td>
+    <td class="num">2.00 %</td>
+<td><span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Alpenstrom Muster AG</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZALPSTRB012</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Bahnbau Beispiel AG</td>
+    <td class="num">4.50 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-zuordnung_unsicher">Zuordnung unsicher</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td>    <td>Bahnbau Beispiel AG</td>
+    <td class="caption">nur über Namen (tief)</td>
+    <td class="caption">ZZBHNBAU0016</td>
+  </tr>
+  <tr data-finding="ja">
+    <td>Kakao Handel Beispiel SA</td>
+    <td class="num">3.50 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-zuordnung_unsicher">Zuordnung unsicher</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Kakao Handel Beispiel SA</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZKKOHDL0011</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Datenwolke Beispiel Inc</td>
+    <td class="num">12.00 %</td>
+<td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td>    <td>Datenwolke Beispiel Inc</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZDTNWLK0014</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Bauchemie Beispiel AG</td>
+    <td class="num">5.00 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td>    <td>Bauchemie Beispiel AG</td>
+    <td class="caption">manuell zugeordnet (mittel)</td>
+    <td class="caption">ZZBCHEMI0018</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Unbekannte Beteiligung Beispiel AG</td>
+    <td class="num">3.00 %</td>
+<td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td><td><span class="chip s-unbekannt">Unbekannt</span></td>    <td>nicht identifiziert</td>
+    <td class="caption">ISIN nicht in Stammdaten.</td>
+    <td class="caption">ZZUNBKNT0016</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Medizinal Beispiel AG</td>
+    <td class="num">10.00 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Medizinal Beispiel AG</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZMDZNAL0010</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Sonnenpark Beispiel AG</td>
+    <td class="num">9.00 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Sonnenpark Beispiel AG</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZSNNPRK0016</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Versicherung Beispiel AG</td>
+    <td class="num">8.00 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Versicherung Beispiel AG</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZVRSCHR0012</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Grüne Logistik Beispiel AG</td>
+    <td class="num">6.00 %</td>
+<td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td><td><span class="chip s-keine_hinweise">Keine Hinweise</span></td>    <td>Grüne Logistik Beispiel AG</td>
+    <td class="caption">über Register (hoch)</td>
+    <td class="caption">ZZGRNLGS0015</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Barmittel CHF</td>
+    <td class="num">3.50 %</td>
+<td><span class="chip s-nicht_anwendbar">–</span></td><td><span class="chip s-nicht_anwendbar">–</span></td><td><span class="chip s-nicht_anwendbar">–</span></td><td><span class="chip s-nicht_anwendbar">–</span></td><td><span class="chip s-nicht_anwendbar">–</span></td>    <td>–</td>
+    <td class="caption">Anlageklasse wird nicht nach Emittent geprüft.</td>
+    <td class="caption">–</td>
+  </tr>
+  <tr data-finding="nein">
+    <td>Devisentermingeschäft USD/CHF</td>
+    <td class="num">1.50 %</td>
+<td><span class="chip s-nicht_anwendbar">–</span></td><td><span class="chip s-nicht_anwendbar">–</span></td><td><span class="chip s-nicht_anwendbar">–</span></td><td><span class="chip s-nicht_anwendbar">–</span></td><td><span class="chip s-nicht_anwendbar">–</span></td>    <td>–</td>
+    <td class="caption">Anlageklasse wird nicht nach Emittent geprüft.</td>
+    <td class="caption">–</td>
+  </tr>
+  </tbody>
+</table></div>
+
+<h2>Belege im Detail</h2>
+<p class="caption">Jede Aussage gibt eine Quelle wieder. Darunter steht, aus welchem Datenstand sie stammt.</p>
+<details>
+  <summary>Tiefsee Öl &amp; Gas Beispiel SA · 5.50 % · stärkster Status: <span class="chip s-festgestellt">Festgestellt</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Tiefsee Öl &amp; Gas Beispiel SA</strong> (LEI FIKT00TIEFSEEOEL0139)</p>
+    <h3>Öl-/Gas-Expansion <span class="chip s-festgestellt">Festgestellt</span></h3>
+    <p>Behördliche Feststellung (Fiktive Energieaufsicht Nordmeer, 30.09.2025), Verfahren rechtskräftig abgeschlossen, Originaldokument von uns geprüft.</p>
+<div class="evidence">
+  <div><span class="role">Massgebend:</span> Laut behördlicher Feststellung (Fiktive Energieaufsicht Nordmeer, 30.09.2025): Bewilligung zur Erschliessung von zwei neuen Offshore-Gasfeldern erteilt.</div>
+  <div class="caption">Behördliche Feststellung · Verfahren abgeschlossen (rechtskräftig)
+    · Stufe 1 – Gericht/Behörde · Verifizierung: Dokument geprüft
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-002" rel="noopener noreferrer">Fiktive Energieaufsicht Nordmeer: Dokument BEL-002 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-002</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Vorwurf laut Medien «Fiktive Wirtschaftszeitung» (05.03.2026) – nicht bestätigt: Bericht über geplante Investitionen von 2 Mrd. in neue Förderprojekte.</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 3 – Medienbericht · Verifizierung: ungeprüft (nur importiert)
+    · letzte Überprüfung –
+    · Zuordnung über ISIN (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-003" rel="noopener noreferrer">Fiktive Wirtschaftszeitung: Dokument BEL-003 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-003</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Kontext:</span> Laut Stellungnahme des Unternehmens (Tiefsee Öl &amp; Gas Beispiel SA, 07.03.2026): Das Unternehmen bezeichnet die Projekte als notwendig für die Versorgungssicherheit.</div>
+  <div class="caption">Unternehmensstellungnahme · Verfahren –
+    · Selbstauskunft Unternehmen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung –
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-004" rel="noopener noreferrer">Tiefsee Öl &amp; Gas Beispiel SA: Dokument BEL-004 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-004</div>
+</div>
+<ul class="flags"><li>Berichtet von 2 verschiedenen Herausgebern (Kontext – ändert den Beweisstatus nicht).</li><li>Das Unternehmen hat Stellung genommen (siehe Belege).</li><li>1 Beleg(e) noch ungeprüft (nur importiert).</li></ul>  </div>
+</details>
+<details>
+  <summary>Waldland Agrar Beispiel Ltd · 4.00 % · stärkster Status: <span class="chip s-festgestellt">Festgestellt</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Waldland Agrar Beispiel Ltd</strong> (LEI FIKT00WALDLAND000127)</p>
+    <h3>Entwaldung <span class="chip s-festgestellt">Festgestellt</span></h3>
+    <p>Gerichtsurteil (Fiktives Verwaltungsgericht Musterkanton, 12.03.2025), Verfahren rechtskräftig abgeschlossen, Originaldokument von uns geprüft.</p>
+<div class="evidence">
+  <div><span class="role">Massgebend:</span> Laut Gerichtsurteil (Fiktives Verwaltungsgericht Musterkanton, 12.03.2025): Gericht bestätigt eine Busse wegen illegaler Rodung von 1 200 ha Primärwald.</div>
+  <div class="caption">Gerichtsurteil · Verfahren abgeschlossen (rechtskräftig)
+    · Stufe 1 – Gericht/Behörde · Verifizierung: Dokument geprüft
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-008" rel="noopener noreferrer">Fiktives Verwaltungsgericht Musterkanton: Dokument BEL-008 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-008</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Vorwurf laut NGO «Fiktive Waldallianz» (02.04.2026) – nicht bestätigt: Satellitenanalyse zeigt fortgesetzte Rodungen in Zulieferbetrieben.</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-009" rel="noopener noreferrer">Fiktive Waldallianz: Dokument BEL-009 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-009</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Kontext:</span> Laut Angaben zu Abhilfemassnahmen (Waldland Agrar Beispiel Ltd, 15.06.2026): Das Unternehmen meldet ein Wiederaufforstungsprogramm und ein Lieferantenaudit.</div>
+  <div class="caption">Abhilfemassnahme · Verfahren –
+    · Selbstauskunft Unternehmen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung –
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-010" rel="noopener noreferrer">Waldland Agrar Beispiel Ltd: Dokument BEL-010 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-010</div>
+</div>
+<ul class="flags"><li>Berichtet von 2 verschiedenen Herausgebern (Kontext – ändert den Beweisstatus nicht).</li><li>Abhilfemassnahmen sind dokumentiert – sie werden angezeigt, aber nicht verrechnet.</li></ul>  </div>
+</details>
+<details>
+  <summary>Präzisionstechnik Beispiel AG · 5.00 % · stärkster Status: <span class="chip s-pruefung_ausstehend">Prüfung ausstehend</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Präzisionstechnik Beispiel AG</strong> (LEI FIKT00PRAEZISIO00197)<br><span class="caption">Verifizierte Muttergesellschaft(en):
+Wehrtechnik Beispiel Holding AG</span></p>
+    <h3>Geächtete Waffen <span class="chip s-pruefung_ausstehend">Prüfung ausstehend</span></h3>
+    <p>Behördliche Feststellung (Fiktive Exportkontrollbehörde, 08.05.2024) als abgeschlossen gemeldet; unsere Prüfung des Originaldokuments steht aus.</p>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Laut Ausschlussentscheid (Fiktiver Ethikrat für Anlagen, 10.03.2023): Ausschluss wegen Herstellung von Schlüsselkomponenten für Streumunition. (Betrifft die Muttergesellschaft Wehrtechnik Beispiel Holding AG.)</div>
+  <div class="caption">Ausschlussentscheid einer Institution · Verfahren abgeschlossen (rechtskräftig)
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.09.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/eth-003" rel="noopener noreferrer">Fiktiver Ethikrat für Anlagen: Dokument ETH-003 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Ausschlussliste «Fiktiver Ethikrat für Anlagen» · Version #3 · Hash 7578ad9b68 · importiert 07.11.2026 21:13 UTC · Datensatz ETH-003</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Massgebend:</span> Laut behördlicher Feststellung (Fiktive Exportkontrollbehörde, 08.05.2024): Exportbehörde stellt Lieferung von Streumunitions-Komponenten fest (Verfügung). (Betrifft die Muttergesellschaft Wehrtechnik Beispiel Holding AG.)</div>
+  <div class="caption">Behördliche Feststellung · Verfahren abgeschlossen (rechtskräftig)
+    · Stufe 1 – Gericht/Behörde · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 15.08.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-011" rel="noopener noreferrer">Fiktive Exportkontrollbehörde: Dokument BEL-011 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-011</div>
+</div>
+<ul class="flags"><li>Beleg betrifft die Muttergesellschaft Wehrtechnik Beispiel Holding AG (verifizierte Konzernbeziehung).</li><li>Ein abgeschlossenes Verfahren ist gemeldet, das Originaldokument wurde von uns aber noch nicht geprüft. Bis dahin gilt es nicht als festgestellt.</li><li>Berichtet von 2 verschiedenen Herausgebern (Kontext – ändert den Beweisstatus nicht).</li></ul>  </div>
+</details>
+<details>
+  <summary>Muster Textil Gruppe AG · 4.50 % · stärkster Status: <span class="chip s-verfahren_laufend">Verfahren laufend</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Muster Textil Gruppe AG</strong> (LEI FIKT00MUSTERTEX00125)</p>
+    <h3>Zwangs- und Kinderarbeit <span class="chip s-verfahren_laufend">Verfahren laufend</span></h3>
+    <p>Verfahren bei Fiktive Nationale Kontaktstelle für Unternehmensverantwortung – kein abschliessender Entscheid.</p>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Vorwurf laut NGO «Fiktive Menschenrechtsbeobachtung» (12.05.2026) – nicht bestätigt: Recherche dokumentiert Hinweise auf Zwangsarbeit bei einem Zulieferer (Interviews, Lieferdokumente).</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-005" rel="noopener noreferrer">Fiktive Menschenrechtsbeobachtung: Dokument BEL-005 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-005</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Massgebend:</span> Vorwurf laut Behörde «Fiktive Nationale Kontaktstelle für Unternehmensverantwortung» (01.07.2026) – nicht bestätigt: Beschwerde gegen das Unternehmen zur vertieften Prüfung angenommen; Verfahren laufend.</div>
+  <div class="caption">Vorwurf · Verfahren laufend
+    · Stufe 1 – Gericht/Behörde · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-006" rel="noopener noreferrer">Fiktive Nationale Kontaktstelle für Unternehmensverantwortung: Dokument BEL-006 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-006</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Kontext:</span> Laut Stellungnahme des Unternehmens (Muster Textil Gruppe AG, 20.05.2026): Das Unternehmen weist die Vorwürfe zurück und kündigt ein externes Audit an.</div>
+  <div class="caption">Unternehmensstellungnahme · Verfahren –
+    · Selbstauskunft Unternehmen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung –
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-007" rel="noopener noreferrer">Muster Textil Gruppe AG: Dokument BEL-007 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-007</div>
+</div>
+<ul class="flags"><li>Berichtet von 2 verschiedenen Herausgebern (Kontext – ändert den Beweisstatus nicht).</li><li>Das Unternehmen hat Stellung genommen (siehe Belege).</li></ul>  </div>
+</details>
+<details>
+  <summary>Alpenstrom Muster AG · 6.00 % · stärkster Status: <span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Alpenstrom Muster AG</strong> (LEI FIKT00ALPENSTROM0114)</p>
+    <h3>Kohle <span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></h3>
+    <p>Vorwurf bzw. Einschätzung von NGO/Institution mit Belegen (Fiktive Klima-Recherche e.V.; Fiktiver Ethikrat für Anlagen) – keine gerichtliche Feststellung.</p>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Laut Ausschlussentscheid (Fiktiver Ethikrat für Anlagen, 15.06.2025): Ausschluss wegen Stromerzeugung aus Kohle; Umsatzanteil laut Ethikrat 32 %. Gemeldete Kennzahl: umsatzanteil_kohle = 32 %.</div>
+  <div class="caption">Ausschlussentscheid einer Institution · Verfahren abgeschlossen (rechtskräftig)
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.09.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/eth-001" rel="noopener noreferrer">Fiktiver Ethikrat für Anlagen: Dokument ETH-001 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Ausschlussliste «Fiktiver Ethikrat für Anlagen» · Version #3 · Hash 7578ad9b68 · importiert 07.11.2026 21:13 UTC · Datensatz ETH-001</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Massgebend:</span> Vorwurf laut NGO «Fiktive Klima-Recherche e.V.» (10.02.2026) – nicht bestätigt: Recherche dokumentiert den geplanten Ausbau eines Kohlekraftwerks um 400 MW.</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Dokument geprüft
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-001" rel="noopener noreferrer">Fiktive Klima-Recherche e.V.: Dokument BEL-001 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-001</div>
+</div>
+<ul class="flags"><li>Es handelt sich um Vorwürfe bzw. Einschätzungen Dritter, nicht um eine gerichtliche oder behördliche Feststellung.</li><li>Berichtet von 2 verschiedenen Herausgebern (Kontext – ändert den Beweisstatus nicht).</li><li>Kennzahl gemeldet, Schwellenwert aber noch nicht festgelegt – jede gemeldete Beteiligung wird vorerst angezeigt.</li></ul>  </div>
+</details>
+<details>
+  <summary>Bergbau Vielfalt Beispiel Ltd · 4.00 % · stärkster Status: <span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Bergbau Vielfalt Beispiel Ltd</strong> (LEI FIKT00BERGBAU0000126)</p>
+    <h3>Kohle <span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></h3>
+    <p>Vorwurf bzw. Einschätzung von NGO/Institution mit Belegen (Fiktive Klima-Recherche e.V.) – keine gerichtliche Feststellung.</p>
+<div class="evidence">
+  <div><span class="role">Massgebend:</span> Vorwurf laut NGO «Fiktive Klima-Recherche e.V.» (15.03.2026) – nicht bestätigt: Recherche beziffert den Umsatzanteil aus Kraftwerkskohle auf 4 %. Gemeldete Kennzahl: umsatzanteil_kohle = 4 %.</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-015" rel="noopener noreferrer">Fiktive Klima-Recherche e.V.: Dokument BEL-015 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-015</div>
+</div>
+<ul class="flags"><li>Es handelt sich um Vorwürfe bzw. Einschätzungen Dritter, nicht um eine gerichtliche oder behördliche Feststellung.</li><li>Kennzahl gemeldet, Schwellenwert aber noch nicht festgelegt – jede gemeldete Beteiligung wird vorerst angezeigt.</li></ul>  </div>
+</details>
+<details>
+  <summary>Nordkohle Beispiel plc · 3.00 % · stärkster Status: <span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Nordkohle Beispiel plc</strong> (LEI FIKT00NORDKOHLE00117)</p>
+    <h3>Kohle <span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></h3>
+    <p>Vorwurf bzw. Einschätzung von NGO/Institution mit Belegen (Fiktiver Ethikrat für Anlagen) – keine gerichtliche Feststellung.</p>
+<div class="evidence">
+  <div><span class="role">Massgebend:</span> Laut Ausschlussentscheid (Fiktiver Ethikrat für Anlagen, 20.11.2024): Ausschluss wegen Abbau von Kraftwerkskohle. Gemeldete Kennzahl: umsatzanteil_kohle = 78 %.</div>
+  <div class="caption">Ausschlussentscheid einer Institution · Verfahren abgeschlossen (rechtskräftig)
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.09.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/eth-002" rel="noopener noreferrer">Fiktiver Ethikrat für Anlagen: Dokument ETH-002 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Ausschlussliste «Fiktiver Ethikrat für Anlagen» · Version #3 · Hash 7578ad9b68 · importiert 07.11.2026 21:13 UTC · Datensatz ETH-002</div>
+</div>
+<ul class="flags"><li>Es handelt sich um Vorwürfe bzw. Einschätzungen Dritter, nicht um eine gerichtliche oder behördliche Feststellung.</li><li>Kennzahl gemeldet, Schwellenwert aber noch nicht festgelegt – jede gemeldete Beteiligung wird vorerst angezeigt.</li></ul>  </div>
+</details>
+<details>
+  <summary>Alpenstrom Muster AG 1.5 % 2031 · 2.00 % · stärkster Status: <span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Alpenstrom Muster AG</strong> (LEI FIKT00ALPENSTROM0114)</p>
+    <h3>Kohle <span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span></h3>
+    <p>Vorwurf bzw. Einschätzung von NGO/Institution mit Belegen (Fiktive Klima-Recherche e.V.; Fiktiver Ethikrat für Anlagen) – keine gerichtliche Feststellung.</p>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Laut Ausschlussentscheid (Fiktiver Ethikrat für Anlagen, 15.06.2025): Ausschluss wegen Stromerzeugung aus Kohle; Umsatzanteil laut Ethikrat 32 %. Gemeldete Kennzahl: umsatzanteil_kohle = 32 %.</div>
+  <div class="caption">Ausschlussentscheid einer Institution · Verfahren abgeschlossen (rechtskräftig)
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.09.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/eth-001" rel="noopener noreferrer">Fiktiver Ethikrat für Anlagen: Dokument ETH-001 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Ausschlussliste «Fiktiver Ethikrat für Anlagen» · Version #3 · Hash 7578ad9b68 · importiert 07.11.2026 21:13 UTC · Datensatz ETH-001</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Massgebend:</span> Vorwurf laut NGO «Fiktive Klima-Recherche e.V.» (10.02.2026) – nicht bestätigt: Recherche dokumentiert den geplanten Ausbau eines Kohlekraftwerks um 400 MW.</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Dokument geprüft
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-001" rel="noopener noreferrer">Fiktive Klima-Recherche e.V.: Dokument BEL-001 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-001</div>
+</div>
+<ul class="flags"><li>Es handelt sich um Vorwürfe bzw. Einschätzungen Dritter, nicht um eine gerichtliche oder behördliche Feststellung.</li><li>Berichtet von 2 verschiedenen Herausgebern (Kontext – ändert den Beweisstatus nicht).</li><li>Kennzahl gemeldet, Schwellenwert aber noch nicht festgelegt – jede gemeldete Beteiligung wird vorerst angezeigt.</li></ul>  </div>
+</details>
+<details>
+  <summary>Bahnbau Beispiel AG · 4.50 % · stärkster Status: <span class="chip s-zuordnung_unsicher">Zuordnung unsicher</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Bahnbau Beispiel AG</strong> (LEI FIKT00BAHNBAU0000138)</p>
+    <h3>Zwangs- und Kinderarbeit <span class="chip s-zuordnung_unsicher">Zuordnung unsicher</span></h3>
+    <p>Es gibt Belege, aber die Zuordnung zu diesem Unternehmen ist nicht gesichert.</p>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Vorwurf laut NGO «Fiktive Menschenrechtsbeobachtung» (25.02.2026) – nicht bestätigt: Recherche zu Arbeitsbedingungen bei einem Subunternehmer im Gleisbau.</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 2 – NGO/Institution mit Belegen · Verifizierung: Quelle gesichtet
+    · letzte Überprüfung 01.10.2026
+    · Zuordnung über LEI (hoch)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-016" rel="noopener noreferrer">Fiktive Menschenrechtsbeobachtung: Dokument BEL-016 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-016</div>
+</div>
+<ul class="flags"><li>Zuordnung Wertpapier → Unternehmen ist unsicher.</li></ul>  </div>
+</details>
+<details>
+  <summary>Kakao Handel Beispiel SA · 3.50 % · stärkster Status: <span class="chip s-zuordnung_unsicher">Zuordnung unsicher</span></summary>
+  <div class="body">
+    <p>Emittent: <strong>Kakao Handel Beispiel SA</strong> (LEI FIKT00KAKAOHAND00187)</p>
+    <h3>Zwangs- und Kinderarbeit <span class="chip s-zuordnung_unsicher">Zuordnung unsicher</span></h3>
+    <p>Es gibt Belege, aber die Zuordnung zu diesem Unternehmen ist nicht gesichert.</p>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Vorwurf laut Medien «Fiktives Nachrichtenportal» (01.06.2026) – nicht bestätigt: Bericht über Kinderarbeit auf Zulieferplantagen.</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 3 – Medienbericht · Verifizierung: ungeprüft (nur importiert)
+    · letzte Überprüfung –
+    · Zuordnung nur über Namen (tief)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-013" rel="noopener noreferrer">Fiktives Nachrichtenportal: Dokument BEL-013 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-013</div>
+</div>
+<div class="evidence">
+  <div><span class="role">Weiterer Beleg:</span> Vorwurf laut Medien «Fiktive Wirtschaftszeitung» (03.06.2026) – nicht bestätigt: Artikel greift den Bericht über Kinderarbeit auf Zulieferplantagen auf.</div>
+  <div class="caption">Vorwurf · Verfahren –
+    · Stufe 3 – Medienbericht · Verifizierung: ungeprüft (nur importiert)
+    · letzte Überprüfung –
+    · Zuordnung nur über Namen (tief)</div>
+  <div class="caption">Quelle: <a href="https://example.org/fiktiv/bel-014" rel="noopener noreferrer">Fiktive Wirtschaftszeitung: Dokument BEL-014 (fiktiv)</a></div>
+  <div class="caption">Datenquelle: Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien) · Version #5 · Hash 0a10a22f54 · importiert 07.11.2026 21:13 UTC · Datensatz BEL-014</div>
+</div>
+<ul class="flags"><li>Mindestens ein Beleg ist nur über den Namen zugeordnet – er bestimmt den Status nicht.</li><li>2 Beleg(e) noch ungeprüft (nur importiert).</li></ul>  </div>
+</details>
+
+<h2>Datenlücken und Unsicherheiten</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kriterium</th><th class="num">Gewicht ohne Datenabdeckung</th></tr></thead>
+  <tbody><tr><td>Kohle</td><td class="num">15.0 %</td></tr><tr><td>Öl-/Gas-Expansion</td><td class="num">32.5 %</td></tr><tr><td>Geächtete Waffen</td><td class="num">15.0 %</td></tr><tr><td>Zwangs- und Kinderarbeit</td><td class="num">28.0 %</td></tr><tr><td>Entwaldung</td><td class="num">32.5 %</td></tr></tbody>
+</table></div>
+<h3>Emittent nicht identifiziert</h3>
+<p class="caption">Für diese Positionen ist jede Aussage «unbekannt».</p>
+<ul><li>Unbekannte Beteiligung Beispiel AG (ZZUNBKNT0016, 3.00 %): ISIN nicht in Stammdaten.</li></ul>
+<h3>Unsichere Zuordnung Wertpapier → Unternehmen</h3>
+<ul><li>Bahnbau Beispiel AG: Zuordnung laut Nur Namensähnlichkeit, nicht bestätigt (Vertrauen tief)</li></ul>
+<h3>Weitere Hinweise ohne übernommenen Beleg</h3>
+<ul><li>Grüne Logistik Beispiel AG – Zwangs- und Kinderarbeit: Für die mögliche Muttergesellschaft Fernost Handel Beispiel Corp liegen Belege vor. Die Konzernbeziehung ist nicht verifiziert – Belege werden nicht übernommen.</li></ul>
+<h3>Sachverhalte ohne Zuordnung</h3>
+<p class="caption">Diese Datensätze fliessen nicht in die Auswertung ein.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Datensatz</th><th>Name in Quelle</th><th>LEI in Quelle</th><th>Herausgeber</th><th>Grund</th></tr></thead>
+  <tbody><tr><td>BEL-017</td><td>Phantom Minen Beispiel GmbH</td>
+    <td class="caption">–</td><td>Fiktives Nachrichtenportal</td><td>Kein passendes Unternehmen gefunden.</td></tr><tr><td>BEL-018</td><td>Sonnenpark Beispiel AG</td>
+    <td class="caption">FIKT00SONNENPARK0235</td><td>Fiktive Wirtschaftszeitung</td><td>Name passt zu Sonnenpark Beispiel AG, aber der LEI der Quelle widerspricht – keine Zuordnung.</td></tr></tbody>
+</table></div>
+
+<h2>Bericht und Daten herunterladen</h2>
+<ul>
+  <li><a href="bericht-zzfiketf0019.md" download>Bericht (Markdown)</a></li>
+  <li><a href="belege-zzfiketf0019.csv" download>Alle Belege (CSV, für Excel)</a></li>
+</ul>
+<h3>Zugrunde liegende Datenstände</h3>
+<ul class="caption"><li>Fiktive Ausschlussliste «Fiktiver Ethikrat für Anlagen»: Version #3, Datenstand 01.09.2026, abgerufen 07.11.2026, Hash 7578ad9b68</li><li>Abdeckung der fiktiven Ausschlussliste: Version #4, Datenstand 01.09.2026, abgerufen 07.11.2026, Hash 91182b968b</li><li>Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien): Version #5, Datenstand 01.10.2026, abgerufen 07.11.2026, Hash 0a10a22f54</li><li>Recherche-Abdeckung der fiktiven Belegsammlung: Version #6, Datenstand 01.10.2026, abgerufen 07.11.2026, Hash 04ea782247</li><li>Fiktiver ETF «Muster Nachhaltigkeit Welt» – Positionen: Version #1, Datenstand 30.09.2026, abgerufen 07.11.2026, Hash 2c389ff192</li><li>Fiktive Stammdaten (Unternehmen, Wertpapiere, Konzernbeziehungen): Version #2, Datenstand –, abgerufen 07.11.2026, Hash fc644da661</li></ul>
+
+<script>
+// Optionaler Filter – ohne JavaScript werden einfach alle Positionen gezeigt.
+(function () {
+  var label = document.getElementById("filter-label");
+  var box = document.getElementById("only-findings");
+  if (!label || !box) return;
+  label.hidden = false;
+  box.addEventListener("change", function () {
+    document.querySelectorAll("#positions tbody tr").forEach(function (row) {
+      row.hidden = box.checked && row.dataset.finding !== "ja";
+    });
+  });
+})();
+</script>
+</main>
+<footer>
+  <div class="wrap">
+    Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
+    Statischer Schnappschuss, erzeugt am 07.11.2026 21:37 UTC. Aktualisieren:
+    <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.
+  </div>
+</footer>
+</body>
+</html>

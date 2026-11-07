@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% macro chip(status) %}<span class="chip s-{{ status.value }}">{{ short_status(status) }}</span>{% endmacro %}
+{% macro evidence(m, role) %}
+<div class="evidence">
+  <div><span class="role">{{ role }}:</span> {{ finding_sentence(m) }}</div>
+  <div class="caption">{{ label(m.record.evidence_type) }} · Verfahren {{ label(m.record.proceeding_status) }}
+    · {{ label(m.record.tier) }} · Verifizierung: {{ label(m.record.verification_level) }}
+    · letzte Überprüfung {{ format_date(m.record.last_reviewed) }}
+    · Zuordnung {{ label(m.resolution.method) }} ({{ label(m.resolution.confidence) }})</div>
+  <div class="caption">Quelle: <a href="{{ m.record.source_url }}" rel="noopener noreferrer">{{ m.record.source_title }}</a></div>
+  <div class="caption">{{ provenance(m) }}</div>
+</div>
+{% endmacro %}
+{% block content %}
+{% set f = r.fund %}
+<h1>{{ f.name }}</h1>
+<div class="caption">ISIN {{ f.isin }} · {{ f.provider }} · Positionen per {{ format_date(f.as_of_date) }}
+  · Auswertung per {{ format_date(r.as_of) }}</div>
+{% if f.is_fictional %}
+<div class="notice"><strong>Fiktive Demodaten.</strong> Fonds, Unternehmen, Kennungen und Quellen sind erfunden.
+Ähnlichkeiten mit realen Unternehmen sind nicht beabsichtigt.</div>
+{% endif %}
+<p class="disclaimer">{{ disclaimer }}</p>
+
+<div class="cards">
+  <div class="card"><div class="k">Positionen</div><div class="v">{{ r.positions|length }}</div></div>
+  <div class="card"><div class="k">Gewicht mit Belegen</div><div class="v">{{ pct(r.weight_with_finding) }}</div></div>
+  <div class="card"><div class="k">davon gerichtlich/behördlich festgestellt</div><div class="v">{{ pct(r.weight_with_status(S.FESTGESTELLT)) }}</div></div>
+  <div class="card"><div class="k">Emittent nicht identifiziert</div><div class="v">{{ pct(r.unidentified_weight) }}</div></div>
+</div>
+
+<h2>Überblick pro Kriterium</h2>
+<p class="caption">Anteil am Fondsgewicht je Belegstatus. Jedes Kriterium steht für sich – es gibt keinen Gesamtwert.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Belegstatus</th>{% for c in r.criteria %}<th class="num">{{ c.name }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for s in statuses %}
+  <tr><td>{{ chip(s) }}</td>{% for c in r.criteria %}<td class="num">{{ pct(r.summaries[c.key].weight_by_status[s]) }}</td>{% endfor %}</tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% set na = r.total_weight - r.screenable_weight %}
+{% if na > 0 %}<p class="caption">Nicht nach Emittent prüfbar (Barmittel, Derivate): {{ pct(na) }} – in allen Kriterien gleich.</p>{% endif %}
+
+<h2>Positionen</h2>
+<label class="filter" hidden id="filter-label"><input type="checkbox" id="only-findings"> Nur Positionen mit Belegen anzeigen</label>
+<div class="table-wrap"><table id="positions">
+  <thead><tr><th>Position</th><th class="num">Gewicht</th>
+    {% for c in r.criteria %}<th>{{ c.name }}</th>{% endfor %}
+    <th>Emittent</th><th>Zuordnung</th><th>ISIN</th></tr></thead>
+  <tbody>
+  {% for p in r.positions %}
+  <tr data-finding="{{ 'ja' if p.has_finding else 'nein' }}">
+    <td>{{ p.position.name }}</td>
+    <td class="num">{{ pct(p.position.weight_pct, 2) }}</td>
+    {% for c in r.criteria %}<td>{{ chip(p.assessments[c.key].status) }}</td>{% endfor %}
+    <td>{{ issuer_text(p) }}</td>
+    <td class="caption">{% if p.company %}{{ label(p.issuer_resolution.method) }} ({{ label(p.issuer_resolution.confidence) }}){% else %}{{ p.issuer_resolution.note }}{% endif %}</td>
+    <td class="caption">{{ p.position.isin or "–" }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h2>Belege im Detail</h2>
+<p class="caption">Jede Aussage gibt eine Quelle wieder. Darunter steht, aus welchem Datenstand sie stammt.</p>
+{% if not with_findings %}<p>Zu keiner Position liegen Belege vor. Das ist kein Nachweis von Nachhaltigkeit – siehe Datenlücken.</p>{% endif %}
+{% for p in with_findings %}
+<details>
+  <summary>{{ p.position.name }} · {{ pct(p.position.weight_pct, 2) }} · stärkster Status: {{ chip(p.strongest_status) }}</summary>
+  <div class="body">
+    <p>Emittent: <strong>{{ issuer_text(p) }}</strong>{% if p.company and p.company.lei %} (LEI {{ p.company.lei }}){% endif %}
+    {% if p.verified_parents %}<br><span class="caption">Verifizierte Muttergesellschaft(en):
+      {% for c in p.verified_parents %}{{ c.name }}{% if not loop.last %}, {% endif %}{% endfor %}</span>{% endif %}</p>
+    {% for c in r.criteria %}
+    {% set a = p.assessments[c.key] %}
+    {% if a.has_finding %}
+    <h3>{{ c.name }} {{ chip(a.status) }}</h3>
+    <p>{{ status_explanation(a) }}</p>
+    {% for m in a.supporting %}{{ evidence(m, "Massgebend" if m is sameas a.decisive else "Weiterer Beleg") }}{% endfor %}
+    {% for m in a.context %}{{ evidence(m, "Kontext") }}{% endfor %}
+    {% for m in a.not_counted %}{{ evidence(m, "Nicht gezählt") }}{% endfor %}
+    {% if a.flags %}<ul class="flags">{% for flag in a.flags %}<li>{{ flag }}</li>{% endfor %}</ul>{% endif %}
+    {% endif %}
+    {% endfor %}
+  </div>
+</details>
+{% endfor %}
+
+<h2>Datenlücken und Unsicherheiten</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kriterium</th><th class="num">Gewicht ohne Datenabdeckung</th></tr></thead>
+  <tbody>{% for c in r.criteria %}<tr><td>{{ c.name }}</td><td class="num">{{ pct(r.summaries[c.key].weight_by_status[S.UNBEKANNT]) }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% if unknown %}
+<h3>Emittent nicht identifiziert</h3>
+<p class="caption">Für diese Positionen ist jede Aussage «unbekannt».</p>
+<ul>{% for p in unknown %}<li>{{ p.position.name }} ({{ p.position.isin or "ohne ISIN" }}, {{ pct(p.position.weight_pct, 2) }}): {{ p.issuer_resolution.note }}</li>{% endfor %}</ul>
+{% endif %}
+{% if r.low_confidence_mappings %}
+<h3>Unsichere Zuordnung Wertpapier → Unternehmen</h3>
+<ul>{% for p in r.low_confidence_mappings %}<li>{{ p.position.name }}: {{ p.issuer_resolution.note }} (Vertrauen {{ label(p.issuer_resolution.confidence) }})</li>{% endfor %}</ul>
+{% endif %}
+{% if hints %}
+<h3>Weitere Hinweise ohne übernommenen Beleg</h3>
+<ul>{% for name, crit, flag in hints %}<li>{{ name }} – {{ crit }}: {{ flag }}</li>{% endfor %}</ul>
+{% endif %}
+{% if r.unresolved_evidence %}
+<h3>Sachverhalte ohne Zuordnung</h3>
+<p class="caption">Diese Datensätze fliessen nicht in die Auswertung ein.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Datensatz</th><th>Name in Quelle</th><th>LEI in Quelle</th><th>Herausgeber</th><th>Grund</th></tr></thead>
+  <tbody>{% for ev, res in r.unresolved_evidence %}<tr><td>{{ ev.record.evidence_id }}</td><td>{{ ev.record.company_name }}</td>
+    <td class="caption">{{ ev.record.lei or "–" }}</td><td>{{ ev.record.publisher }}</td><td>{{ res.note }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endif %}
+
+<h2>Bericht und Daten herunterladen</h2>
+<ul>
+  <li><a href="bericht-{{ slug }}.md" download>Bericht (Markdown)</a></li>
+  <li><a href="belege-{{ slug }}.csv" download>Alle Belege (CSV, für Excel)</a></li>
+</ul>
+<h3>Zugrunde liegende Datenstände</h3>
+<ul class="caption">{% for line in data_versions %}<li>{{ line }}</li>{% endfor %}</ul>
+
+<script>
+// Optionaler Filter – ohne JavaScript werden einfach alle Positionen gezeigt.
+(function () {
+  var label = document.getElementById("filter-label");
+  var box = document.getElementById("only-findings");
+  if (!label || !box) return;
+  label.hidden = false;
+  box.addEventListener("change", function () {
+    document.querySelectorAll("#positions tbody tr").forEach(function (row) {
+      row.hidden = box.checked && row.dataset.finding !== "ja";
+    });
+  });
+})();
+</script>
+{% endblock %}

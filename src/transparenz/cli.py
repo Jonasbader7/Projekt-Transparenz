@@ -6,6 +6,7 @@ Befehle:
   validate [--source KEY]         Quelle(n) abrufen und prüfen, ohne zu schreiben
   status                          Aktualität aller Quellen anzeigen
   screen --fund ISIN [--out DATEI] Fonds auswerten, optional Markdown-Bericht schreiben
+  build-site [--out site] [--update] statische Website erzeugen (Schnappschuss)
 """
 
 from __future__ import annotations
@@ -101,6 +102,26 @@ def _cmd_screen(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_build_site(args: argparse.Namespace) -> int:
+    from transparenz.site.builder import SiteBuildError, build_site
+
+    ctx = create_context()
+    if args.update:
+        for o in ctx.updates.run_all(trigger="build-site"):
+            print(f"{o.source_key:35s} {label(o.status):35s} {o.message}")
+    out = Path(args.out)
+    if not out.is_absolute():
+        out = ctx.settings.project_root / out
+    try:
+        result = build_site(ctx, out)
+    except SiteBuildError as exc:
+        print(f"Fehler: {exc}")
+        return 1
+    print(f"Website erzeugt: {len(result.files)} Dateien in {out}")
+    print(f"Öffnen: {out / 'index.html'}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="transparenz", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -119,6 +140,10 @@ def build_parser() -> argparse.ArgumentParser:
     sc.add_argument("--fund", required=True, help="ISIN des Fonds")
     sc.add_argument("--out", help="Markdown-Datei")
     sc.set_defaults(func=_cmd_screen)
+    bs = sub.add_parser("build-site")
+    bs.add_argument("--out", default="site", help="Zielordner (Standard: site)")
+    bs.add_argument("--update", action="store_true", help="vorher fällige Quellen aktualisieren")
+    bs.set_defaults(func=_cmd_build_site)
     return p
 
 

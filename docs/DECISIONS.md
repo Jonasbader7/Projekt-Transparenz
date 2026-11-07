@@ -4,6 +4,25 @@ Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst inne
 
 ## 07.11.2026 – Session 1 (Projektaufbau)
 
+### D-022 Projektordner: `OneDrive\Desktop\Projekt Transparenz`
+- **Entscheid (Jonas):** dauerhafter Ort des Projekts. Git-Verlauf wurde mitübernommen.
+- **Hinweis:** OneDrive synchronisiert auch eine lokale `.venv`; bei Problemen die Umgebung
+  ausserhalb anlegen (`scripts\setup.ps1 -VenvPath …`).
+
+### D-021 Vorerst eine statische Website statt lokaler App als Hauptoberfläche
+- **Entscheid (Jonas):** Das Projekt soll vorerst eine Website sein.
+- **Umsetzung:** Python erzeugt aus dem aktiven Datenstand fertige HTML-Seiten in `site/`
+  (`python -m transparenz build-site`). Die Seiten sind eigenständig (CSS inline, keine externen
+  Skripte), per Doppelklick lokal nutzbar und unverändert auf GitHub Pages veröffentlichbar.
+  Alle Berechnungen bleiben in Python; die Website zeigt nur an. `site/` wird versioniert, damit
+  geprüft werden kann, was veröffentlicht würde.
+- **Begründung:** Die lokale Streamlit-App setzt PowerShell, Python und eine Installation voraus
+  – zu viele Hürden für die Nutzung und für Interviews. Eine statische Seite entspricht dem
+  bewährten BORS-Ansatz (GitHub Pages).
+- **Alternativen:** Streamlit Community Cloud (braucht Push und externen Dienst, Server-Abhängigkeit);
+  JavaScript-App mit Logik im Browser (Methodik doppelt implementiert – verworfen).
+  Die Streamlit-App bleibt für lokale Arbeit (manuelle Updates) erhalten.
+
 ### D-020 Erste Zielgruppe: Privatanleger:innen
 - **Entscheid (Jonas):** Die ersten Interviews, Texte und Berichte richten sich an
   Privatanleger:innen in der Schweiz.

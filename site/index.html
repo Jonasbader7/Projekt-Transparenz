@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Übersicht – Projekt Transparenz</title>
+<style>
+:root {
+  --bg: #FBFAF7; --surface: #FFFFFF; --surface-2: #F2F0EA; --text: #1F2421;
+  --muted: #5E6661; --border: #E2DFD6; --primary: #2F5D50; --link: #24564A;
+  --warn-bg: #FBF3D6; --warn-text: #5C4A0E;
+  --s-festgestellt: #F2C4BD; --s-pruefung_ausstehend: #F6D7B0; --s-verfahren_laufend: #F6D7B0;
+  --s-dokumentiert: #DCD3EC; --s-medienbericht: #D3E0EE; --s-zuordnung_unsicher: #F3E9B5;
+  --s-unbekannt: #F3E9B5; --s-keine_hinweise: #E7E5DF; --s-nicht_anwendbar: #F4F3EF;
+  --s-text: #1F2421;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161917; --surface: #1D2120; --surface-2: #252A28; --text: #E6E8E3;
+    --muted: #A2AAA4; --border: #333937; --primary: #8CC3B2; --link: #9ED1C1;
+    --warn-bg: #3A3320; --warn-text: #F1E2AE;
+    --s-festgestellt: #5A2E2A; --s-pruefung_ausstehend: #5A4326; --s-verfahren_laufend: #5A4326;
+    --s-dokumentiert: #3F3756; --s-medienbericht: #2C3D52; --s-zuordnung_unsicher: #4F4721;
+    --s-unbekannt: #4F4721; --s-keine_hinweise: #343836; --s-nicht_anwendbar: #2A2E2C;
+    --s-text: #F0F1EC;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--link); }
+header.site { background: var(--surface); border-bottom: 1px solid var(--border); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+header.site .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-top: 14px; padding-bottom: 14px; }
+.brand { font-weight: 700; color: var(--text); text-decoration: none; font-size: 1.1rem; }
+nav a { color: var(--muted); text-decoration: none; margin-right: 18px; white-space: nowrap; }
+nav a.active, nav a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
+main { padding: 28px 0 48px; }
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 6px; }
+h2 { font-size: 1.35rem; margin: 40px 0 10px; }
+h3 { font-size: 1.1rem; margin: 22px 0 6px; }
+.lead { font-size: 1.1rem; max-width: 760px; }
+.muted, .caption { color: var(--muted); }
+.caption { font-size: .9rem; }
+.notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 8px; padding: 12px 16px; margin: 14px 0; }
+.disclaimer { font-size: .88rem; color: var(--muted); border-left: 3px solid var(--border); padding-left: 12px; margin: 14px 0; max-width: 860px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 18px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card .k { color: var(--muted); font-size: .88rem; }
+.card .v { font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--s-text); }
+.s-festgestellt { background: var(--s-festgestellt); }
+.s-pruefung_ausstehend { background: var(--s-pruefung_ausstehend); }
+.s-verfahren_laufend { background: var(--s-verfahren_laufend); }
+.s-dokumentiert { background: var(--s-dokumentiert); }
+.s-medienbericht { background: var(--s-medienbericht); }
+.s-zuordnung_unsicher { background: var(--s-zuordnung_unsicher); }
+.s-keine_hinweise { background: var(--s-keine_hinweise); }
+.s-unbekannt { background: var(--s-unbekannt); }
+.s-nicht_anwendbar { background: var(--s-nicht_anwendbar); }
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; }
+details > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+details > .body { padding: 0 16px 14px; }
+.evidence { border-left: 3px solid var(--border); padding: 4px 0 4px 12px; margin: 10px 0; }
+.evidence .role { font-weight: 600; }
+ul.flags { margin: 6px 0; padding-left: 20px; color: var(--muted); font-size: .9rem; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px 16px; margin: 10px 0; }
+.columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.prose { max-width: 860px; }
+.prose table { margin: 10px 0; display: block; overflow-x: auto; }
+footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; padding: 18px 0 32px; }
+label.filter { display: inline-flex; gap: 8px; align-items: center; margin: 8px 0; cursor: pointer; }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">Projekt Transparenz</a>
+    <nav aria-label="Hauptnavigation">
+      <a href="index.html" class="active">Übersicht</a>
+      <a href="fonds-zzfiketf0019.html" >Fondsanalyse</a>
+      <a href="methodik.html" >Methodik</a>
+      <a href="datenquellen.html" >Datenquellen &amp; Aktualität</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+<h1>Projekt Transparenz</h1>
+<p class="lead">Fondspositionen mit nachvollziehbaren Quellen verbinden – damit Anlegerinnen und
+Anleger selbst beurteilen können, ob ein Fonds zu ihren Wertvorstellungen passt.</p>
+<p class="disclaimer">Diese Auswertung ist eine Informations- und Analysehilfe. Sie gibt wieder, was die genannten Quellen berichten oder festgestellt haben, und enthält keine Empfehlung zum Kauf, Verkauf oder Halten von Finanzinstrumenten. Vorwürfe sind keine bewiesenen Verstösse. «Unbekannt» bedeutet fehlende Daten, nicht Unbedenklichkeit.</p>
+
+<div class="columns">
+  <div class="card"><strong>Was gezeigt wird</strong>
+    <ul><li>welche Unternehmen in einem Fonds stecken</li>
+    <li>welche Belege es zu Ausschlusskriterien gibt – mit Quelle und Datum</li>
+    <li>wo Informationen fehlen oder unsicher sind</li></ul></div>
+  <div class="card"><strong>Was bewusst nicht passiert</strong>
+    <ul><li>kein Gesamtscore, keine Verrechnung zwischen Kriterien</li>
+    <li>keine eigenen Urteile – nur Wiedergabe von Quellen</li>
+    <li>keine Kauf- oder Verkaufsempfehlungen</li></ul></div>
+</div>
+
+<h2>Fonds</h2>
+<div class="card">
+  <h3 style="margin-top:0"><a href="fonds-zzfiketf0019.html">Muster Nachhaltigkeit Welt ETF (fiktiv)</a></h3>
+  <div class="caption">ISIN ZZFIKETF0019 · Fiktiver ETF-Anbieter (Demo) · 19 Positionen
+    · Stichtag 30.09.2026 · <strong>fiktive Demodaten</strong></div>
+  <div class="cards">
+    <div class="card"><div class="k">Gewicht mit Belegen</div><div class="v">42.0 %</div></div>
+    <div class="card"><div class="k">davon festgestellt</div><div class="v">9.5 %</div></div>
+    <div class="card"><div class="k">Emittent nicht identifiziert</div><div class="v">3.0 %</div></div>
+  </div>
+  <a href="fonds-zzfiketf0019.html">Zur Fondsanalyse →</a>
+</div>
+
+<h2>Wie Belege eingestuft werden</h2>
+<p class="caption">Massgebend ist die Art des stärksten Belegs – nicht die Anzahl Quellen.
+Details auf der Seite <a href="methodik.html">Methodik</a>.</p>
+<div class="legend">
+  <div><span class="chip s-festgestellt">Festgestellt</span> <span class="caption">Gerichtlich/behördlich festgestellt</span></div>
+  <div><span class="chip s-pruefung_ausstehend">Prüfung ausstehend</span> <span class="caption">Entscheid gemeldet – unsere Prüfung ausstehend</span></div>
+  <div><span class="chip s-verfahren_laufend">Verfahren laufend</span> <span class="caption">Verfahren laufend (nicht entschieden)</span></div>
+  <div><span class="chip s-dokumentiert">Dokumentiert (NGO/Inst.)</span> <span class="caption">Dokumentiert durch NGO/Institution</span></div>
+  <div><span class="chip s-medienbericht">Medienbericht</span> <span class="caption">Nur Medienberichte (unbestätigt)</span></div>
+  <div><span class="chip s-zuordnung_unsicher">Zuordnung unsicher</span> <span class="caption">Beleg vorhanden, Zuordnung unsicher</span></div>
+  <div><span class="chip s-keine_hinweise">Keine Hinweise</span> <span class="caption">Keine Hinweise in geprüften Quellen</span></div>
+  <div><span class="chip s-unbekannt">Unbekannt</span> <span class="caption">Unbekannt (keine Datenabdeckung)</span></div>
+</div>
+
+<h2>Datenlage</h2>
+<p>6 aktive Datenstände.
+Keine Quelle ist veraltet.<a href="datenquellen.html">Details zu Quellen und Aktualität</a></p>
+</main>
+<footer>
+  <div class="wrap">
+    Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
+    Statischer Schnappschuss, erzeugt am 07.11.2026 21:37 UTC. Aktualisieren:
+    <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.
+  </div>
+</footer>
+</body>
+</html>

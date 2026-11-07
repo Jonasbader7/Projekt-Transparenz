@@ -5,8 +5,9 @@
 ## Fortschritt
 
 Das MVP-Fundament läuft **mit fiktiven Daten** End-to-End: CSV-Import → Validierung →
-versionierte Datenbank → Screening nach Belegmodell → Streamlit-Anzeige und Bericht.
-84 Tests bestehen (zuletzt ausgeführt am 07.11.2026), ruff ohne Befund.
+versionierte Datenbank → Screening nach Belegmodell → **statische Website** (Doppelklick auf
+`site/index.html`), dazu Streamlit-App und Bericht.
+109 Tests bestehen (zuletzt ausgeführt am 07.11.2026), ruff ohne Befund.
 
 ### Funktioniert (getestet)
 
@@ -24,12 +25,15 @@ versionierte Datenbank → Screening nach Belegmodell → Streamlit-Anzeige und 
 | Jede angezeigte Feststellung mit Quelle, Datum, Datenstand (Version, Hash, Importzeit) | End-to-End-Test |
 | Streamlit: vier Seiten, Fondsanalyse zeigt importierte CSV-Daten | End-to-End-Test (AppTest) + manuell im Browser |
 | Windows-Setup und Start | `scripts/setup.ps1` in Windows PowerShell 5.1 ausgeführt (Exit 0), App unter localhost:8501 geöffnet |
+| Statische Website: 4 Seiten + Bericht/CSV, ohne externe Ressourcen, interne Links geprüft, Texte escaped | `tests/test_site.py`; im Browser geprüft (Desktop, Handybreite, hell/dunkel) |
+| Jeder Aufzählungswert hat eine eigene Bezeichnung | `tests/test_labels.py` |
 
 ### Nur vorbereitet (nicht produktiv)
 
 - HTTP-Abruf echter Quellen (gebaut und mit simulierten Antworten getestet, keine Quelle angebunden)
 - GitHub Actions: Test-Workflow bereit; Update-Workflow nur manuell, ohne dauerhaften Speicher
   (noch nie auf GitHub gelaufen – Repo ist nicht veröffentlicht)
+- Veröffentlichung der Website über GitHub Pages (`pages.yml`, nur manuell, braucht Push + Zustimmung)
 - Schwellenwerte (Platzhalter in `docs/methodik/ausschlusskriterien.md`)
 - Kein echter Fonds, keine echte Belegquelle
 
@@ -46,8 +50,9 @@ versionierte Datenbank → Screening nach Belegmodell → Streamlit-Anzeige und 
 - Welche echte Datenquelle zuerst?
 - Produktname: «ImpactLens» (Vorschlag aus Feedback) übernehmen oder weiter offen lassen?
 - Lizenz für Code und Methodik (z. B. MIT/AGPL bzw. CC BY), bevor das Repo öffentlich wird?
-- Wöchentliche Status-Zusammenfassung (Sonntagabend) einrichten, sobald das Projekt in einem
-  dauerhaften Ordner liegt?
+- Wöchentliche Status-Zusammenfassung (Sonntagabend) einrichten? (Projekt liegt jetzt dauerhaft
+  unter `Desktop\Projekt Transparenz`.)
+- Website öffentlich machen (GitHub-Repo + Pages) – wann und unter welchem Namen?
 
 ## Bekannte Einschränkungen
 
@@ -56,3 +61,6 @@ versionierte Datenbank → Screening nach Belegmodell → Streamlit-Anzeige und 
 - Freisprüche/aufgehobene Urteile nicht modelliert.
 - Keine DB-Migrationen; Schema wird bei Änderungen neu erzeugt.
 - Nicht rechtlich geprüft (siehe `docs/recht/`).
+- Die Website ist ein Schnappschuss: nach Datenänderungen `build-site` erneut ausführen.
+- Das Projekt liegt in OneDrive. Eine lokale `.venv` dort wird mitsynchronisiert (viele Dateien);
+  bei Sync-Problemen die Umgebung ausserhalb von OneDrive anlegen (`setup.ps1 -VenvPath`).

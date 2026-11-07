@@ -19,7 +19,7 @@ screening/engine.py              Belegmodell: Status pro Position × Kriterium (
    ▼
 reports/                         quellenbasierte Texte, Tabellen, Markdown/CSV-Export
    ▼
-app/ (Streamlit)  ·  cli.py      Anzeige bzw. Kommandozeile
+site/ (statische Website, Hauptoberfläche) · app/ (Streamlit, lokal) · cli.py
 ```
 
 ## Module
@@ -34,6 +34,7 @@ app/ (Streamlit)  ·  cli.py      Anzeige bzw. Kommandozeile
 | `reports/` | Texte («Laut Gerichtsurteil … vom …»), Tabellen, Markdown-Bericht |
 | `services/` | `DataUpdateManager`, `AppContext` (Zusammenbau für CLI, App, Tests) |
 | `utils/` | Zeit, Logging |
+| `site/` (Modul) | Website-Generator: Jinja2-Vorlagen → statische HTML-Seiten im Ordner `site/` (Schnappschuss, keine Logik im Browser) |
 | später | `portfolios/`, `analytics/`, `ai/` – bewusst noch nicht angelegt |
 
 Abweichungen vom ursprünglichen Ordnervorschlag sind in `DECISIONS.md` begründet

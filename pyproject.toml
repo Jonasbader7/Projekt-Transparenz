@@ -15,7 +15,8 @@ dependencies = [
     "sqlalchemy>=2.0",
     "httpx>=0.27",
     "streamlit>=1.40",
-    "jinja2>=3.1",  # für farbige Tabellen (pandas Styler)
+    "jinja2>=3.1",  # Website-Vorlagen und farbige Tabellen (pandas Styler)
+    "markdown>=3.6",  # Methodik-Dokumente als HTML auf der Website
 ]
 
 [project.optional-dependencies]
@@ -28,7 +29,7 @@ transparenz = "transparenz.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-transparenz = ["config/*.toml"]
+transparenz = ["config/*.toml", "site/templates/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

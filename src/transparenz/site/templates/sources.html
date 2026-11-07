@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Datenquellen &amp; Aktualität</h1>
+<p class="lead">Öffentlich zugänglich heisst nicht kommerziell nutzbar – Lizenz und Nutzungsrecht
+stehen deshalb bei jeder Quelle. Aktuell sind <strong>ausschliesslich fiktive Demoquellen</strong>
+angebunden.</p>
+<p class="caption">Diese Seite ist ein Schnappschuss vom {{ format_datetime(built_at) }}.</p>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Quelle</th><th>Art</th><th>Herausgeber</th><th>Fiktiv</th><th>Lizenz</th><th>Kommerziell nutzbar</th>
+    <th>Datenstand</th><th>Zuletzt geprüft</th><th class="num">Alter (Tage)</th><th class="num">Max. Alter</th><th>Zustand</th><th>Version</th></tr></thead>
+  <tbody>
+  {% for f in freshness %}
+  <tr>
+    <td>{{ f.config.name }}</td><td>{{ label(f.config.kind) }}</td><td>{{ f.config.publisher }}</td>
+    <td>{{ "ja" if f.config.is_fictional else "nein" }}</td><td class="caption">{{ f.config.license }}</td>
+    <td>{{ label(f.config.commercial_use) }}</td><td>{{ format_date(f.data_as_of) }}</td>
+    <td class="caption">{{ format_datetime(f.last_check_at) }}</td>
+    <td class="num">{{ f.age_days if f.age_days is not none else "–" }}</td><td class="num">{{ f.config.max_age_days }}</td>
+    <td>{% if f.is_stale %}<span class="chip s-unbekannt">veraltet</span>{% else %}aktuell{% endif %}</td>
+    <td class="caption">{% if f.active_version %}#{{ f.active_version.id }} · {{ f.active_version.content_hash[:10] }}{% else %}kein gültiger Stand{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h2>Update-Protokoll (letzte Läufe)</h2>
+<p class="caption">Fehlerhafte neue Daten werden abgelehnt; der letzte gültige Stand bleibt dann aktiv.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Start</th><th>Quelle</th><th>Auslöser</th><th>Ergebnis</th><th class="num">Versuche</th><th>Meldung</th></tr></thead>
+  <tbody>
+  {% for run in runs %}
+  <tr><td class="caption">{{ format_datetime(run.started_at) }}</td><td>{{ run.source_key }}</td><td>{{ run.trigger }}</td>
+    <td>{{ label(UpdateStatus(run.status)) }}</td><td class="num">{{ run.attempts }}</td><td class="caption">{{ run.message }}</td></tr>
+  {% else %}
+  <tr><td colspan="6">Noch keine Aktualisierungen protokolliert.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h2>Wo die Daten liegen</h2>
+<ul>
+  <li>Datenbank lokal (SQLite) unter <code>data/processed/</code> – nicht im Repository.</li>
+  <li>Rohdaten-Schnappschüsse unter <code>data/raw/&lt;quelle&gt;/</code>, abgelehnte unter <code>abgelehnt/</code>.</li>
+  <li>Diese Website ist ein Schnappschuss und enthält keine Rohdaten.</li>
+</ul>
+{% endblock %}

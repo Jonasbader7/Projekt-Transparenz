@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }} – {{ display_name }}</title>
+<style>
+:root {
+  --bg: #FBFAF7; --surface: #FFFFFF; --surface-2: #F2F0EA; --text: #1F2421;
+  --muted: #5E6661; --border: #E2DFD6; --primary: #2F5D50; --link: #24564A;
+  --warn-bg: #FBF3D6; --warn-text: #5C4A0E;
+  --s-festgestellt: #F2C4BD; --s-pruefung_ausstehend: #F6D7B0; --s-verfahren_laufend: #F6D7B0;
+  --s-dokumentiert: #DCD3EC; --s-medienbericht: #D3E0EE; --s-zuordnung_unsicher: #F3E9B5;
+  --s-unbekannt: #F3E9B5; --s-keine_hinweise: #E7E5DF; --s-nicht_anwendbar: #F4F3EF;
+  --s-text: #1F2421;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161917; --surface: #1D2120; --surface-2: #252A28; --text: #E6E8E3;
+    --muted: #A2AAA4; --border: #333937; --primary: #8CC3B2; --link: #9ED1C1;
+    --warn-bg: #3A3320; --warn-text: #F1E2AE;
+    --s-festgestellt: #5A2E2A; --s-pruefung_ausstehend: #5A4326; --s-verfahren_laufend: #5A4326;
+    --s-dokumentiert: #3F3756; --s-medienbericht: #2C3D52; --s-zuordnung_unsicher: #4F4721;
+    --s-unbekannt: #4F4721; --s-keine_hinweise: #343836; --s-nicht_anwendbar: #2A2E2C;
+    --s-text: #F0F1EC;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--link); }
+header.site { background: var(--surface); border-bottom: 1px solid var(--border); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+header.site .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-top: 14px; padding-bottom: 14px; }
+.brand { font-weight: 700; color: var(--text); text-decoration: none; font-size: 1.1rem; }
+nav a { color: var(--muted); text-decoration: none; margin-right: 18px; white-space: nowrap; }
+nav a.active, nav a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
+main { padding: 28px 0 48px; }
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 6px; }
+h2 { font-size: 1.35rem; margin: 40px 0 10px; }
+h3 { font-size: 1.1rem; margin: 22px 0 6px; }
+.lead { font-size: 1.1rem; max-width: 760px; }
+.muted, .caption { color: var(--muted); }
+.caption { font-size: .9rem; }
+.notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 8px; padding: 12px 16px; margin: 14px 0; }
+.disclaimer { font-size: .88rem; color: var(--muted); border-left: 3px solid var(--border); padding-left: 12px; margin: 14px 0; max-width: 860px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 18px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card .k { color: var(--muted); font-size: .88rem; }
+.card .v { font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--s-text); }
+{% for s in S %}.s-{{ s.value }} { background: var(--s-{{ s.value }}); }
+{% endfor %}
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; }
+details > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+details > .body { padding: 0 16px 14px; }
+.evidence { border-left: 3px solid var(--border); padding: 4px 0 4px 12px; margin: 10px 0; }
+.evidence .role { font-weight: 600; }
+ul.flags { margin: 6px 0; padding-left: 20px; color: var(--muted); font-size: .9rem; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px 16px; margin: 10px 0; }
+.columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.prose { max-width: 860px; }
+.prose table { margin: 10px 0; display: block; overflow-x: auto; }
+footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; padding: 18px 0 32px; }
+label.filter { display: inline-flex; gap: 8px; align-items: center; margin: 8px 0; cursor: pointer; }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">{{ display_name }}</a>
+    <nav aria-label="Hauptnavigation">
+      <a href="index.html" {% if page == "index" %}class="active"{% endif %}>Übersicht</a>
+      {% for snap in funds %}
+      <a href="fonds-{{ fund_slug(snap.fund.isin) }}.html" {% if page == "fonds" and slug == fund_slug(snap.fund.isin) %}class="active"{% endif %}>Fondsanalyse{% if funds|length > 1 %}: {{ snap.fund.name }}{% endif %}</a>
+      {% endfor %}
+      <a href="methodik.html" {% if page == "methodik" %}class="active"{% endif %}>Methodik</a>
+      <a href="datenquellen.html" {% if page == "datenquellen" %}class="active"{% endif %}>Datenquellen &amp; Aktualität</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+{% block content %}{% endblock %}
+</main>
+<footer>
+  <div class="wrap">
+    Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
+    Statischer Schnappschuss, erzeugt am {{ format_datetime(built_at) }}. Aktualisieren:
+    <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.
+  </div>
+</footer>
+</body>
+</html>
