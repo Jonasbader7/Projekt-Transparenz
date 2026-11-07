@@ -2,6 +2,34 @@
 
 Neueste Einträge oben.
 
+## 08.11.2026 – Session 2, Teil 2: Erste echte Datenquelle (parallele Session)
+
+**Erledigt**
+- Lizenzen an den Originalseiten geprüft und in `docs/DATA_SOURCES.md` festgehalten: GLEIF
+  (CC0 1.0), GLEIF/ANNA ISIN-LEI (keine Lizenz genannt → ausgeschlossen), SEC N-PORT (öffentliche
+  Information, Weiterverbreitung ohne Erlaubnis, Quellenangabe erbeten), OFAC SDN (US-Government-
+  Werk; Treasury-Metadaten auf data.gov: CC0 1.0; OFAC-Seiten selbst ohne Lizenzangabe), DOL ILAB
+  (Public Domain, nur Waren × Länder), Weltbank (CC BY 4.0 mit Attributionsformat), WBA
+  (CC BY 4.0 vs. restriktive Tool-Bedingungen → ausgeschlossen; NC-ND-Angabe nicht gefunden)
+- Fachfragen mit Jonas: US-Fonds und OFAC-Einordnung **später** (D-027); Lizenzsperre ja (D-025);
+  GLEIF-Live-Test mit 2–3 Anfragen ja
+- Lizenzregister + automatische Sperre (`config/licensing.py`, Status «gesperrt») (D-025)
+- GLEIF-Adapter (`ingestion/gleif.py`): Abfrageliste, API-Abruf mit Pause (< 60/Min.),
+  Pydantic-Validierung, Übersetzung in Stammdaten inkl. Mutterbeziehungen (D-026);
+  fiktive Testdateien im GLEIF-Format (`tests/fixtures/gleif/`)
+- Zuordnungsquote (`services/mapping_quality.py`, `python -m transparenz mapping --fund …`).
+  Fiktiver ETF: 17 Aktien/Anleihen, 16 zugeordnet, 15 mit LEI, 0 bei GLEIF (fiktive LEIs)
+- Live-Prüfung GLEIF (3 Anfragen insgesamt, je < 4 KB): Struktur der Antwort, Reporting-Exception,
+  Endtest des Adapters mit dem LEI von GLEIF in temporärer Datenbank → 1 Datensatz, keine Warnungen
+- Website: deaktivierte Quellen erscheinen als «deaktiviert» statt «veraltet»; `build-site`
+- 151 Tests grün, ruff sauber
+
+**Problem:** Der Fehler «annullierter LEI doppelt gemeldet» fiel erst im Update-Test auf und
+ist behoben. Das N-PORT-Readme (PDF) liess sich nur behelfsmässig auslesen; die Regel, welche
+Monatsmeldungen öffentlich sind, bleibt unbestätigt.
+
+**Nicht gemacht:** kein N-PORT- oder OFAC-Download, kein Push.
+
 ## 07.11.2026 – Session 2: Umgebung, Besuchszählung, Website online
 
 **Erledigt**

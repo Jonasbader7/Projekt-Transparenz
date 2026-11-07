@@ -1,11 +1,20 @@
-# Konfigurierte Datenquellen für das Update-System.
-# Aktuell sind AUSSCHLIESSLICH fiktive Beispielquellen aktiv. Echte Quellen werden
-# erst nach Lizenzprüfung ergänzt (siehe docs/DATA_SOURCES.md).
+# Konfigurierte Datenquellen für das Update-System – mit Lizenzregistrierung je Quelle.
+# Aktiv sind ausschliesslich fiktive Beispielquellen. Echte Quellen werden erst nach
+# Lizenzprüfung an der Originalseite ergänzt (siehe docs/DATA_SOURCES.md).
 #
 # kind:     holdings | entities | evidence | coverage
-# fetcher:  local (Pfad relativ zum Projektordner) | http (URL)
-# format:   json | csv
-# commercial_use: ja | nein | unklar
+# fetcher:  local (Pfad relativ zum Projektordner) | http (URL) | gleif_api (GLEIF-API)
+# format:   json | csv | gleif_json
+#
+# Lizenzregistrierung (Pflicht für echte Quellen, sonst automatisch GESPERRT –
+# siehe src/transparenz/config/licensing.py und tests/test_licensing.py):
+#   license            genaue Lizenzbezeichnung laut Originalseite
+#   license_url        Lizenztext (falls es einen gibt, z. B. Creative Commons)
+#   terms_url          Originalseite mit den Nutzungsbedingungen (Pflicht)
+#   license_checked_on Datum unserer Prüfung (Pflicht, höchstens 365 Tage alt)
+#   commercial_use     ja | nein | unklar  (Pflicht: ja)
+#   redistribution     ja | nein | unklar  (Weiterveröffentlichung, Pflicht: ja)
+#   attribution        verlangte oder erbetene Quellenangabe
 
 [defaults]
 max_attempts = 3
@@ -24,6 +33,7 @@ interval_hours = 24
 max_age_days = 45
 license = "Fiktive Demodaten, frei verwendbar"
 commercial_use = "ja"
+redistribution = "ja"
 is_fictional = true
 description = "Klar fiktive Fondspositionen zur Demonstration. Keine realen Unternehmen."
 
@@ -39,6 +49,7 @@ interval_hours = 24
 max_age_days = 90
 license = "Fiktive Demodaten, frei verwendbar"
 commercial_use = "ja"
+redistribution = "ja"
 is_fictional = true
 description = "Ersatz für GLEIF/OpenFIGI, bis die echte Anbindung geprüft ist."
 
@@ -54,6 +65,7 @@ interval_hours = 168
 max_age_days = 120
 license = "Fiktive Demodaten, frei verwendbar"
 commercial_use = "ja"
+redistribution = "ja"
 is_fictional = true
 description = "Modelliert eine institutionelle Ausschlussliste (Vorbild: Listen wie jene des norwegischen Staatsfonds)."
 
@@ -70,6 +82,7 @@ interval_hours = 168
 max_age_days = 120
 license = "Fiktive Demodaten, frei verwendbar"
 commercial_use = "ja"
+redistribution = "ja"
 is_fictional = true
 description = "Welche Unternehmen der Ethikrat für welche Kriterien geprüft hat. Ohne Abdeckung gilt «unbekannt»."
 
@@ -85,6 +98,7 @@ interval_hours = 168
 max_age_days = 180
 license = "Fiktive Demodaten, frei verwendbar"
 commercial_use = "ja"
+redistribution = "ja"
 is_fictional = true
 description = "Kuratierte, fiktive Sachverhalte aus verschiedenen fiktiven Herausgebern."
 
@@ -101,5 +115,32 @@ interval_hours = 168
 max_age_days = 180
 license = "Fiktive Demodaten, frei verwendbar"
 commercial_use = "ja"
+redistribution = "ja"
 is_fictional = true
 description = "Welche Unternehmen für welche Kriterien recherchiert wurden."
+
+# ----------------------------------------------------------------------------------
+# Erste echte Quelle: GLEIF (Rechtsträger-Stammdaten Level 1, Mutter-Tochter Level 2).
+# Deaktiviert, bis ein echter Fonds LEIs liefert (Abfrageliste data/gleif/abfrageliste.txt).
+# Manuell: python -m transparenz update --source gleif_lei --force
+[[source]]
+key = "gleif_lei"
+name = "GLEIF – LEI-Stammdaten und Konzernbeziehungen (API)"
+kind = "entities"
+publisher = "Global Legal Entity Identifier Foundation (GLEIF), Basel"
+fetcher = "gleif_api"
+format = "gleif_json"
+location = "https://api.gleif.org/api/v1"
+lei_list = "data/gleif/abfrageliste.txt"
+interval_hours = 168
+max_age_days = 30
+license = "CC0 1.0 Universal (laut LEI Data Terms of Use)"
+license_url = "https://creativecommons.org/publicdomain/zero/1.0/"
+terms_url = "https://www.gleif.org/en/meta/lei-data-terms-of-use"
+license_checked_on = 2026-11-07
+commercial_use = "ja"
+redistribution = "ja"
+attribution = "Quelle: GLEIF, LEI-Daten (CC0 1.0), abgerufen über api.gleif.org. Nicht verlangt; wir nennen die Quelle trotzdem. Kein Eindruck einer Billigung durch GLEIF."
+is_fictional = false
+enabled = false
+description = "Bestätigt LEIs (Name, Sitzland, Registrierungsstatus) und liefert gemeldete direkte/oberste Muttergesellschaften. Kein ISIN-LEI-Mapping (eigene Lizenzfrage, ausgeschlossen)."

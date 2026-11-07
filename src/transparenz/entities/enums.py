@@ -184,6 +184,8 @@ class UpdateStatus(StrEnum):
     UNVERAENDERT = "unveraendert"
     FEHLGESCHLAGEN = "fehlgeschlagen"
     UEBERSPRUNGEN = "uebersprungen"
+    # Lizenz der Quelle nicht freigegeben: kein Abruf (siehe config/licensing.py)
+    GESPERRT = "gesperrt"
 
 
 class VersionStatus(StrEnum):
@@ -192,6 +194,8 @@ class VersionStatus(StrEnum):
 
 
 class CommercialUse(StrEnum):
+    """Antwort auf eine Lizenzfrage (kommerzielle Nutzung, Weiterverbreitung)."""
+
     JA = "ja"
     NEIN = "nein"
     UNKLAR = "unklar"

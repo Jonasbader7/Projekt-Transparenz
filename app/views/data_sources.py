@@ -38,7 +38,8 @@ for f in fresh:
             "Zuletzt geprüft": format_datetime(f.last_check_at),
             "Alter (Tage)": f.age_days if f.age_days is not None else "–",
             "Max. Alter": f.config.max_age_days,
-            "Zustand": "VERALTET" if f.is_stale else "aktuell",
+            "Zustand": "deaktiviert" if not f.config.enabled
+            else ("VERALTET" if f.is_stale else "aktuell"),
             "Version": f"#{v.id} · {v.content_hash[:10]}" if v else "kein gültiger Stand",
             "Letzter Lauf": label(UpdateStatus(f.last_run.status)) if f.last_run else "–",
         }
@@ -66,8 +67,8 @@ if c3.button("Jetzt aktualisieren", type="primary"):
             outcomes = [ctx.updates.run_source(target, force=force, trigger="app")]
     for o in outcomes:
         msg = f"**{o.source_key}**: {label(o.status)} – {o.message}"
-        if o.status == UpdateStatus.FEHLGESCHLAGEN:
-            st.error(msg)
+        if o.status in (UpdateStatus.FEHLGESCHLAGEN, UpdateStatus.GESPERRT):
+            st.error(msg + ("\n\n" + "; ".join(o.errors) if o.errors else ""))
         else:
             st.success(msg)
 

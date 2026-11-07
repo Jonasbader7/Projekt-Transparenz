@@ -80,6 +80,7 @@ _LABEL_ITEMS: tuple[tuple[Enum, str], ...] = (
     (UpdateStatus.UNVERAENDERT, "erfolgreich (unverändert)"),
     (UpdateStatus.FEHLGESCHLAGEN, "fehlgeschlagen"),
     (UpdateStatus.UEBERSPRUNGEN, "übersprungen (noch nicht fällig)"),
+    (UpdateStatus.GESPERRT, "gesperrt (Lizenz nicht freigegeben)"),
     (CommercialUse.JA, "ja"),
     (CommercialUse.NEIN, "nein"),
     (CommercialUse.UNKLAR, "unklar"),

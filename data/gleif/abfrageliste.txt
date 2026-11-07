@@ -1,0 +1,7 @@
+# Abfrageliste für die Quelle «gleif_lei» (GLEIF-API).
+# Ein LEI pro Zeile; alles nach # ist Kommentar. Höchstens 500 LEIs (API-Limit 60 Anfragen/Min.).
+#
+# Diese Liste enthält ECHTE LEIs. Sie wird gefüllt, sobald ein echter Fonds angebunden ist
+# (Emittenten-LEIs der Positionen). Bis dahin steht hier nur der LEI von GLEIF selbst –
+# als Funktionsprobe, nicht als Analyseobjekt (Entscheid Jonas, 07.11.2026).
+506700GE1G29325QX363  # Global Legal Entity Identifier Foundation (Funktionsprobe)

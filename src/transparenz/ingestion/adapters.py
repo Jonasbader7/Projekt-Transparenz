@@ -7,7 +7,10 @@ from pathlib import Path
 
 from transparenz.config.catalog import Catalog, SourceConfig
 from transparenz.ingestion.fetchers import Fetcher, FetchResult, HttpFetcher, LocalFileFetcher
+from transparenz.ingestion.gleif import GLEIF_PARSERS, GleifApiFetcher
 from transparenz.ingestion.parsing import PARSERS, ParsedDataset
+
+ALL_PARSERS = {**PARSERS, **GLEIF_PARSERS}
 
 
 @dataclass
@@ -20,7 +23,7 @@ class SourceAdapter:
         return self.fetcher.fetch(etag=etag, last_modified=last_modified)
 
     def parse(self, content: bytes) -> ParsedDataset:
-        parser = PARSERS.get((self.config.kind, self.config.format))
+        parser = ALL_PARSERS.get((self.config.kind, self.config.format))
         if parser is None:
             raise ValueError(
                 f"Kein Parser für {self.config.kind}/{self.config.format} ({self.config.key})."
@@ -38,6 +41,15 @@ def build_adapter(
     if config.fetcher == "local":
         path = Path(config.location)
         fetcher = LocalFileFetcher(path if path.is_absolute() else project_root / path)
+    elif config.fetcher == "gleif_api":
+        assert config.lei_list is not None  # durch SourceConfig geprüft
+        lei_list = Path(config.lei_list)
+        fetcher = GleifApiFetcher(
+            lei_list if lei_list.is_absolute() else project_root / lei_list,
+            base_url=config.location,
+            timeout=catalog.defaults.http_timeout_seconds,
+            user_agent=user_agent,
+        )
     else:
         fetcher = HttpFetcher(
             config.location,

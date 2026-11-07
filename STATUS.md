@@ -1,6 +1,6 @@
 # STATUS
 
-**Stand:** 07.11.2026 (Session 2) · **Phase:** 0 Klarheit → Übergang zu 1 Gespräche
+**Stand:** 08.11.2026 (Session 2 inkl. Teil 2: erste echte Datenquelle) · **Phase:** 0 Klarheit → Übergang zu 1 Gespräche
 (parallel: technisches Fundament für Phase 2 steht)
 
 ## Auf einen Blick
@@ -11,8 +11,8 @@
 | GitHub | https://github.com/Jonasbader7/Projekt-Transparenz (**öffentlich**, Branch `main`, keine Lizenz) |
 | Website lokal | `site\index.html` doppelklicken |
 | Website online | **https://jonasbader7.github.io/Projekt-Transparenz/** – live seit 07.11.2026, Stand Commit `f33bc46` (Workflow «Website veröffentlichen» nach jeder Website-Änderung manuell starten) |
-| Tests | 110 grün lokal und auf GitHub Actions (Commit `f33bc46`) |
-| Daten | ausschliesslich fiktiv |
+| Tests | 151 grün lokal (Teil 2, noch nicht gepusht); auf GitHub Actions zuletzt 110 grün (`f33bc46`) |
+| Daten | aktiv ausschliesslich fiktiv; erste echte Quelle **GLEIF** angebunden und live geprüft, aber deaktiviert (D-026) |
 | Zielgruppe | Privatanleger:innen (D-020) |
 | Besuchszählung | aktiv (D-024): BORS/Portfolio-Worker, Seite `transparenz`; auswerten mit `Portfoliopage\analytics\backend\dashboard-windows.ps1` |
 
@@ -40,12 +40,17 @@ dazu Streamlit-App (lokal) und Bericht als Markdown/CSV.
 | Streamlit: vier Seiten | End-to-End-Test (AppTest) + manuell im Browser |
 | Besuchszählung: nur lokale Skripte, kein Token, zählt nur auf github.io | `tests/test_site.py`; lokal im Browser geprüft (keine Anfrage an den Worker); online geprüft: Seitenaufruf vom Worker mit 204 angenommen, keine Konsolenfehler |
 | Website online (GitHub Pages) | Workflow «Website veröffentlichen» erfolgreich, Seite live geprüft |
+| Lizenzregister je Quelle; echte Quellen ohne geprüfte Lizenz werden gesperrt (kein Abruf) | `tests/test_licensing.py` (inkl. Alarm-Test über die echte `sources.toml`) |
+| GLEIF-Adapter: Abfrageliste, API-Abruf < 60/Min., Pydantic-Validierung, Mutterbeziehungen (nur FULLY_CORROBORATED = verifiziert) | `tests/test_gleif.py` mit fiktiven Testdateien; live geprüft am 07.11.2026 (LEI von GLEIF, temporäre DB) |
+| Zuordnungsquote Wertpapier → Unternehmen (`python -m transparenz mapping --fund ISIN`) | `tests/test_mapping_quality.py`; fiktiver ETF: 16/17 zugeordnet, 15 mit LEI, 0 bei GLEIF |
 | Windows-Setup | `scripts/setup.ps1` in Windows PowerShell 5.1 ausgeführt (Exit 0; Session 2: `.venv` im Projektordner) |
 | Tests auf GitHub | Workflow `ci.yml` lief grün |
 
 ### Nur vorbereitet (nicht produktiv)
 
-- HTTP-Abruf echter Quellen (gebaut und getestet, keine Quelle angebunden)
+- GLEIF (`gleif_lei`): angebunden, getestet, live geprüft – **deaktiviert**, bis ein echter Fonds
+  LEIs liefert (`data/gleif/abfrageliste.txt` enthält nur den LEI von GLEIF als Funktionsprobe)
+- Allgemeiner HTTP-Abruf (`HttpFetcher`): gebaut und getestet, keiner Quelle zugeordnet
 - Update-Workflow auf GitHub nur manuell, ohne dauerhaften Speicher
 - Schwellenwerte (Platzhalter in `docs/methodik/ausschlusskriterien.md`)
 - Kein echter Fonds, keine echte Belegquelle
@@ -55,13 +60,20 @@ dazu Streamlit-App (lokal) und Bericht als Markdown/CSV.
 1. **Repo auf dem GitHub-Profil anpinnen** und den Website-Link im Portfolio/README ergänzen.
 2. **3–5 Interviews mit Privatanleger:innen** (Leitfaden Teil A), die Website als
    Gesprächsgrundlage nutzen; Erkenntnisse in `docs/kundengespraeche/erkenntnisse.md`.
-3. **Erste echte Datenquelle** anbinden: läuft in einer eigenen Session (Vorschlag SEC N-PORT +
-   GLEIF + OFAC, nur kommerziell nutzbare Quellen; iShares und NBIM vorerst ausgeschlossen).
-   Inkl. Lizenzprüfung und Messung der Zuordnungsquote. Danach Schwellenwerte festlegen.
+3. **Ersten echten Fonds wählen** (D-027): US-Fonds aus SEC N-PORT (2026q3_nport.zip, 440.95 MB,
+   Download nur nach Zustimmung) oder zuerst eine frei lizenzierte UCITS-Quelle suchen. Danach
+   dessen Emittenten-LEIs in die GLEIF-Abfrageliste, GLEIF aktivieren, Zuordnungsquote messen.
 
 ## Offene Fragen an Jonas
 
-- Welche echte Datenquelle zuerst? (in Bearbeitung, separate Session)
+- **Erster echter Fonds:** Ist ein US-Fonds aus SEC N-PORT in Ordnung, obwohl die Zielgruppe
+  meist UCITS-ETFs hält (D-020)? (Jonas: später entscheiden, D-027)
+- **OFAC im Belegmodell:** eigener Sachverhaltstyp «Sanktionslistung» (höchstens «dokumentiert»),
+  angezeigt mit Programm-Kürzel und amtlicher Bezeichnung? Welche Programme gehören zu welchem
+  Kriterium (z. B. GLOMAG → Menschenrechte)? (Jonas: später entscheiden, D-027)
+- Für N-PORT verlangt die SEC einen User-Agent mit E-Mail-Adresse: welche Adresse?
+- GLEIF-Konzernbeziehungen: Ist «verifiziert nur bei FULLY_CORROBORATED» (D-026) die richtige
+  Schwelle?
 - IP-Sicherheitsprotokoll auf der Website rechtlich prüfen lassen, bevor echte Interviewpartner
   die Seite nutzen (D-024, `docs/recht/datenschutz.md`)?
 - Produktname: «ImpactLens» (Vorschlag aus Feedback) übernehmen oder offen lassen?
@@ -91,3 +103,9 @@ dazu Streamlit-App (lokal) und Bericht als Markdown/CSV.
 - Nicht rechtlich geprüft (siehe `docs/recht/`).
 - Die Website ist ein Schnappschuss: nach Datenänderungen `build-site` erneut ausführen.
 - Projekt liegt in OneDrive; eine `.venv` dort wird mitsynchronisiert.
+- Gleicher LEI aus mehreren Stammdatenquellen wird nicht zusammengeführt. GLEIF nutzt den
+  Schlüssel `lei:<LEI>`; künftige echte Quellen sollten denselben Schlüssel verwenden, sonst
+  greifen GLEIF-Konzernbeziehungen nicht.
+- Lizenzprüfungen laufen nach 365 Tagen ab (GLEIF: 07.11.2027) – dann sperrt das System die
+  Quelle und ein Test schlägt Alarm.
+- Die Online-Website zeigt die GLEIF-Zeile erst nach Push und Workflow «Website veröffentlichen».

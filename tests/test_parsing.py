@@ -57,7 +57,9 @@ def ev_row(eid: str, **kw: object) -> dict[str, object]:
 
 class TestSampleData:
     def test_all_sample_sources_are_valid(self, catalog: Catalog) -> None:
-        for src in catalog.sources:
+        local = [s for s in catalog.sources if s.fetcher == "local"]
+        assert local and all(s.is_fictional for s in local)
+        for src in local:  # echte Quellen (GLEIF) haben eigene Tests mit Testdateien
             content = (SAMPLE.parent.parent / src.location).read_bytes()
             ds = PARSERS[(src.kind, src.format)](content, catalog.criterion_keys)
             assert ds.is_valid, (src.key, [str(e) for e in ds.errors])

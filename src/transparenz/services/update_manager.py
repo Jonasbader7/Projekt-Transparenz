@@ -30,6 +30,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from transparenz.config.catalog import Catalog, SourceConfig
+from transparenz.config.licensing import SourceBlockedError, license_block_reasons
 from transparenz.database.models import DatasetVersion, Source, UpdateRun
 from transparenz.database.writers import write_dataset
 from transparenz.entities.enums import UpdateStatus, VersionStatus
@@ -41,6 +42,11 @@ from transparenz.utils.timeutil import utcnow
 log = logging.getLogger(__name__)
 
 MAX_STORED_ISSUES = 200
+
+
+def _raw_ext(cfg: SourceConfig) -> str:
+    """Dateiendung des Rohdaten-Schnappschusses («gleif_json» → «json»)."""
+    return cfg.format.rsplit("_", 1)[-1]
 
 
 @dataclass
@@ -202,7 +208,8 @@ class DataUpdateManager:
                 outcome.warnings[:MAX_STORED_ISSUES], ensure_ascii=False
             )
             session.commit()
-        level = logging.ERROR if outcome.status == UpdateStatus.FEHLGESCHLAGEN else logging.INFO
+        failed = {UpdateStatus.FEHLGESCHLAGEN, UpdateStatus.GESPERRT}
+        level = logging.ERROR if outcome.status in failed else logging.INFO
         log.log(level, "Update %s: %s – %s", key, outcome.status.value, outcome.message)
         return outcome
 
@@ -211,6 +218,14 @@ class DataUpdateManager:
     ) -> UpdateOutcome:
         key = cfg.key
         now = self._clock()
+        blocked = license_block_reasons(cfg, now.date())
+        if blocked:
+            # Vor jedem Abruf: ohne freigegebene Lizenz wird nichts heruntergeladen.
+            return UpdateOutcome(
+                key, UpdateStatus.GESPERRT,
+                "Lizenz nicht freigegeben – kein Abruf. Bisheriger Stand bleibt unverändert.",
+                errors=blocked,
+            )
         active = self._active_version(session, key)
         last = self._last_check(session, key)
         if not force and active is not None and last is not None and last.finished_at:
@@ -251,7 +266,7 @@ class DataUpdateManager:
         errors = [str(i) for i in parsed.errors]
         warnings = [str(i) for i in parsed.warnings]
         if not parsed.is_valid:
-            raw = self._save_raw(key, content, digest, rejected=True, ext=cfg.format)
+            raw = self._save_raw(key, content, digest, rejected=True, ext=_raw_ext(cfg))
             run.raw_path = str(raw)
             return UpdateOutcome(
                 key, UpdateStatus.FEHLGESCHLAGEN,
@@ -260,7 +275,7 @@ class DataUpdateManager:
                 attempts=attempts, errors=errors, warnings=warnings,
             )
 
-        raw = self._save_raw(key, content, digest, rejected=False, ext=cfg.format)
+        raw = self._save_raw(key, content, digest, rejected=False, ext=_raw_ext(cfg))
         run.raw_path = str(raw)
         try:
             version = DatasetVersion(
@@ -300,7 +315,13 @@ class DataUpdateManager:
         )
 
     def validate_source(self, key: str) -> ParsedDataset:
-        """Trockenlauf: abrufen und validieren, nichts schreiben."""
+        """Trockenlauf: abrufen und validieren, nichts schreiben.
+
+        Auch der Trockenlauf ist ein Abruf – gesperrte Quellen lösen ``SourceBlockedError`` aus.
+        """
+        blocked = license_block_reasons(self.catalog.source(key), self._clock().date())
+        if blocked:
+            raise SourceBlockedError(key, blocked)
         adapter = self.adapter(key)
         fetched = adapter.fetch()
         return adapter.parse(fetched.content or b"")
@@ -331,7 +352,9 @@ class DataUpdateManager:
                         last_run=last_run,
                         data_as_of=as_of,
                         age_days=age,
-                        is_stale=active is None or (age is not None and age > cfg.max_age_days),
+                        # deaktivierte Quellen werden nicht aktualisiert – also nie «veraltet»
+                        is_stale=cfg.enabled
+                        and (active is None or (age is not None and age > cfg.max_age_days)),
                         next_due_at=(check_at + timedelta(hours=cfg.interval_hours))
                         if check_at else None,
                     )

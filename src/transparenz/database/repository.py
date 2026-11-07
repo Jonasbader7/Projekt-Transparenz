@@ -48,6 +48,8 @@ class ActiveData:
     versions: dict[str, DatasetVersion] = field(default_factory=dict)
     funds: dict[str, FundSnapshot] = field(default_factory=dict)
     companies: list[CompanyRecord] = field(default_factory=list)
+    # company_key → Quelle, aus der das Unternehmen stammt (für Herkunft/Qualitätsmessung)
+    company_sources: dict[str, str] = field(default_factory=dict)
     securities: list[SecurityRecord] = field(default_factory=list)
     relationships: list[RelationshipRecord] = field(default_factory=list)
     evidence: list[SourcedEvidence] = field(default_factory=list)
@@ -100,6 +102,7 @@ def load_active_data(session: Session, coverage_of: dict[str, str] | None = None
             continue
         seen_companies.add(row.company_key)
         data.companies.append(CompanyRecord.model_validate(row))
+        data.company_sources[row.company_key] = by_id[row.dataset_version_id].source_key
 
     seen_isins: set[str] = set()
     for row in session.scalars(

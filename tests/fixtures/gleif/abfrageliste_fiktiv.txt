@@ -1,0 +1,6 @@
+# FIKTIVE Abfrageliste für Tests (LEIs mit Präfix FIKT00).
+FIKT00GLTOCHTER00130  # Muster Tochter Beispiel AG (fiktiv)
+FIKT00GLLAPSED000122
+FIKT00GLANNULL000110
+FIKT00GLFEHLT0000114  # absichtlich nicht in der Antwort
+FIKT00GLTOCHTER00130  # Duplikat, wird ignoriert

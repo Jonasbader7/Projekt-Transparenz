@@ -2,6 +2,45 @@
 
 Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst innerhalb einer Session.
 
+## 08.11.2026 – Session 2, Teil 2 (erste echte Datenquelle, parallele Session)
+
+### D-027 Offen gelassen: US-Fonds (N-PORT) als erster echter Fonds, OFAC im Belegmodell
+- **Entscheid (Jonas):** beide Fragen **später entscheiden**. Lizenzrechtlich sind SEC N-PORT
+  und OFAC SDN geeignet (`docs/DATA_SOURCES.md`); es wird nichts heruntergeladen.
+- **Abzuwägen bei N-PORT:** nur US-registrierte Fonds, Zielgruppe hält meist UCITS-ETFs (D-020);
+  dafür liefern die Fonds je Position ISIN und Emittenten-LEI selbst (ideal für die
+  Zuordnungsquote). SEC verlangt einen User-Agent mit E-Mail-Adresse.
+- **Vorschlag für OFAC (nicht entschieden):** eigener Sachverhaltstyp «Sanktionslistung»,
+  Herausgeber Behörde, höchstens «dokumentiert», nie «festgestellt»; Anzeige von Programm-Kürzel
+  und amtlicher Bezeichnung (z. B. «GLOMAG – Executive Order 13818 – Global Magnitsky»);
+  einem Kriterium nur über eine von Jonas festgelegte Zuordnung Programm → Kriterium zugeordnet.
+
+### D-026 GLEIF als erste echte Quelle, vorerst deaktiviert
+- **Entscheid:** GLEIF (CC0 1.0) über die API anbinden, nicht über die Golden Copy (mehrere GB);
+  abgefragt werden nur die LEIs aus `data/gleif/abfrageliste.txt`. Quelle bleibt `enabled = false`,
+  bis ein echter Fonds LEIs liefert; die Liste enthält bis dahin nur den LEI von GLEIF selbst
+  (Funktionsprobe, Entscheid Jonas: kein Unternehmen auswählen).
+- **Übersetzungsregeln (Vorschlag, umgesetzt):** Schlüssel `lei:<LEI>`; Registrierungsstatus
+  ANNULLED/CANCELLED/DUPLICATE wird nicht übernommen, LAPSED u. Ä. mit Warnung; eine
+  Konzernbeziehung ist nur **verifiziert** (überträgt Belege, D-012), wenn sie aktiv,
+  PUBLISHED und FULLY_CORROBORATED ist – sonst nur Hinweis. Kein ISIN-LEI-Mapping (Lizenz
+  ungeklärt), deshalb liefert GLEIF keine Zuordnung Wertpapier → Unternehmen.
+- **Zuordnungsquote:** `python -m transparenz mapping --fund ISIN` misst stufenweise nach Anzahl
+  und Gewicht (Aktien/Anleihen → mit ISIN → Emittent zugeordnet → mit LEI → LEI bei GLEIF).
+- **Alternativen:** Golden Copy (zu gross für wenige LEIs); GLEIF-ISIN-Abfrage (ausgeschlossen);
+  N-PORT zuerst (fachlich offen, D-027).
+
+### D-025 Lizenzregister je Quelle mit automatischer Sperre
+- **Entscheid (Jonas):** Jede Quelle in `sources.toml` führt Lizenz, Lizenz-URL, Originalseite
+  der Bedingungen, Prüfdatum, kommerzielle Nutzung, Weiterveröffentlichung und Quellenangabe.
+  Echte Quellen ohne vollständige, höchstens 365 Tage alte Prüfung mit «ja» bei kommerzieller
+  Nutzung **und** Weiterveröffentlichung werden **gesperrt** (kein Abruf, Status «gesperrt»).
+- **Begründung:** Grundsatz «nur ausdrücklich kommerziell nutzbare oder klar öffentlich
+  freigegebene Daten» soll technisch durchgesetzt werden, nicht nur dokumentiert. Bedingungen
+  ändern sich (jährliche Wiederholung).
+- **Alternativen:** nur Warnung im Protokoll (nicht gewählt); separates Lizenzregister neben
+  den Quellen (mehr Doppelpflege).
+
 ## 07.11.2026 – Session 2 (Website online, Besuchszählung)
 
 ### D-024 Website zählt Besuche mit dem BORS/Portfolio-Tracker, inkl. IP-Sicherheitsprotokoll

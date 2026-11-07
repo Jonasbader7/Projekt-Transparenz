@@ -304,6 +304,21 @@ def parse_entities_json(content: bytes, criteria_keys: set[str] | None = None) -
     relationships = _build(
         RelationshipRecord, data.get("relationships", []), ds, "Konzernbeziehung", 1
     )
+    check_entities(ds, companies, securities, relationships)
+    return ds
+
+
+def check_entities(
+    ds: ParsedDataset,
+    companies: list[CompanyRecord],
+    securities: list[SecurityRecord],
+    relationships: list[RelationshipRecord],
+) -> None:
+    """Gemeinsame Prüfungen für Stammdaten (auch für Adapter echter Quellen wie GLEIF).
+
+    Duplikate, eindeutige LEIs, Verweise auf bekannte Unternehmen, keine Zirkelbezüge.
+    Setzt ``ds.records``.
+    """
     if not companies:
         ds.error("Keine Unternehmen enthalten.")
     companies = _dedupe(companies, lambda c: c.company_key, ds, "Unternehmen")
@@ -329,7 +344,6 @@ def parse_entities_json(content: bytes, criteria_keys: set[str] | None = None) -
     _check_cycles(relationships, ds)
 
     ds.records = {"companies": companies, "securities": securities, "relationships": relationships}
-    return ds
 
 
 def _check_cycles(relationships: list[RelationshipRecord], ds: ParsedDataset) -> None:

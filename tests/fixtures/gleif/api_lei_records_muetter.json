@@ -1,0 +1,115 @@
+{
+ "_hinweis": "FIKTIVE TESTDATEN im Aufbau der GLEIF-API (api.gleif.org, Stand 07.11.2026). Alle LEIs beginnen mit FIKT00, alle Namen sind erfunden.",
+ "meta": {
+  "goldenCopy": {
+   "publishDate": "2026-11-07T16:00:00Z"
+  },
+  "pagination": {
+   "currentPage": 1,
+   "perPage": 200,
+   "from": 1,
+   "to": 2,
+   "total": 2,
+   "lastPage": 1
+  }
+ },
+ "data": [
+  {
+   "type": "lei-records",
+   "id": "FIKT00GLMUTTER000119",
+   "attributes": {
+    "lei": "FIKT00GLMUTTER000119",
+    "entity": {
+     "legalName": {
+      "name": "Muster Zwischenholding Beispiel AG (fiktiv)",
+      "language": "de"
+     },
+     "legalAddress": {
+      "language": "de",
+      "addressLines": [
+       "Musterstrasse 1"
+      ],
+      "city": "Musterstadt",
+      "country": "CH",
+      "postalCode": "0000"
+     },
+     "jurisdiction": "CH",
+     "category": "GENERAL",
+     "status": "ACTIVE"
+    },
+    "registration": {
+     "initialRegistrationDate": "2018-03-16T00:00:00Z",
+     "lastUpdateDate": "2026-04-23T05:00:06Z",
+     "status": "ISSUED",
+     "nextRenewalDate": "2027-03-15T00:00:00Z",
+     "managingLou": "FIKT00GLLOU000000106",
+     "corroborationLevel": "FULLY_CORROBORATED"
+    }
+   },
+   "relationships": {
+    "direct-parent": {
+     "links": {
+      "reporting-exception": "https://api.gleif.org/api/v1/lei-records/FIKT00GLMUTTER000119/direct-parent-reporting-exception"
+     }
+    },
+    "ultimate-parent": {
+     "links": {
+      "relationship-record": "https://api.gleif.org/api/v1/lei-records/FIKT00GLMUTTER000119/ultimate-parent-relationship",
+      "lei-record": "https://api.gleif.org/api/v1/lei-records/FIKT00GLMUTTER000119/ultimate-parent"
+     }
+    }
+   },
+   "links": {
+    "self": "https://api.gleif.org/api/v1/lei-records/FIKT00GLMUTTER000119"
+   }
+  },
+  {
+   "type": "lei-records",
+   "id": "FIKT00GLOBERST000177",
+   "attributes": {
+    "lei": "FIKT00GLOBERST000177",
+    "entity": {
+     "legalName": {
+      "name": "Muster Konzern Beispiel Holding AG (fiktiv)",
+      "language": "de"
+     },
+     "legalAddress": {
+      "language": "de",
+      "addressLines": [
+       "Musterstrasse 1"
+      ],
+      "city": "Musterstadt",
+      "country": "LU",
+      "postalCode": "0000"
+     },
+     "jurisdiction": "LU",
+     "category": "GENERAL",
+     "status": "ACTIVE"
+    },
+    "registration": {
+     "initialRegistrationDate": "2018-03-16T00:00:00Z",
+     "lastUpdateDate": "2026-04-23T05:00:06Z",
+     "status": "ISSUED",
+     "nextRenewalDate": "2027-03-15T00:00:00Z",
+     "managingLou": "FIKT00GLLOU000000106",
+     "corroborationLevel": "FULLY_CORROBORATED"
+    }
+   },
+   "relationships": {
+    "direct-parent": {
+     "links": {
+      "reporting-exception": "https://api.gleif.org/api/v1/lei-records/FIKT00GLOBERST000177/direct-parent-reporting-exception"
+     }
+    },
+    "ultimate-parent": {
+     "links": {
+      "reporting-exception": "https://api.gleif.org/api/v1/lei-records/FIKT00GLOBERST000177/ultimate-parent-reporting-exception"
+     }
+    }
+   },
+   "links": {
+    "self": "https://api.gleif.org/api/v1/lei-records/FIKT00GLOBERST000177"
+   }
+  }
+ ]
+}

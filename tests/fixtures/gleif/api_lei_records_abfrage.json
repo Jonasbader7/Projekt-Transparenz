@@ -1,0 +1,164 @@
+{
+ "_hinweis": "FIKTIVE TESTDATEN im Aufbau der GLEIF-API (api.gleif.org, Stand 07.11.2026). Alle LEIs beginnen mit FIKT00, alle Namen sind erfunden.",
+ "meta": {
+  "goldenCopy": {
+   "publishDate": "2026-11-07T16:00:00Z"
+  },
+  "pagination": {
+   "currentPage": 1,
+   "perPage": 200,
+   "from": 1,
+   "to": 3,
+   "total": 3,
+   "lastPage": 1
+  }
+ },
+ "data": [
+  {
+   "type": "lei-records",
+   "id": "FIKT00GLTOCHTER00130",
+   "attributes": {
+    "lei": "FIKT00GLTOCHTER00130",
+    "entity": {
+     "legalName": {
+      "name": "Muster Tochter Beispiel AG (fiktiv)",
+      "language": "de"
+     },
+     "legalAddress": {
+      "language": "de",
+      "addressLines": [
+       "Musterstrasse 1"
+      ],
+      "city": "Musterstadt",
+      "country": "CH",
+      "postalCode": "0000"
+     },
+     "jurisdiction": "CH",
+     "category": "GENERAL",
+     "status": "ACTIVE"
+    },
+    "registration": {
+     "initialRegistrationDate": "2018-03-16T00:00:00Z",
+     "lastUpdateDate": "2026-04-23T05:00:06Z",
+     "status": "ISSUED",
+     "nextRenewalDate": "2027-03-15T00:00:00Z",
+     "managingLou": "FIKT00GLLOU000000106",
+     "corroborationLevel": "FULLY_CORROBORATED"
+    }
+   },
+   "relationships": {
+    "direct-parent": {
+     "links": {
+      "relationship-record": "https://api.gleif.org/api/v1/lei-records/FIKT00GLTOCHTER00130/direct-parent-relationship",
+      "lei-record": "https://api.gleif.org/api/v1/lei-records/FIKT00GLTOCHTER00130/direct-parent"
+     }
+    },
+    "ultimate-parent": {
+     "links": {
+      "relationship-record": "https://api.gleif.org/api/v1/lei-records/FIKT00GLTOCHTER00130/ultimate-parent-relationship",
+      "lei-record": "https://api.gleif.org/api/v1/lei-records/FIKT00GLTOCHTER00130/ultimate-parent"
+     }
+    }
+   },
+   "links": {
+    "self": "https://api.gleif.org/api/v1/lei-records/FIKT00GLTOCHTER00130"
+   }
+  },
+  {
+   "type": "lei-records",
+   "id": "FIKT00GLLAPSED000122",
+   "attributes": {
+    "lei": "FIKT00GLLAPSED000122",
+    "entity": {
+     "legalName": {
+      "name": "Muster Abgelaufen Beispiel GmbH (fiktiv)",
+      "language": "de"
+     },
+     "legalAddress": {
+      "language": "de",
+      "addressLines": [
+       "Musterstrasse 1"
+      ],
+      "city": "Musterstadt",
+      "country": "DE",
+      "postalCode": "0000"
+     },
+     "jurisdiction": "DE",
+     "category": "GENERAL",
+     "status": "ACTIVE"
+    },
+    "registration": {
+     "initialRegistrationDate": "2018-03-16T00:00:00Z",
+     "lastUpdateDate": "2026-04-23T05:00:06Z",
+     "status": "LAPSED",
+     "nextRenewalDate": "2027-03-15T00:00:00Z",
+     "managingLou": "FIKT00GLLOU000000106",
+     "corroborationLevel": "FULLY_CORROBORATED"
+    }
+   },
+   "relationships": {
+    "direct-parent": {
+     "links": {
+      "reporting-exception": "https://api.gleif.org/api/v1/lei-records/FIKT00GLLAPSED000122/direct-parent-reporting-exception"
+     }
+    },
+    "ultimate-parent": {
+     "links": {
+      "reporting-exception": "https://api.gleif.org/api/v1/lei-records/FIKT00GLLAPSED000122/ultimate-parent-reporting-exception"
+     }
+    }
+   },
+   "links": {
+    "self": "https://api.gleif.org/api/v1/lei-records/FIKT00GLLAPSED000122"
+   }
+  },
+  {
+   "type": "lei-records",
+   "id": "FIKT00GLANNULL000110",
+   "attributes": {
+    "lei": "FIKT00GLANNULL000110",
+    "entity": {
+     "legalName": {
+      "name": "Muster Annulliert Beispiel SA (fiktiv)",
+      "language": "de"
+     },
+     "legalAddress": {
+      "language": "de",
+      "addressLines": [
+       "Musterstrasse 1"
+      ],
+      "city": "Musterstadt",
+      "country": "FR",
+      "postalCode": "0000"
+     },
+     "jurisdiction": "FR",
+     "category": "GENERAL",
+     "status": "INACTIVE"
+    },
+    "registration": {
+     "initialRegistrationDate": "2018-03-16T00:00:00Z",
+     "lastUpdateDate": "2026-04-23T05:00:06Z",
+     "status": "ANNULLED",
+     "nextRenewalDate": "2027-03-15T00:00:00Z",
+     "managingLou": "FIKT00GLLOU000000106",
+     "corroborationLevel": "FULLY_CORROBORATED"
+    }
+   },
+   "relationships": {
+    "direct-parent": {
+     "links": {
+      "reporting-exception": "https://api.gleif.org/api/v1/lei-records/FIKT00GLANNULL000110/direct-parent-reporting-exception"
+     }
+    },
+    "ultimate-parent": {
+     "links": {
+      "reporting-exception": "https://api.gleif.org/api/v1/lei-records/FIKT00GLANNULL000110/ultimate-parent-reporting-exception"
+     }
+    }
+   },
+   "links": {
+    "self": "https://api.gleif.org/api/v1/lei-records/FIKT00GLANNULL000110"
+   }
+  }
+ ]
+}

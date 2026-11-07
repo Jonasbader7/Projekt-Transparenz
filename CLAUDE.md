@@ -33,7 +33,9 @@ Python-Monolith, Paket `transparenz` (src-Layout):
 | Pfad | Inhalt |
 |---|---|
 | `src/transparenz/config/settings.py` | **einzige Stelle für den Anzeigenamen** (`DEFAULT_DISPLAY_NAME`) |
-| `src/transparenz/config/sources.toml` | Datenquellen, Intervalle, Lizenzen |
+| `src/transparenz/config/sources.toml` | Datenquellen, Intervalle, **Lizenzregister je Quelle** |
+| `src/transparenz/config/licensing.py` | Lizenzsperre: echte Quellen ohne geprüfte Lizenz werden nicht abgerufen |
+| `src/transparenz/ingestion/gleif.py` | GLEIF-Adapter (erste echte Quelle, deaktiviert bis zum ersten echten Fonds) |
 | `src/transparenz/config/criteria.toml` | Ausschlusskriterien, Schwellenwerte (offen) |
 | `src/transparenz/screening/engine.py` | Belegstatus-Logik |
 | `src/transparenz/services/update_manager.py` | DataUpdateManager |
@@ -50,8 +52,9 @@ Python-Monolith, Paket `transparenz` (src-Layout):
 - Enum-Werte sind ASCII-Schlüssel; deutsche Anzeigetexte nur in `entities/labels.py`.
 
 ## Integrierte Quellen
-Nur fiktive Demoquellen (siehe `sources.toml`). Echte Kandidaten mit Lizenzstatus:
-`docs/DATA_SOURCES.md`. Nächste Quelle erst, wenn die vorherige zuverlässig läuft.
+Aktiv nur fiktive Demoquellen. GLEIF (CC0) ist angebunden, getestet und deaktiviert (D-026).
+Geprüfte Lizenzen und Kandidaten: `docs/DATA_SOURCES.md`. Vor jedem Download echter Daten Jonas
+fragen (Dateiname, Quelle, Grösse). Nächste Quelle erst, wenn die vorherige zuverlässig läuft.
 
 ## Tests und Start
 ```powershell
@@ -79,4 +82,4 @@ Git Bash: bei `git show <ref>:<pfad>` `MSYS_NO_PATHCONV=1` setzen.
 
 ## Grenzen
 Nur fiktive Daten · nicht rechtlich geprüft · keine Anlageberatung · Schwellenwerte offen ·
-keine Migrationen (Alembic) · keine echte Quelle angebunden.
+keine Migrationen (Alembic) · kein echter Fonds, keine echte Belegquelle.

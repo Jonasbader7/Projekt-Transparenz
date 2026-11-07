@@ -1,0 +1,53 @@
+{
+ "_hinweis": "FIKTIVE TESTDATEN im Aufbau der GLEIF-API (api.gleif.org, Stand 07.11.2026). Alle LEIs beginnen mit FIKT00, alle Namen sind erfunden.",
+ "meta": {
+  "goldenCopy": {
+   "publishDate": "2026-11-07T16:00:00Z"
+  }
+ },
+ "data": {
+  "type": "relationship-records",
+  "id": "FIKT00GLTOCHTER00130|LEI|IS_DIRECTLY_CONSOLIDATED_BY|1|fiktiv|",
+  "attributes": {
+   "validFrom": "2025-01-01T00:00:00Z",
+   "validTo": null,
+   "relationship": {
+    "startNode": {
+     "id": "FIKT00GLTOCHTER00130",
+     "type": "LEI"
+    },
+    "endNode": {
+     "id": "FIKT00GLMUTTER000119",
+     "type": "LEI"
+    },
+    "type": "IS_DIRECTLY_CONSOLIDATED_BY",
+    "status": "ACTIVE",
+    "periods": [
+     {
+      "startDate": "2025-01-01T00:00:00Z",
+      "type": "RELATIONSHIP_PERIOD"
+     }
+    ]
+   },
+   "registration": {
+    "initialRegistrationDate": "2025-01-02T00:00:00Z",
+    "lastUpdateDate": "2026-04-01T00:00:00Z",
+    "status": "PUBLISHED",
+    "corroborationLevel": "FULLY_CORROBORATED",
+    "corroborationDocuments": "SUPPORTING_DOCUMENTS"
+   }
+  },
+  "relationships": {
+   "start-node": {
+    "links": {
+     "related": "https://api.gleif.org/api/v1/lei-records/FIKT00GLTOCHTER00130"
+    }
+   },
+   "end-node": {
+    "links": {
+     "related": "https://api.gleif.org/api/v1/lei-records/FIKT00GLMUTTER000119"
+    }
+   }
+  }
+ }
+}

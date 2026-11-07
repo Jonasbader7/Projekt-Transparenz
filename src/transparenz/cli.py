@@ -7,6 +7,7 @@ Befehle:
   status                          Aktualität aller Quellen anzeigen
   screen --fund ISIN [--out DATEI] Fonds auswerten, optional Markdown-Bericht schreiben
   build-site [--out site] [--update] statische Website erzeugen (Schnappschuss)
+  mapping --fund ISIN             Zuordnungsquote Wertpapier → Unternehmen messen
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ import logging
 import sys
 from pathlib import Path
 
+from transparenz.config.licensing import SourceBlockedError
 from transparenz.entities.enums import UpdateStatus
 from transparenz.entities.labels import label
 from transparenz.ingestion.fetchers import FetchError
@@ -44,7 +46,7 @@ def _cmd_update(args: argparse.Namespace) -> int:
         print(f"{o.source_key:35s} {label(o.status):35s} {o.message}")
         for e in o.errors[:10]:
             print(f"    {e}")
-        if o.status == UpdateStatus.FEHLGESCHLAGEN:
+        if o.status in (UpdateStatus.FEHLGESCHLAGEN, UpdateStatus.GESPERRT):
             failed += 1
     return 1 if failed else 0
 
@@ -58,6 +60,10 @@ def _cmd_validate(args: argparse.Namespace) -> int:
             parsed = ctx.updates.validate_source(key)
         except FetchError as exc:
             print(f"{key:35s} ABRUF FEHLGESCHLAGEN: {exc}")
+            bad += 1
+            continue
+        except SourceBlockedError as exc:
+            print(f"{key:35s} GESPERRT: {'; '.join(exc.reasons)}")
             bad += 1
             continue
         state = "gültig" if parsed.is_valid else "UNGÜLTIG"
@@ -102,6 +108,44 @@ def _cmd_screen(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_mapping(args: argparse.Namespace) -> int:
+    from transparenz.entities.resolution import EntityResolver
+    from transparenz.services.mapping_quality import STEP_LABELS, measure_mapping_quality
+
+    ctx = create_context()
+    data = ctx.active_data()
+    snap = data.funds.get(args.fund)
+    if snap is None:
+        print(f"Fonds {args.fund} nicht im aktiven Datenstand. Verfügbar: {', '.join(data.funds)}")
+        return 1
+    gleif_sources = {s.key for s in ctx.catalog.sources if s.format == "gleif_json"}
+    gleif_leis = {
+        c.lei for c in data.companies
+        if c.lei and data.company_sources.get(c.company_key) in gleif_sources
+    }
+    q = measure_mapping_quality(
+        snap.positions, EntityResolver(data.companies, data.securities), gleif_leis
+    )
+    print(f"Zuordnungsquote {snap.fund.name} ({snap.fund.isin}), Stichtag "
+          f"{format_date(snap.fund.as_of_date)}")
+    print(f"Alle Positionen: {q.total_positions} ({q.total_weight_pct:.2f} % Gewicht)")
+    for step in q.steps:
+        by_count, by_weight = q.share(step.key)
+        share = (
+            f"{by_count:5.1f} % der Anzahl, {by_weight:5.1f} % des Gewichts"
+            if by_count is not None and by_weight is not None else "–"
+        )
+        print(f"  {STEP_LABELS[step.key]:32s} {step.count:4d}  {step.weight_pct:7.2f} %  {share}")
+    if not gleif_leis:
+        print("Hinweis: kein aktiver GLEIF-Datenstand – letzte Stufe ist deshalb 0.")
+    if q.gaps:
+        print("Lücken (grösstes Gewicht zuerst):")
+        for g in q.gaps[: args.limit]:
+            where = g.isin or "ohne ISIN"
+            print(f"  {g.weight_pct:6.2f} %  {g.position_name} ({where}): {g.reason}")
+    return 0
+
+
 def _cmd_build_site(args: argparse.Namespace) -> int:
     from transparenz.site.builder import SiteBuildError, build_site
 
@@ -140,6 +184,10 @@ def build_parser() -> argparse.ArgumentParser:
     sc.add_argument("--fund", required=True, help="ISIN des Fonds")
     sc.add_argument("--out", help="Markdown-Datei")
     sc.set_defaults(func=_cmd_screen)
+    mp = sub.add_parser("mapping")
+    mp.add_argument("--fund", required=True, help="ISIN des Fonds")
+    mp.add_argument("--limit", type=int, default=20, help="höchstens so viele Lücken zeigen")
+    mp.set_defaults(func=_cmd_mapping)
     bs = sub.add_parser("build-site")
     bs.add_argument("--out", default="site", help="Zielordner (Standard: site)")
     bs.add_argument("--update", action="store_true", help="vorher fällige Quellen aktualisieren")

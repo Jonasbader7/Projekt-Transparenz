@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import tomllib
+from datetime import date
 from pathlib import Path
 from typing import Literal
 
@@ -33,28 +34,50 @@ class UpdateDefaults(BaseModel):
 
 
 class SourceConfig(BaseModel):
+    """Eine Datenquelle inkl. Lizenzregistrierung.
+
+    Lizenzfelder (siehe docs/DATA_SOURCES.md): ``license`` (genaue Bezeichnung),
+    ``license_url``, ``terms_url`` (Originalseite mit den Nutzungsbedingungen),
+    ``license_checked_on`` (Prüfdatum), ``commercial_use``, ``redistribution``
+    (Weiterveröffentlichung) und ``attribution`` (verlangte/erbetene Quellenangabe).
+    Ob eine Quelle genutzt werden darf, entscheidet ``config.licensing``.
+    """
+
     model_config = ConfigDict(frozen=True)
 
     key: str = Field(pattern=r"^[a-z0-9_]+$")
     name: str
     kind: DatasetKind
     publisher: str
-    fetcher: Literal["local", "http"]
-    format: Literal["json", "csv"]
+    fetcher: Literal["local", "http", "gleif_api"]
+    format: Literal["json", "csv", "gleif_json"]
     location: str
     interval_hours: float = Field(gt=0)
     max_age_days: int = Field(gt=0)
     license: str
     commercial_use: CommercialUse
     is_fictional: bool
+    license_url: str | None = None
+    terms_url: str | None = None
+    license_checked_on: date | None = None
+    redistribution: CommercialUse = CommercialUse.UNKLAR
+    attribution: str = ""
     description: str = ""
     coverage_of: str | None = None
+    # nur fetcher = "gleif_api": Textdatei mit den abzufragenden LEIs (relativ zum Projekt)
+    lei_list: str | None = None
     enabled: bool = True
 
     @model_validator(mode="after")
     def _check_coverage(self) -> SourceConfig:
         if self.kind == DatasetKind.COVERAGE and not self.coverage_of:
             raise ValueError(f"Quelle {self.key}: coverage-Quellen brauchen 'coverage_of'.")
+        if self.fetcher == "gleif_api" and not self.lei_list:
+            raise ValueError(f"Quelle {self.key}: fetcher 'gleif_api' braucht 'lei_list'.")
+        if (self.fetcher == "gleif_api") != (self.format == "gleif_json"):
+            raise ValueError(
+                f"Quelle {self.key}: 'gleif_api' und 'gleif_json' gehören zusammen."
+            )
         return self
 
 
