@@ -93,6 +93,7 @@ Git Bash: bei `git show <ref>:<pfad>` `MSYS_NO_PATHCONV=1` setzen.
 ## Grenzen
 Demooberfläche fiktiv; echte Registerdaten nur lokal. Kein vollständiger Aktien-/ETF-Bestand,
 keine Fondspositionen und keine Firmenvorwürfe importiert. SwissPRTR-Standorte ohne sichere
-Betreiber-UID bleiben unzugeordnet; Emissions-XLSX ist archiviert, noch nicht normalisiert.
+Betreiber-UID bleiben unzugeordnet; die Emissions-XLSX ist normalisiert (D-032), Verknüpfung
+nur über die eigene, prüfzifferngeprüfte Betriebs-UID, nicht über den Namen.
 Quellenprüfung anhand offizieller Bedingungen, keine externe Rechtsberatung. Keine
 Migrationen (Alembic); bestehendes Screening-Schema unverändert. Daten nicht ungeprüft publizieren.

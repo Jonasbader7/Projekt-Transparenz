@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree as ET
 
 import httpx
 from pydantic import ValidationError
@@ -80,7 +81,7 @@ class ExternalDataset(ParsedDataset):
     @property
     def record_count(self) -> int:
         return super().record_count + sum(len(self.extra.get(k, [])) for k in
-                                          ("funds", "facilities"))
+                                          ("funds", "facilities", "emissions"))
 
 
 class RawClient:
@@ -292,8 +293,9 @@ class ExternalFetcher:
                                              transient=False)
                     pages.append(dict(workbook, role="original_emissions_workbook"))
                 data_as_of = body["properties"]["datetime"][:10]
-                coverage.update(scope="Standorte; Emissionen 2007–2024 nur als Original-XLSX",
-                                emissions_normalized=False)
+                coverage.update(
+                    scope="Standorte; Emissionen 2007–2024 aus Original-XLSX normalisiert",
+                    emissions_normalized=bool(self.config.supplementary_url))
             else:
                 raise FetchError(f"Unbekannter Modus: {mode}", transient=False)
             # Download times are sidecars. Manifest hash changes only with data/coverage.
@@ -443,6 +445,113 @@ def _swissprtr(content: bytes, ds: ExternalDataset, folder: Path) -> None:
                             "evidence_category": "facility_register_not_violation"})
 
 
+_XLSX_NS = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+            "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+            "rel": "http://schemas.openxmlformats.org/package/2006/relationships"}
+EMISSION_HEADERS = {"Facility ID", "UID of facility", "UID holder", "Year", "Source type",
+                    "Pollutant_name", "CAS", "Pollutant_group", "Medium", "Value", "Unit",
+                    "Diffuse_sources"}
+
+
+def _xlsx_header_and_rows(content: bytes) -> tuple[dict[str, str], list[dict[str, str]]]:
+    """Minimal OOXML reader: shared strings + the 'Daten…' sheet's rows.
+
+    Stdlib only (zipfile + ElementTree), matching the no-Excel-dependency approach
+    already used for the SwissPRTR GeoPackage.
+    """
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        workbook = ET.fromstring(archive.read("xl/workbook.xml"))
+        rels = ET.fromstring(archive.read("xl/_rels/workbook.xml.rels"))
+        targets = {rel.get("Id"): rel.get("Target")
+                   for rel in rels.findall(f"{{{_XLSX_NS['rel']}}}Relationship")}
+        sheet = next((s for s in workbook.findall(".//s:sheets/s:sheet", _XLSX_NS)
+                      if (s.get("name") or "").startswith("Daten")), None)
+        if sheet is None:
+            raise ValueError("Kein Datenblatt 'Daten…' in der Arbeitsmappe gefunden")
+        target = targets.get(sheet.get(f"{{{_XLSX_NS['r']}}}id"))
+        if not target:
+            raise ValueError("Datenblatt-Verweis in der Arbeitsmappe fehlt")
+        sheet_xml = ET.fromstring(archive.read(f"xl/{target}"))
+        strings: list[str] = []
+        if "xl/sharedStrings.xml" in archive.namelist():
+            shared = ET.fromstring(archive.read("xl/sharedStrings.xml"))
+            strings = ["".join(t.text or "" for t in si.findall(".//s:t", _XLSX_NS))
+                       for si in shared.findall("s:si", _XLSX_NS)]
+
+        def cell_value(cell) -> str | None:
+            value = cell.find("s:v", _XLSX_NS)
+            text = value.text if value is not None else None
+            if cell.get("t") == "s" and text is not None:
+                return strings[int(text)]
+            if cell.get("t") == "inlineStr":
+                inline = cell.find("s:is/s:t", _XLSX_NS)
+                return inline.text if inline is not None else None
+            return text
+
+        rows = []
+        for row in sheet_xml.findall(".//s:sheetData/s:row", _XLSX_NS):
+            cells = {}
+            for cell in row.findall("s:c", _XLSX_NS):
+                match = re.match(r"[A-Z]+", cell.get("r", ""))
+                if match:
+                    cells[match.group()] = cell_value(cell)
+            rows.append(cells)
+        if not rows:
+            raise ValueError("Datenblatt der Arbeitsmappe ist leer")
+        header = {col: name for col, name in rows[0].items() if name}
+        return header, rows[1:]
+
+
+def _swissprtr_emissions(content: bytes, ds: ExternalDataset) -> None:
+    """Normalise the archived original SwissPRTR emissions workbook (2007–2024).
+
+    Linking to a company uses only the row's own validated facility UID, the same
+    exact-match rule as everywhere else; it never uses the facility name. Diffuse
+    (non-point) sources report no facility and stay explicitly unlinked. Emissions
+    are an official report, not evidence of a legal violation (evidence_category).
+    """
+    header, data_rows = _xlsx_header_and_rows(content)
+    by_name = {name: col for col, name in header.items()}
+    missing = EMISSION_HEADERS - set(by_name)
+    if missing:
+        raise ValueError(f"SwissPRTR-Arbeitsmappe: Spalten fehlen: {sorted(missing)}")
+    invalid_uid = 0
+    for row in data_rows:
+        year_raw = row.get(by_name["Year"])
+        if (not year_raw or not re.fullmatch(r"\d{4}", year_raw)
+                or not 2000 <= int(year_raw) <= 2100):
+            continue
+        raw_uid = row.get(by_name["UID of facility"])
+        uid = normalize_uid(raw_uid)
+        if raw_uid and not uid:
+            invalid_uid += 1
+        value_raw = row.get(by_name["Value"])
+        try:
+            value = float(value_raw) if value_raw is not None else None
+        except ValueError:
+            value = None
+        source_type = row.get(by_name["Source type"])
+        ds.extra.setdefault("emissions", []).append({
+            "source_key": "swissprtr",
+            "data_as_of": str(ds.data_as_of) if ds.data_as_of else None,
+            "facility_id": row.get(by_name["Facility ID"]),
+            "uid_facility": uid, "uid_facility_raw": None if uid else raw_uid,
+            "uid_holder": normalize_uid(row.get(by_name["UID holder"])),
+            "year": int(year_raw), "source_type": source_type,
+            "pollutant_name": row.get(by_name["Pollutant_name"]),
+            "cas": row.get(by_name["CAS"]), "pollutant_group": row.get(by_name["Pollutant_group"]),
+            "medium": row.get(by_name["Medium"]), "value": value,
+            "unit": row.get(by_name["Unit"]),
+            "diffuse_source_description": row.get(by_name["Diffuse_sources"]),
+            "company_key": None,
+            "mapping_status": "diffuse_source_no_facility" if source_type == "Nicht-Punktquelle"
+            else "unresolved",
+            "evidence_category": "emission_register_not_violation"})
+    if invalid_uid:
+        ds.warn(f"SwissPRTR-Emissionen: {invalid_uid} Betriebs-UID(s) mit ungültiger Prüfziffer, "
+                "ohne Unternehmenszuordnung übernommen.")
+
+
 def parse_external(content: bytes, cfg: SourceConfig, root: Path) -> ExternalDataset:
     ds = ExternalDataset(DatasetKind.ENTITIES)
     ds.records = {"companies": [], "securities": [], "relationships": []}
@@ -463,6 +572,8 @@ def parse_external(content: bytes, cfg: SourceConfig, root: Path) -> ExternalDat
             if cfg.external_mode == "swissprtr":
                 if entry.get("role") == "geopackage":
                     _swissprtr(raw, ds, folder)
+                elif entry.get("role") == "original_emissions_workbook":
+                    _swissprtr_emissions(raw, ds)
                 continue
             body = json.loads(raw)
             if entry.get("role") == "count":
@@ -494,6 +605,10 @@ def parse_external(content: bytes, cfg: SourceConfig, root: Path) -> ExternalDat
             check_entities(ds, ds.records["companies"], [], [])
         elif not ds.extra.get("facilities"):
             ds.error("SwissPRTR ohne Standorte")
+        if (cfg.external_mode == "swissprtr"
+                and any(p.get("role") == "original_emissions_workbook" for p in bundle["pages"])
+                and not ds.extra.get("emissions")):
+            ds.error("SwissPRTR-Emissionsarbeitsmappe ohne auswertbare Zeilen")
         if cfg.external_mode == "gleif_ch":
             count = (len(ds.records["companies"]) + len(ds.extra.get("funds", []))
                      + len(ds.extra.get("excluded", []))
@@ -506,7 +621,7 @@ def parse_external(content: bytes, cfg: SourceConfig, root: Path) -> ExternalDat
         if cfg.external_mode == "zefix":
             ds.warn("Zefix: zeitlich gestaffelte Extraktion, kein atomarer Registerstand.")
     except (ValueError, KeyError, TypeError, OSError, ValidationError,
-            sqlite3.Error, zipfile.BadZipFile) as exc:
+            sqlite3.Error, zipfile.BadZipFile, ET.ParseError) as exc:
         ds.error(f"Externe Rohdaten ungültig: {exc}")
     return ds
 

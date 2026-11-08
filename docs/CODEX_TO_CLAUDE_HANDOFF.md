@@ -25,7 +25,9 @@ Aktiengesellschaften. Die Fondsanzahl ist ausdrücklich kein ETF- oder Anteilskl
   sechs Originaleinheiten sind zurückgehalten (ungültige UID oder widersprüchliche Register-IDs).
   Mehrsprachige Namen derselben Register-ID sind Varianten, keine Dubletten.
 - `swissprtr`: STAC + GeoPackage, 247 Standorte zum 31.12.2024. Amtliche Asset-Checksumme
-  geprüft. Zusätzlich Original-XLSX mit Emissionen 2007–2024 heruntergeladen (3'106'306 Bytes).
+  geprüft. Original-XLSX mit Emissionen 2007–2024 (3'106'306 Bytes) normalisiert (D-032, Claude-
+  Session): 22'860 Zeilen, davon 16'058 Punktquellen über die im XLSX gemeldete,
+  prüfzifferngeprüfte Betriebs-UID exakt einem Rechtsträger zugeordnet; Details in STATUS.md.
 - `wikidata_ch`: vorbereitet und synthetisch getestet, **nicht live funktionsfähig: HTTP 403**.
   Im Standardlauf deaktiviert mit sichtbarem Grund, manuell über `--source wikidata_ch` prüfbar.
   Kein Hostwechsel und keine Sperrumgehung. Abfragen in `data/queries/`.
@@ -71,9 +73,12 @@ geklärt; Climate TRACE hat Drittquellen-Ausnahmen. Unternehmensvorwürfe nicht 
 
 Kein nachgewiesenes vollständiges Schweizer Aktien-/SIX-/ETF-Universum. Keine bestätigten
 ISIN→Emittent-Zuordnungen. Fondsanbieter, Index, Nachhaltigkeitslabel und Anteilsklassen fehlen.
-SwissPRTR-Emissionen sind nur als Original-XLSX archiviert, nicht normalisiert. Die
-Standortdatei enthält keine sichere Betreiber-UID, deshalb 0 Firmenzuordnungen. Keine
-Emissions-/Vorwurfsdaten automatisch einem Mutterkonzern zugerechnet.
+Die SwissPRTR-Standortdatei (GeoPackage) enthält weiterhin keine UID, deshalb 0 Firmenzuordnungen
+über das Standortregister selbst. Die Emissionen (normalisiert, siehe unten) tragen ihre eigene
+UID und erreichen dadurch eine deutlich höhere, aber nicht vollständige Zuordnungsquote; 5'298
+Punktquellen-Zeilen mit gültiger UID finden keinen passenden Rechtsträger (z. B. historische
+oder nicht in GLEIF/Zefix erfasste Betriebe) und bleiben ungeklärt. Keine Emissions-/
+Vorwurfsdaten automatisch einem Mutterkonzern zugerechnet.
 
 ## 6. Befehle
 
@@ -99,13 +104,20 @@ Mehrere GB freien Speicher vorhalten; grosse Läufe werden per OS-Lock serialisi
 
 ## 7. Tests
 
-Vor Änderung: 151 bestanden. Abschliessende Gesamtsuite: **172 bestanden (11.02s)**;
-`ruff check .` bestanden. Zusätzlich wird der tatsächliche Bestand mit
-`python scripts/audit_swiss_foundation.py` offline geprüft; Ergebnis in
+Vor Änderung: 151 bestanden. Nach der Codex-Session: **172 bestanden (11.02s)**;
+`ruff check .` bestanden. Nach der SwissPRTR-Emissionsnormalisierung (Claude-Session,
+08.11.2026): **183 bestanden**, Ruff weiterhin sauber; 4 neue Tests decken die XLSX-
+Normalisierung (Pflichtspalten, Punkt-/Nicht-Punktquelle, ungültige UID-Prüfziffer) und die
+End-to-End-Verknüpfung Emission → Rechtsträger über die validierte Betriebs-UID ab.
+Zusätzlich wird der tatsächliche Bestand mit `python scripts/audit_swiss_foundation.py`
+offline geprüft (jetzt inkl. Emissionszahlen und Zuordnungsquote); Ergebnis in
 `data/processed/swiss/audit_report.json`.
 Bestandsaudit bestanden: **801'647 eindeutige Unternehmensschlüssel**, gültige importierte
-LEI-/UID-/ISIN-Prüfziffern und **156 Originaldateien** mit korrekten Hashes/Grössen geprüft.
-Updatehistorie: 5 erfolgreiche, 8 fehlgeschlagene Versuche; **0 offene laufende Versuche**.
+LEI-/UID-/ISIN-Prüfziffern, **156 Originaldateien** mit korrekten Hashes/Grössen und
+**22'860 geprüfte Emissionszeilen** (16'058 einem Rechtsträger zugeordnet, 1'476 diffuse
+Quellen ohne Betrieb) geprüft.
+Updatehistorie: 5 erfolgreiche, 10 fehlgeschlagene (weiterhin nur Wikidata-403-Versuche),
+mehrere übersprungene Versuche; **0 offene laufende Versuche**.
 Die Fehlerhistorie dokumentiert Erprobung/Abbrüche und den weiterhin blockierten Wikidata-Zugang.
 Getestet sind u. a. fünf Lizenzrechte, Rohdatenintegrität, Quarantäne, mehrsprachige
 Registeridentitäten, UID-Konflikte, ausschliessliche Kennungsfusion, Cache/403, fehlende
@@ -127,8 +139,9 @@ Die Demo-/Screeningdatenbank bleibt separat; kein `build-site` mit echten Rohdat
 
 1. Regulären Wikidata-Zugang herstellen und vorbereitete Adapter live prüfen; ein kommerziell
    offenes Referenzuniversum für Kotierungen zur Abdeckungsmessung erschliessen.
-2. SwissPRTR-XLSX normalisieren, Betreiber-UID mit belastbarer Herkunft erschliessen und
-   Standortmessung von amtlicher Feststellung/Vorwurf/Branchenrisiko trennen.
+2. Die 5'298 SwissPRTR-Punktquellen-Emissionen mit validierter UID ohne passenden Rechtsträger
+   stichprobenweise prüfen (historische/nicht erfasste Betriebe); amtliche Quelle für eine
+   Betreiber-UID im Standortregister selbst suchen (GeoPackage hat aktuell keine UID-Spalte).
 3. Konkrete Schweizer/UCITS-ETF-Metadaten und anschliessend Positionen mit vollständigen
    kommerziellen Rechten beschaffen; Anteilsklassen und Emittentenmodell ergänzen.
 

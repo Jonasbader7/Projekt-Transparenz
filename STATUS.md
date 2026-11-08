@@ -1,9 +1,8 @@
 # STATUS
 
-**Stand: 08.11.2026 · lokales Schweizer Rohdatenfundament umgesetzt, Export-Wiederverwendung
-ergänzt (D-031).** Die bestehende Website bleibt eine fiktive Demo. Echte Daten wurden
-ausschliesslich lokal importiert; nichts veröffentlicht oder gepusht.
-Übergabe: `docs/CODEX_TO_CLAUDE_HANDOFF.md`.
+**Stand: 08.11.2026 · SwissPRTR-Emissionen 2007–2024 normalisiert (D-032).** Die bestehende
+Website bleibt eine fiktive Demo. Echte Daten wurden ausschliesslich lokal importiert; nichts
+veröffentlicht oder gepusht. Übergabe: `docs/CODEX_TO_CLAUDE_HANDOFF.md`.
 
 ## Tatsächlicher Datenbestand
 
@@ -13,8 +12,16 @@ ausschliesslich lokal importiert; nichts veröffentlicht oder gepusht.
 | GLEIF CH | 28'495 Originaldatensätze = 25'121 Rechtsträger + 3'254 Fondsrechtsträger + 118 Statusausschlüsse + 2 ungültige LEIs |
 | Zefix/LINDAS | 796'690 Originaleinheiten, 796'684 validiert; sechs Einheiten in Quarantäne |
 | Bestätigte Wertpapiere / ETF-Anteilsklassen mit ISIN / Fondspositionen | 0 / 0 / 0 |
-| SwissPRTR | 247 Standorte, keine sichere Firmenzuordnung; Original-Emissions-XLSX 2007–2024 archiviert |
+| SwissPRTR-Standorte | 247, weiterhin keine sichere Firmenzuordnung (Standortregister ohne UID-Feld) |
+| SwissPRTR-Emissionen 2007–2024 | 22'860 Zeilen aus dem Original-XLSX normalisiert: 16'058 Punktquellen mit validierter Betriebs-UID eindeutig einem Rechtsträger zugeordnet, 5'298 Punktquellen mit validierter UID ohne passenden Rechtsträger, 28 Punktquellen ohne verwertbare UID, 1'476 Nicht-Punktquellen (diffuse Quellen wie Verkehr/Haushalte) ausdrücklich ohne Betrieb/Zuordnung |
 | Prüflisten | 13'189 mögliche Namensdubletten-Gruppen; 10 Kennungskonflikt-Gruppen; 776'526 Einheiten ohne LEI; insgesamt 8 Quarantäneeinträge |
+
+Emissionen sind amtlich gemeldete Jahreswerte (Schadstoff/Abfall je Standort und Jahr), kein
+automatischer Nachweis eines Rechtsverstosses und keine Feststellung von Fehlverhalten. Die
+Zuordnung zu einem Rechtsträger läuft ausschliesslich über die im XLSX selbst gemeldete,
+prüfzifferngeprüfte Betriebs-UID – nie über Firmennamen und nicht über das (UID-lose)
+Standortregister. Ungeklärte Zeilen bleiben explizit `unresolved` bzw.
+`diffuse_source_no_facility`.
 
 Registereinheiten umfassen verschiedene Rechtsformen; die Zahl bezeichnet nicht ausschliesslich
 operative Aktiengesellschaften. GLEIF FUND ist kein Nachweis für einen börsengehandelten ETF.
@@ -54,16 +61,21 @@ OpenSanctions sowie nicht konkret freigegebene Wirkungsdaten werden nicht produk
 Details: `docs/DATA_SOURCES.md`, `src/transparenz/config/source_reviews.json`.
 Die Lizenzsperre prüft jetzt auch Speicherung, Ableitungen und offizielle Lizenz-URL.
 
-Tests: **172 bestanden**, Ruff sauber; bestehende 151 Tests waren vor Änderung ebenfalls grün.
-Offline-Bestandsaudit: `scripts/audit_swiss_foundation.py` → `data/processed/swiss/audit_report.json`.
-Keine neuen Frameworks und keine Änderung am Webdesign.
+Tests: **183 bestanden** (179 bereits vorhanden, davor im STATUS veraltet mit 172 beziffert;
+4 neue zu SwissPRTR-Emissionen in dieser Session), Ruff sauber. Exportschemaversion auf 2
+erhöht (neues Feld `emissions`), bestehende Generationen werden deshalb automatisch neu aufgebaut.
+Offline-Bestandsaudit: `scripts/audit_swiss_foundation.py` → `data/processed/swiss/audit_report.json`
+(jetzt inkl. Emissionszahlen, UID-Prüfziffern und Zuordnungsquote). Keine neuen Frameworks
+(XLSX-Lesung mit stdlib `zipfile`/`xml.etree`, wie schon beim GeoPackage) und keine Änderung
+am Webdesign.
 
 ## Nächste drei Aufgaben
 
 1. Regulären Wikidata-Zugang herstellen und die vorbereiteten Abfragen/Adapter live prüfen;
    keine Umgehung des HTTP 403. Eine freigegebene Referenzliste für Schweizer Kotierungen finden.
-2. SwissPRTR-XLSX fachlich normalisieren und Betreiber-UIDs mit Herkunft erschliessen;
-   keine Zuordnung über ähnliche Namen oder ungeprüfte Mutterbeziehungen.
+2. Die 5'298 Punktquellen-Emissionen mit validierter UID ohne passenden Rechtsträger
+   stichprobenweise prüfen (z. B. historische/ausländische Betriebe); SwissPRTR-Standorte
+   weiterhin ohne sichere Betreiber-UID klären, falls eine amtliche Quelle dafür auftaucht.
 3. Einen konkreten Schweizer/UCITS-ETF-Datensatz inkl. Redistribution freigeben und ISIN,
    Anteilsklasse, Domizil, Kotierung und Fondspositionen sauber modellieren.
 

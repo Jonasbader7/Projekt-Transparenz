@@ -2,6 +2,29 @@
 
 Neueste Einträge oben.
 
+## 08.11.2026 – Claude: SwissPRTR-Emissionen 2007–2024 normalisiert
+
+- Auftrag: das bereits archivierte Original-XLSX tatsächlich in die bestehende Importarchitektur
+  normalisieren (nicht nur archiviert lassen). Gelesen mit Stdlib (`zipfile`/`xml.etree`), kein
+  neues Framework; dieselbe No-Dependency-Logik wie beim GeoPackage-Adapter.
+- Neue Funktionen `_xlsx_header_and_rows`/`_swissprtr_emissions` in
+  `src/transparenz/ingestion/external.py`; neuer `emissions`-Export-Bucket mit Verknüpfung in
+  `src/transparenz/services/swiss_foundation.py`. `EXPORT_SCHEMA_VERSION` 1 → 2.
+- Verknüpfung zu Rechtsträgern ausschliesslich über die im XLSX gemeldete, prüfzifferngeprüfte
+  Betriebs-UID (nie über den Namen); das Standortregister selbst hat keine UID und bleibt wie
+  bisher ohne Firmenzuordnung.
+- Tatsächlicher Lauf (`swiss-update --source swissprtr`, danach vollständiger Re-Export):
+  22'860 Emissionszeilen, davon 16'058 Punktquellen einem Rechtsträger zugeordnet, 5'298
+  Punktquellen mit gültiger UID ohne passenden Rechtsträger, 28 ohne verwertbare UID, 1'476
+  Nicht-Punktquellen ausdrücklich ohne Betrieb/Zuordnung. Emissionen sind kein Nachweis eines
+  Rechtsverstosses (eigene `evidence_category`, Hinweis im Qualitätsbericht).
+- 4 neue Tests (Pflichtspalten, Punkt-/Nicht-Punktquelle, ungültige UID-Prüfziffer, End-to-End-
+  Verknüpfung über `export_foundation`); Gesamtsuite **183 bestanden**, Ruff sauber.
+  `scripts/audit_swiss_foundation.py` um Emissionsprüfungen (Prüfziffern, Jahr, Zuordnungsquote)
+  erweitert und erfolgreich gegen den tatsächlichen Bestand ausgeführt.
+- STATUS.md, docs/DECISIONS.md (D-032) und docs/CODEX_TO_CLAUDE_HANDOFF.md aktualisiert.
+  Kein Push, keine kostenpflichtigen Dienste; nur lokaler Commit.
+
 ## 08.11.2026 – Nachbesserung nach PowerShell-Standardlauf
 
 - Der gemeldete 403 war die bekannte Wikidata-Zugangssperre; die übrigen Quellen waren aktuell.

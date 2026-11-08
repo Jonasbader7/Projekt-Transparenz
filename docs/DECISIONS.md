@@ -2,6 +2,41 @@
 
 Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst innerhalb einer Session.
 
+## 08.11.2026 – SwissPRTR-Emissionen normalisiert (Claude, Auftrag Jonas)
+
+### D-032 Emissions-XLSX mit stdlib gelesen, Verknüpfung nur über die eigene Betriebs-UID
+- **Entscheid (Auftrag Jonas):** Das bereits archivierte Original-XLSX (2007–2024) tatsächlich
+  normalisieren statt nur zu archivieren. Standort-ID, Berichtsjahr, Schadstoff/Schadstoffgruppe,
+  CAS, Menge, Einheit und Umweltmedium werden je Zeile erfasst, soweit vorhanden.
+- **Lesung ohne neues Framework:** OOXML (ZIP + XML) wird mit `zipfile`/`xml.etree` (Stdlib)
+  gelesen, nicht mit `openpyxl`/`pandas.read_excel` (nicht installiert, hätte eine neue
+  Abhängigkeit erfordert) – dieselbe Logik wie beim bestehenden GeoPackage-Adapter (SQLite-
+  Stdlib statt GIS-Framework). Das Datenblatt wird über seinen Namen («Daten…») gefunden, die
+  Spalten über ihre englischen Kopfzeilen, nicht über feste Spaltenbuchstaben.
+- **Verknüpfung ausschliesslich über die im XLSX gemeldete, prüfzifferngeprüfte Betriebs-UID**
+  (Spalte «UID of facility»), nie über den Betriebs-/Firmennamen. Das SwissPRTR-Standortregister
+  (GeoPackage) selbst hat keine UID-Spalte und bleibt wie bisher ohne Firmenzuordnung; die
+  Emissionszeilen tragen ihre Zuordnung direkt und sind davon unabhängig.
+  Ergebnis: 22'860 Zeilen, 16'058 Punktquellen eindeutig zugeordnet, 5'298 Punktquellen mit
+  gültiger UID ohne passenden Rechtsträger (ausdrücklich `unresolved`), 28 Punktquellen ohne
+  verwertbare UID, 1'476 Nicht-Punktquellen (diffuse Quellen wie Verkehr/Haushalte) ausdrücklich
+  ohne Betrieb (`diffuse_source_no_facility`). Ungültige UID-Prüfziffern verwerfen nicht die
+  ganze Zeile (Mengenangabe bleibt erhalten), sondern lassen nur die Zuordnung offen.
+- **Emissionen sind kein Nachweis eines Rechtsverstosses:** `evidence_category:
+  "emission_register_not_violation"`, zusätzlicher Hinweis im Qualitätsbericht
+  (`coverage_notes`). Eine amtlich gemeldete Jahresmenge ist keine Feststellung von
+  Fehlverhalten und kein Gerichtsurteil (vgl. D-016/D-017).
+- **Exportschema:** `EXPORT_SCHEMA_VERSION` 1 → 2 (neues Feld `emissions`), damit die
+  bestehende Exportgeneration automatisch neu aufgebaut wird statt stillschweigend veraltete
+  Daten weiterzuverwenden.
+- **Alternativen:** `openpyxl`/`pandas.read_excel` installieren (abgelehnt: neue Abhängigkeit,
+  CLAUDE.md verlangt «keine neuen Frameworks», Stdlib reicht); Zuordnung zusätzlich über die
+  Standort-ID aus dem GeoPackage versuchen (abgelehnt: Standortregister ist nur ein
+  Jahresschnappschuss 2024 ohne UID, die XLSX-eigene UID ist die belastbarere, jahresunabhängige
+  Kennung); fehlende/ungültige UID der ganzen Zeile zur Quarantäne hinzufügen (abgelehnt: das ist
+  kein Identitätskonflikt wie bei GLEIF/Zefix, sondern nur eine offene Verknüpfung einer bereits
+  gültigen Emissionsmeldung).
+
 ## 08.11.2026 – Schweizer Rohdatenfundament (Auftrag an Codex)
 
 ### D-031 Standardlauf bei bekannter Sperre und unveränderten Daten verkürzen

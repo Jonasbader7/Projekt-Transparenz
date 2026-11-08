@@ -76,7 +76,25 @@ def main():
     assert len(securities) == counts["securities_confirmed"]
     assert all(is_valid_isin(s["isin"]) for s in securities)
     assert counts["fund_holdings"] == 0
-    assert len(list(array_items(folder / "facilities.json"))) == counts["facilities"]
+    facilities = list(array_items(folder / "facilities.json"))
+    assert len(facilities) == counts["facilities"]
+    emissions = list(array_items(folder / "emissions.json"))
+    assert len(emissions) == counts["emissions"]
+    matched = diffuse = 0
+    for row in emissions:
+        assert row.get("uid_facility") is None or normalize_uid(row["uid_facility"]) == row[
+            "uid_facility"]
+        assert 2000 <= row["year"] <= 2100
+        assert row.get("value") is None or isinstance(row["value"], int | float)
+        if row["company_key"] is not None:
+            assert row["company_key"] in seen, row["company_key"]
+            assert row["mapping_status"] == "exact_uid_match"
+            matched += 1
+        if row["mapping_status"] == "diffuse_source_no_facility":
+            assert row["facility_id"] is None
+            diffuse += 1
+    assert matched == counts["emissions_company_matched"]
+    assert diffuse == counts["emissions_diffuse_source"]
     originals = 0
     for key, report in quality["sources"].items():
         assert not report["license_block_reasons"], key
@@ -95,7 +113,8 @@ def main():
         active = conn.execute("SELECT source_key, record_count FROM dataset_versions "
                               "WHERE status='active'").fetchall()
     result = {"status": "passed", "counts": counts, "originals_hash_verified": originals,
-              "unique_company_keys": len(seen), "update_runs_by_status": runs,
+              "unique_company_keys": len(seen), "emissions_checked": len(emissions),
+              "update_runs_by_status": runs,
               "active_versions_record_counts": dict(active),
               "note": "Historical failures are retained; Wikidata 403 remains unresolved."}
     atomic_json(base / "audit_report.json", result)

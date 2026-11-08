@@ -23,11 +23,12 @@ from transparenz.ingestion.external import atomic_json, atomic_write, encoded, n
 from transparenz.services.context import AppContext, create_context
 
 log = logging.getLogger(__name__)
-EXPORT_SCHEMA_VERSION = 1  # Increase when parsing/merging changes exported data semantics.
+EXPORT_SCHEMA_VERSION = 2  # Increase when parsing/merging changes exported data semantics.
 EXPORT_FILES = (
     "companies", "identified_companies", "securities", "security_candidates", "funds",
-    "facilities", "possible_duplicates", "identifier_conflicts", "companies_without_lei",
-    "unresolved_relationships", "excluded_records", "quarantined_identifiers",
+    "facilities", "emissions", "possible_duplicates", "identifier_conflicts",
+    "companies_without_lei", "unresolved_relationships", "excluded_records",
+    "quarantined_identifiers",
 )
 
 
@@ -150,6 +151,7 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
     print("Export wird aus aktiven Datenständen aufgebaut; das kann einige Minuten dauern.",
           flush=True)
     attributes, funds, facilities, unresolved, excluded, candidates = [], [], [], [], [], []
+    emissions = []
     quarantined = []
     source_conflicts = []
     source_reports = {}
@@ -169,6 +171,7 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
             attributes.extend(extra.get("company_attributes", []))
             funds.extend(extra.get("funds", []))
             facilities.extend(extra.get("facilities", []))
+            emissions.extend(extra.get("emissions", []))
             unresolved.extend(extra.get("unresolved_relationships", []))
             excluded.extend(extra.get("excluded", []))
             candidates.extend(extra.get("security_candidates", []))
@@ -182,6 +185,7 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
                 fetched_at=version.fetched_at.isoformat(), coverage=parsed.coverage,
                 companies=len(parsed.records["companies"]),
                 funds=len(extra.get("funds", [])), facilities=len(extra.get("facilities", [])),
+                emissions=len(extra.get("emissions", [])),
                 quarantined_identifiers=len(extra.get("quarantined_identifiers", [])),
                 warnings=[str(x) for x in parsed.warnings])
     companies, conflicts, duplicates = resolve_companies(attributes)
@@ -199,6 +203,12 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
         if len(uids) == 1 and len(matches) == 1:
             facility["company_key"] = next(iter(matches))
             facility["mapping_status"] = "exact_uid_operator_only"
+    for emission in emissions:
+        uid = emission.get("uid_facility")
+        matches = by_uid.get(uid, []) if uid else []
+        if len(matches) == 1:
+            emission["company_key"] = matches[0]
+            emission["mapping_status"] = "exact_uid_match"
     no_lei = [c for c in companies if not c["lei"]]
     # No unreviewed company-level Wikidata ISIN becomes a confirmed equity mapping.
     securities: list[dict] = []
@@ -213,6 +223,10 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
                    "funds_with_isin": sum(bool(f.get("isin")) for f in funds),
                    "fund_holdings": 0, "facilities": len(facilities),
                    "facilities_exact_uid_matched": sum(bool(f["company_key"]) for f in facilities),
+                   "emissions": len(emissions),
+                   "emissions_company_matched": sum(bool(e["company_key"]) for e in emissions),
+                   "emissions_diffuse_source": sum(
+                       e["mapping_status"] == "diffuse_source_no_facility" for e in emissions),
                    "possible_duplicate_groups": len(duplicates),
                    "identifier_conflict_groups": len(conflicts),
                    "companies_without_lei": len(no_lei),
@@ -228,6 +242,10 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
             "Kein vollständiges Schweizer Aktien-/ETF-Universum; keine geprüfte SIX-Abdeckung.",
             "Standorte: nur eindeutige UID zum Betreiber; keine Mutterzurechnung.",
             "Standortemissionen, Vorwürfe, amtliche Feststellungen und Branchenrisiken getrennt.",
+            "Emissionen sind amtlich gemeldete Jahreswerte, kein Nachweis eines "
+            "Rechtsverstosses und keine Feststellung von Fehlverhalten.",
+            "Nicht-Punktquellen (z. B. Verkehr, Haushalte) haben keinen Betrieb/UID und "
+            "bleiben ohne Unternehmenszuordnung.",
             "Kein negativer Befund bedeutet hier keine Nachhaltigkeitsaussage.",
             "Zefix: Abfrageseiten zeitversetzt, kein atomarer Gesamtsnapshot."]}
     output = ctx.settings.processed_dir / "swiss"
@@ -240,7 +258,7 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
     files = {"companies": companies, "identified_companies": [
         identity_summary(c) for c in companies if c["identity_status"] == "identified"],
         "securities": securities, "security_candidates": candidates,
-        "funds": funds, "facilities": facilities,
+        "funds": funds, "facilities": facilities, "emissions": emissions,
         "possible_duplicates": duplicates, "identifier_conflicts": conflicts,
         "companies_without_lei": [identity_summary(c) for c in no_lei],
         "unresolved_relationships": unresolved,
