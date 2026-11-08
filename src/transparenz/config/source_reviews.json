@@ -85,6 +85,90 @@
       "redistribution": "unclear",
       "attribution": "BHRRC/SVVK/Urgewald/WBA jeweils separat prüfen.",
       "reason": "Kein konkreter maschinenlesbarer Bestand mit nachgewiesenen Rechten und sicheren Schweizer Firmenkennungen freigegeben. Nicht als lizenzrechtlich geprüft darstellen."
+    },
+    {
+      "key": "nasdaq_symbol_directory",
+      "status": "blocked",
+      "terms_url": "https://nasdaqtrader.com/Trader.aspx?id=CopyDisclaimMain",
+      "license_url": null,
+      "commercial_internal_processing": "not_activated",
+      "storage": "not_activated",
+      "derivatives": "not_activated",
+      "redistribution": "not_activated",
+      "attribution": "Dataset-specific attribution required before activation.",
+      "reason": "Personal non-commercial use only without written permission."
+    },
+    {
+      "key": "tickerinside_identifiers",
+      "status": "blocked_upstream_rights",
+      "terms_url": "https://tickerinside.com/legal/",
+      "license_url": null,
+      "commercial_internal_processing": "not_activated",
+      "storage": "not_activated",
+      "derivatives": "not_activated",
+      "redistribution": "not_activated",
+      "attribution": "Dataset-specific attribution required before activation.",
+      "reason": "Own CC BY contributions do not clear upstream rights; exchange directory derives from NasdaqTrader."
+    },
+    {
+      "key": "esma_firds",
+      "status": "blocked_pending_dataset_specific_rights",
+      "terms_url": "https://www.esma.europa.eu/about-esma/legal-notice-and-data-protection",
+      "license_url": null,
+      "commercial_internal_processing": "not_activated",
+      "storage": "not_activated",
+      "derivatives": "not_activated",
+      "redistribution": "not_activated",
+      "attribution": "Dataset-specific attribution required before activation.",
+      "reason": "Website/Library reuse permission is not a verified grant for all venue-supplied FIRDS data."
+    },
+    {
+      "key": "fca_firds",
+      "status": "blocked_pending_dataset_specific_rights",
+      "terms_url": "https://www.fca.org.uk/legal",
+      "license_url": null,
+      "commercial_internal_processing": "not_activated",
+      "storage": "not_activated",
+      "derivatives": "not_activated",
+      "redistribution": "not_activated",
+      "attribution": "Dataset-specific attribution required before activation.",
+      "reason": "OGL for selected FCA-owned numerical data does not clear other or third-party instrument data."
+    },
+    {
+      "key": "openfigi_master_data",
+      "status": "blocked_pending_dataset_specific_rights",
+      "terms_url": "https://www.openfigi.com/docs/terms-of-service",
+      "license_url": null,
+      "commercial_internal_processing": "not_activated",
+      "storage": "not_activated",
+      "derivatives": "not_activated",
+      "redistribution": "not_activated",
+      "attribution": "Dataset-specific attribution required before activation.",
+      "reason": "FIGI identifier public-domain grant does not verify a global security-description master licence."
+    },
+    {
+      "key": "cvm_fund_register",
+      "status": "candidate_not_imported",
+      "terms_url": "https://dados.cvm.gov.br/dataset/fi-cad",
+      "license_url": null,
+      "commercial_internal_processing": "not_activated",
+      "storage": "not_activated",
+      "derivatives": "not_activated",
+      "redistribution": "not_activated",
+      "attribution": "Dataset-specific attribution required before activation.",
+      "reason": "ODbL stated on official dataset; review share-alike and class/listing mapping before activation."
+    },
+    {
+      "key": "fsma_instruments",
+      "status": "candidate_not_imported",
+      "terms_url": "https://www.fsma.be/en/disclaimer-copyright",
+      "license_url": null,
+      "commercial_internal_processing": "not_activated",
+      "storage": "not_activated",
+      "derivatives": "not_activated",
+      "redistribution": "not_activated",
+      "attribution": "Dataset-specific attribution required before activation.",
+      "reason": "Own website information CC BY 4.0; select specific instrument resource before activation."
     }
   ]
 }

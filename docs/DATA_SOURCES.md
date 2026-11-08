@@ -5,6 +5,48 @@ getrennt. `sources.toml` bleibt Demo + deaktivierte LEI-Abfrageliste; produktive
 Registerimporte stehen in `swiss_sources.toml`. Grundsatz: nur nachgewiesene kommerzielle
 Rechte; öffentliche Abrufbarkeit genügt nicht. Der neue Auftrag erlaubt diese lokalen
 kostenlosen Downloads ausdrücklich. Frühere Einzelrückfragen sind dafür aufgehoben.
+Der weltweite Aktien-/ETF-Auftrag startet zusätzlich separat mit `market_sources.toml`.
+
+## Aktien-/Fonds-Katalog: SEC-Freigaben (08.11.2026)
+
+| Quelle | Verarbeitung kommerziell | Speichern | Ableiten | Weitergeben | Tatsächlicher Import |
+|---|---|---|---|---|---|
+| `sec_exchange_tickers` | ja | ja | ja | ja | 10'419 Ticker/CIK/Börsen-Zuordnungen, Instrumenttyp offen |
+| `sec_fund_classes` | ja | ja | ja | ja | 28'647 Serien-/Klassen-/Ticker-Zuordnungen, nicht ausschliesslich ETFs |
+| `sec_ncen` | ja | ja | ja | ja | 45'456 Fonds-/Klassenbeobachtungen, Quartale 2025Q4–2026Q3 |
+
+Grundlage: [SEC Website Dissemination](https://www.sec.gov/about/privacy-information),
+öffentliche Informationen dürfen kopiert und weiterverteilt werden. Quellenangabe wird
+erbeten und hier mitgeführt; keine Billigung durch die SEC, keine Übernahme ihrer Marken.
+Kein CC0-Schild und keine pauschale Freigabe von Drittanbieter-Websites. Eigene Auswahl und
+Normalisierung der öffentlichen Register-/Meldedaten unter dieser Freigabe; Rechtefelder sind
+die dokumentierte Quellenprüfung, keine individuelle juristische Zusicherung.
+
+Die [offizielle EDGAR-Zugangsdokumentation](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data)
+benennt beide Tickerdateien und warnt vor ungesicherter Genauigkeit/Abdeckung. 1.1 Sekunden
+Mindestabstand pro Anfrage; Kontakt im User-Agent ausschliesslich aus lokalem
+`TRANSPARENZ_SEC_CONTACT`, vom Nutzer ausdrücklich bereitgestellt. Keine Adresse in Git
+oder Daten-Sidecars. HTTP 403 bleibt ein Fehler, keine Sperrumgehung.
+
+[N-CEN-Datenseite und Quartalsarchive](https://www.sec.gov/data-research/sec-markets-data/form-n-cen-data-sets)
+und [Readme](https://www.sec.gov/file/ncen_readme): Jahresmeldungen, as-filed, Berichtigungen
+möglich; laut SEC fehlen Meldungen nach Schema 3.1 im Bulkbestand. `IS_ETF` gilt für die
+Fondsserie; nur bei genau einer gemeldeten Klasse wird diese einzelne Klasse historisch als
+ETF belegt. Mehrklassenserien offen. Keine Aussage heutiger Handelbarkeit oder Weltabdeckung.
+Originale mit Hash-/Lizenzmetadaten lokal archiviert; sieben Dateien im Offline-Audit geprüft.
+Bestand und Bedienung: [GLOBAL_MARKET_CATALOG.md](GLOBAL_MARKET_CATALOG.md).
+
+Weitere geprüfte Kandidaten, **keine produktiven Imports**:
+
+| Kandidat | Ergebnis | Offizielle Grundlage |
+|---|---|---|
+| NasdaqTrader Symbol Directory | persönliche, nicht kommerzielle Verwendung ohne separate Erlaubnis; keine kommerzielle Importfreigabe | [Copyright](https://nasdaqtrader.com/Trader.aspx?id=CopyDisclaimMain) |
+| TickerInside identifiers / Holdings | CC BY für eigene Beiträge ist keine Freigabe der Upstream-Daten; NasdaqTrader als Börsenquelle, deshalb kein pauschaler Katalogimport | [Legal](https://tickerinside.com/legal/), [API-Herkunft](https://tickerinside.com/api/) |
+| ESMA FIRDS | konkrete Freigabe der Venue-/Drittanbieter-Instrumentdaten noch offen; allgemeine Website-/Library-Erlaubnis nicht pauschal übertragen | [ESMA Legal Notice](https://www.esma.europa.eu/about-esma/legal-notice-and-data-protection) |
+| FCA FIRDS | OGL gilt nur für konkrete FCA-eigene numerische Daten; andere und Drittanbieter-Daten nicht pauschal frei | [FCA Legal](https://www.fca.org.uk/legal) |
+| OpenFIGI | FIGI-Identifier selbst offen; keine verifizierte Vollfreigabe eines weltweiten Beschreibungs-/Stammdatenbestands | [Terms](https://www.openfigi.com/docs/terms-of-service) |
+| CVM Brasilien Fondsregister | Datensatz nennt ODbL; Share-Alike, passende Fonds-/Klassenfelder und fehlender Listing-Nachweis vor Import klären | [amtlicher Datensatz](https://dados.cvm.gov.br/dataset/fi-cad) |
+| FSMA Belgien | eigene Website-Informationen CC BY 4.0, Attribution und Auflagen bei Weiterverkauf; passende Instrumentdatei noch nicht ausgewählt | [FSMA Copyright](https://www.fsma.be/en/disclaimer-copyright) |
 
 ## Schweizer Fundament: aktuelle Freigaben (geprüft 08.11.2026)
 
@@ -13,7 +55,7 @@ kostenlosen Downloads ausdrücklich. Frühere Einzelrückfragen sind dafür aufg
 | `gleif_ch` – LEI-Referenzdaten CC0 | ja | ja | ja | ja | freiwillig; keine Billigung suggerieren | CH-Filter vollständig abgerufen; 25'121 Rechtsträger, 3'254 Fondsrechtsträger; 118 Statusausschlüsse, 2 ungültige LEIs separat |
 | `zefix_lindas` – terms_open | ja | ja | ja | ja | empfohlen; wird mitgeführt | 796'684 gültige Registereinheiten; Mehrsprachigkeit als Namensvarianten; Konflikte/ungültige UID separat |
 | `wikidata_ch` – strukturierte Daten CC0 | ja | ja | ja | ja | freiwillig | **kein Import: HTTP 403**; im Standardlauf deaktiviert, explizit mit `--source wikidata_ch` prüfbar |
-| `swissprtr` – terms_by | ja | ja | ja | ja | **BAFU, Datensatztitel und Link verpflichtend** | 247 Standorte aus GeoPackage; Original-XLSX 2007–2024 archiviert, noch nicht normalisiert |
+| `swissprtr` – terms_by | ja | ja | ja | ja | **BAFU, Datensatztitel und Link verpflichtend** | 247 Standorte; 22'860 Emissionszeilen 2007–2024 normalisiert (D-032) |
 
 Offizielle Nachweise und Geltungsbereiche:
 

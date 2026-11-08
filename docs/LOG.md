@@ -2,6 +2,29 @@
 
 Neueste Einträge oben.
 
+## 08.11.2026 – Codex: lokaler Aktien-/Fonds-Katalog aus SEC-Originalen
+
+- Auftrag auf alle weltweit börsenkotierten Aktien und ETFs erweitert; nicht vollständig erfüllt.
+  Geprüfter kostenloser SEC-Teilbestand tatsächlich geladen; keine globale Vollständigkeit behauptet.
+- 10'419 SEC-Ticker-/Börsenzuordnungen, 28'647 aktuelle Fonds-Ticker-/Class-Zuordnungen und
+  45'456 N-CEN-Beobachtungen aus 2025Q4–2026Q3 aktiviert. Sieben Originaldateien mit Sidecars.
+- `market-update`, `market-search`, separate DB/Tabelle, lokale HTML-Suche/JSON und Qualitätsbericht.
+  44'085 Einträge: 4'168 ETF-Ein-Klassen-Nachweise, 212 Klassen von ETF-Mehrklassenserien offen,
+  29'284 sonstige Fondsklassen, zwei Identitätskonflikte, 10'419 unklassifizierte Tickerclaims.
+- Nichtstandardisierte SEC-Serienkennung und Class-ID-Platzhalter im realen N-CEN-Bestand
+  erhalten, ohne sie als gültige Identitäten zu verwenden. Frühere fehlgeschlagene Versuche
+  bleiben im Updateprotokoll; letzte gültige Version wird geschützt.
+- SEC-Kontakt mit Zustimmung nur in ignorierter `.env`; keine Adresse in Code/Metadaten/Git.
+  NasdaqTrader, TickerInside-Upstream und FIRDS nicht produktiv freigegeben. Weitere Weltmärkte offen.
+- 200 Tests bestanden (183 + 17), Ruff sauber. Gesamtsuite im eingeschränkten Streamlit-Lauf
+  ohne Fortschritt abgebrochen. Ein späterer Lauf im OneDrive-Testordner hatte WinError 5 beim
+  atomaren Dateiersatz; abschliessend im normalen temporären Testordner 200/200 bestanden.
+  Offline-Audit bestätigt sieben Originalhashes und alle 4'168 ETF-Nachweise;
+  JS-Syntax `node --check` sauber.
+  Visuelle Prüfung im Browser durch dessen `file:`-URL-Sperre verhindert; keine Umgehung.
+- Anleitung und Ausbau: `docs/GLOBAL_MARKET_CATALOG.md`; STATUS/Quellen/Entscheide/Handoff gepflegt.
+  Keine neuen Abhängigkeiten, keine Änderung am öffentlichen Webdesign, kein Push.
+
 ## 08.11.2026 – Claude: SwissPRTR-Emissionen 2007–2024 normalisiert
 
 - Auftrag: das bereits archivierte Original-XLSX tatsächlich in die bestehende Importarchitektur

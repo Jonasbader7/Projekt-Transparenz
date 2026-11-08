@@ -49,8 +49,8 @@ class SourceConfig(BaseModel):
     name: str
     kind: DatasetKind
     publisher: str
-    fetcher: Literal["local", "http", "gleif_api", "external"]
-    format: Literal["json", "csv", "gleif_json", "external_json"]
+    fetcher: Literal["local", "http", "gleif_api", "external", "market"]
+    format: Literal["json", "csv", "gleif_json", "external_json", "market_json"]
     location: str
     interval_hours: float = Field(gt=0)
     max_age_days: int = Field(gt=0)
@@ -70,7 +70,10 @@ class SourceConfig(BaseModel):
     lei_list: str | None = None
     enabled: bool = True
     disabled_reason: str = ""
-    external_mode: Literal["gleif_ch", "zefix", "wikidata", "swissprtr"] | None = None
+    external_mode: Literal[
+        "gleif_ch", "zefix", "wikidata", "swissprtr",
+        "sec_exchange", "sec_fund_classes", "sec_ncen",
+    ] | None = None
     query_file: str | None = None
     supplementary_url: str | None = None
 
@@ -88,6 +91,11 @@ class SourceConfig(BaseModel):
             self.format != "external_json" or self.external_mode is None
         ):
             raise ValueError("external braucht external_json und external_mode")
+        if self.fetcher == "market" and (
+            self.kind != DatasetKind.MARKET or self.format != "market_json"
+            or self.external_mode not in {"sec_exchange", "sec_fund_classes", "sec_ncen"}
+        ):
+            raise ValueError("market braucht kind market, market_json und unterstützten Modus")
         return self
 
 

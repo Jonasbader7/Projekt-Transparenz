@@ -11,6 +11,7 @@ from transparenz.database.models import (
     EvidenceRow,
     FundRow,
     HoldingRow,
+    MarketRecordRow,
     RelationshipRow,
     SecurityRow,
 )
@@ -47,6 +48,15 @@ def write_dataset(session: Session, version_id: int, parsed: ParsedDataset) -> i
                 count += len(chunk)
         session.flush()
         return count
+    elif parsed.kind == DatasetKind.MARKET:
+        records = r["market"]
+        for start in range(0, len(records), 2000):
+            session.execute(insert(MarketRecordRow), [
+                {"dataset_version_id": version_id, "record_type": item.record_type,
+                 "record_key": item.record_key, "payload_json": item.model_dump_json()}
+                for item in records[start:start + 2000]])
+        session.flush()
+        return len(records)
     elif parsed.kind == DatasetKind.EVIDENCE:
         now = utcnow()
         rows.extend(

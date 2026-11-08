@@ -2,6 +2,26 @@
 
 Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst innerhalb einer Session.
 
+## 08.11.2026 – Weltweiter Aktien-/ETF-Auftrag (Codex)
+
+### D-033 SEC-Teilbestand als ausführbarer Katalog, Weltabdeckung offen
+- Nutzer bestätigt «alle weltweit börsenkotierten Aktien und ETFs» und erlaubt die lokale
+  Kontakt-E-Mail im SEC-HTTP-User-Agent. Keine Kosten, Veröffentlichung oder Push autorisiert.
+- Drei separat geprüfte SEC-Quellen über den vorhandenen DataUpdateManager; neue Beobachtungstabelle
+  in separater `markets.sqlite`. Öffentliches Demo-Screening bleibt beim vorhandenen Datensatz.
+- Ticker-/Börsenliste liefert keine sichere Wertpapiergattung. CIK identifiziert den Registranten;
+  Serien und Klassen bleiben getrennt. Keine Namen-/Tickerfusion und keine erfundenen ISINs.
+- N-CEN-ETF-Flag nur als Klassenbeleg bei genau einer gemeldeten Klasse derselben Serie/Meldung.
+  Mehrklassenserien bleiben offen; jüngster Bericht, danach jüngste Einreichung, Gleichstand offen.
+  Historischer Bericht ist kein Beweis heutiger Handelbarkeit. Vier letzte Quartale; SEC warnt
+  vor fehlenden Schema-3.1-Meldungen. Rohdaten und Konflikte bleiben nachvollziehbar.
+- Lokale HTML-Suche macht den Bestand prüfbar. Keine Weltquote ohne Referenzuniversum. Neue
+  Quellen erst nach konkreter Freigabe. NasdaqTrader ausgeschlossen; TickerInside-CC-BY deckt
+  Drittanbieterrechte nicht pauschal. FIRDS-Rechte weiter ungeklärt.
+- Alternative «alle öffentlichen Tickerlisten zusammenkopieren» verworfen: Nutzungsrechte,
+  Identitäten, Instrumenttypen und Vollständigkeit wären nicht belastbar. Bezahlten Weltfeed
+  ohne konkretes Angebot und Zustimmung beauftragen ebenfalls verworfen.
+
 ## 08.11.2026 – SwissPRTR-Emissionen normalisiert (Claude, Auftrag Jonas)
 
 ### D-032 Emissions-XLSX mit stdlib gelesen, Verknüpfung nur über die eigene Betriebs-UID

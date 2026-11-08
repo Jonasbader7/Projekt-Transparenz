@@ -52,6 +52,18 @@ Python-Monolith, Paket `transparenz` (src-Layout):
 - Enum-Werte sind ASCII-Schlüssel; deutsche Anzeigetexte nur in `entities/labels.py`.
 
 ## Integrierte Quellen
+Der Nutzerauftrag umfasst jetzt **alle weltweit börsenkotierten Aktien und ETFs**.
+Erster lokaler Teilbestand: `market-update` / `market-search`, `market_sources.toml`,
+`markets.sqlite`, `data/processed/market/`. Anleitung und offene Weltabdeckung:
+`docs/GLOBAL_MARKET_CATALOG.md` (D-033). 44'085 Quellen-/Klasseneinträge, keine Zahl
+weltweit eindeutiger Wertpapiere. 4'168 ETF-Klassen durch datierte Ein-Klassen-N-CEN-Meldung
+belegt; Mehrklassenserien bleiben auf Klassenebene offen. SEC-Ticker nicht pauschal Aktien.
+CIK ≠ Serie ≠ Anteilsklasse ≠ Listing. Keine Namens- oder Tickerfusion. Kontakt nur lokal
+`TRANSPARENZ_SEC_CONTACT` in `.env`, vom Nutzer für SEC-Anfragen autorisiert; nie committen.
+`market_records` separat vom ISIN-Screening. Keine Handelsaktivität, ISIN oder Weltquote erfinden.
+SEC hat eine Schema-3.1-Abdeckungslücke. 200 Tests, Offline-Audit der sieben Originaldateien
+und aller 4'168 ETF-Nachweise bestanden. HTML visuell noch nicht geprüft (Browser blockiert file:).
+
 Die Website nutzt weiterhin den Demokatalog. Das **lokale Schweizer Rohdatenfundament**
 läuft separat über `swiss-update`, `config/swiss_sources.toml`, dieselbe DataUpdateManager-
 Architektur und `data/processed/swiss.sqlite`. Funktionsfähige Quellen: GLEIF CH,
@@ -91,7 +103,7 @@ Temp-Pfaden kann pip an der Windows-Pfadgrenze scheitern → `-VenvPath` mit kur
 Git Bash: bei `git show <ref>:<pfad>` `MSYS_NO_PATHCONV=1` setzen.
 
 ## Grenzen
-Demooberfläche fiktiv; echte Registerdaten nur lokal. Kein vollständiger Aktien-/ETF-Bestand,
+Demooberfläche fiktiv; echte Register-/SEC-Daten nur lokal. Kein vollständiger Aktien-/ETF-Bestand,
 keine Fondspositionen und keine Firmenvorwürfe importiert. SwissPRTR-Standorte ohne sichere
 Betreiber-UID bleiben unzugeordnet; die Emissions-XLSX ist normalisiert (D-032), Verknüpfung
 nur über die eigene, prüfzifferngeprüfte Betriebs-UID, nicht über den Namen.

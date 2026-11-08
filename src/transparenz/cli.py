@@ -171,6 +171,16 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="transparenz", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="command", required=True)
+    market = sub.add_parser("market-update", help="Lokalen Aktien-/Fonds-Katalog aktualisieren")
+    market.add_argument("--source",
+                        choices=("sec_exchange_tickers", "sec_fund_classes", "sec_ncen"))
+    market.add_argument("--force", action="store_true")
+    market.add_argument("--export-only", action="store_true")
+    market.set_defaults(func=_cmd_market_update)
+    search = sub.add_parser("market-search", help="Lokalen Wertpapierkatalog durchsuchen")
+    search.add_argument("query")
+    search.add_argument("--limit", type=int, default=20)
+    search.set_defaults(func=_cmd_market_search)
     swiss = sub.add_parser("swiss-update", help="Lokales Schweizer Rohdatenfundament")
     swiss.add_argument("--source")
     swiss.add_argument("--force", action="store_true")
@@ -199,6 +209,35 @@ def build_parser() -> argparse.ArgumentParser:
     bs.add_argument("--update", action="store_true", help="vorher fällige Quellen aktualisieren")
     bs.set_defaults(func=_cmd_build_site)
     return p
+
+
+def _cmd_market_update(args: argparse.Namespace) -> int:
+    from transparenz.services.market_catalog import update_market
+
+    try:
+        _, failed = update_market(args.force, args.source, args.export_only)
+    except (RuntimeError, ValueError, KeyError, OSError) as exc:
+        print(f"Katalog-Aktualisierung: {exc}", file=sys.stderr)
+        return 1
+    return int(failed)
+
+
+def _cmd_market_search(args: argparse.Namespace) -> int:
+    import json
+
+    from transparenz.services.market_catalog import search_market
+
+    if args.limit < 1:
+        print("--limit muss mindestens 1 sein.", file=sys.stderr)
+        return 1
+    try:
+        rows = search_market(args.query, args.limit)
+    except (OSError, ValueError) as exc:
+        print(f"Katalog fehlt oder ungültig: {exc}. Zuerst market-update ausführen.",
+              file=sys.stderr)
+        return 1
+    print(json.dumps(rows, ensure_ascii=False, indent=2))
+    return 0
 
 
 def _cmd_swiss_update(args: argparse.Namespace) -> int:

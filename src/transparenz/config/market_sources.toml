@@ -1,0 +1,74 @@
+# Globaler Katalog: nur freigegebene Teilbestände. Keine Welt-Vollständigkeit behaupten.
+[defaults]
+max_attempts = 3
+backoff_seconds = 3.0
+http_timeout_seconds = 90.0
+
+[[source]]
+key = "sec_exchange_tickers"
+name = "SEC – Ticker, CIK und Börsenbezeichnung"
+publisher = "U.S. Securities and Exchange Commission"
+kind = "market"
+fetcher = "market"
+format = "market_json"
+external_mode = "sec_exchange"
+location = "https://www.sec.gov/files/company_tickers_exchange.json"
+interval_hours = 24
+max_age_days = 7
+license = "SEC public-information dissemination permission; U.S. government compilation"
+license_url = "https://www.sec.gov/about/privacy-information#dissemination"
+terms_url = "https://www.sec.gov/about/privacy-information"
+license_checked_on = 2026-11-08
+commercial_use = "ja"
+storage = "ja"
+derivatives = "ja"
+redistribution = "ja"
+attribution = "Source: U.S. Securities and Exchange Commission, company_tickers_exchange.json. Data transformed into a local catalogue. No SEC endorsement."
+is_fictional = false
+description = "US-EDGAR-Suchzuordnungen, keine garantierte vollständige Liste. Enthält andere Instrumente als Stammaktien; Börsen-/Länder-/Aktivstatus nicht aus dem Ticker ableiten."
+
+[[source]]
+key = "sec_fund_classes"
+name = "SEC – Fondsregistranten, Serien und Anteilsklassen mit Ticker"
+publisher = "U.S. Securities and Exchange Commission"
+kind = "market"
+fetcher = "market"
+format = "market_json"
+external_mode = "sec_fund_classes"
+location = "https://www.sec.gov/files/company_tickers_mf.json"
+interval_hours = 24
+max_age_days = 7
+license = "SEC public-information dissemination permission; U.S. government compilation"
+license_url = "https://www.sec.gov/about/privacy-information#dissemination"
+terms_url = "https://www.sec.gov/about/privacy-information"
+license_checked_on = 2026-11-08
+commercial_use = "ja"
+storage = "ja"
+derivatives = "ja"
+redistribution = "ja"
+attribution = "Source: U.S. Securities and Exchange Commission, company_tickers_mf.json. Data transformed into a local catalogue. No SEC endorsement."
+is_fictional = false
+description = "Anteilsklassen mit stabiler Class-ID und Serien-ID, inklusive Publikumsfonds. Weder ein ETF-Nachweis noch ein Kotierungsnachweis allein. CIK bezeichnet den Registranten, nicht jede Serie."
+
+[[source]]
+key = "sec_ncen"
+name = "SEC – Form N-CEN Fondsarten und Anteilsklassen"
+publisher = "U.S. Securities and Exchange Commission"
+kind = "market"
+fetcher = "market"
+format = "market_json"
+external_mode = "sec_ncen"
+location = "https://www.sec.gov/data-research/sec-markets-data/form-n-cen-data-sets"
+interval_hours = 168
+max_age_days = 150
+license = "SEC public-information dissemination permission; as-filed public disclosures"
+license_url = "https://www.sec.gov/about/privacy-information#dissemination"
+terms_url = "https://www.sec.gov/about/privacy-information"
+license_checked_on = 2026-11-08
+commercial_use = "ja"
+storage = "ja"
+derivatives = "ja"
+redistribution = "ja"
+attribution = "Source: U.S. Securities and Exchange Commission, Form N-CEN quarterly data sets. Data transformed; as-filed reports, no SEC endorsement. Original data available free at sec.gov."
+is_fictional = false
+description = "Vier zuletzt verfügbare Quartale, jährliche Meldungen und Berichtigungen. SEC weist auf fehlende Schema-3.1-Meldungen hin. ETF-Status auf Serienebene nicht blind auf jede Anteilsklasse übertragen. Kein Nachweis heutiger Handelbarkeit."

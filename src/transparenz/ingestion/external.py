@@ -103,6 +103,8 @@ class RawClient:
         hosts = {"gleif_ch": {"api.gleif.org"}, "zefix": {"lindas.admin.ch"},
                  "wikidata": {"query.wikidata.org"},
                  "swissprtr": {"data.geo.admin.ch", "www.bafu.admin.ch"}}
+        hosts.update({mode: {"www.sec.gov"} for mode in
+                      ("sec_exchange", "sec_fund_classes", "sec_ncen")})
         if request.url.host not in hosts[self.cfg.external_mode]:
             raise FetchError("Unerwarteter Host in Quellenlink", transient=False)
         cache_key = hashlib.sha256(str(request.url).encode()).hexdigest()

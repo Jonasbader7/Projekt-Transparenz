@@ -2,6 +2,18 @@
 
 Stand: 08.11.2026. Zuerst diese Datei und STATUS.md lesen. Keine erneute Grundrecherche nötig.
 
+## Neuer Auftrag und SEC-Katalog (D-033)
+
+Jonas möchte **alle weltweit börsenkotierten Aktien und ETFs**. Erster echter Teilbestand
+steht lokal: `market-update` und `market-search`. Zuerst `docs/GLOBAL_MARKET_CATALOG.md` lesen;
+44'085 Katalogeinträge, 4'168 durch historische Ein-Klassen-Meldung belegte ETF-Klassen,
+keine Welt-Vollständigkeit. SEC-Kontakt nur lokal autorisiert in ignorierter `.env`.
+Separate `markets.sqlite`/`market_sources.toml`; alte Schweizer Zahlen unten sind unverändert.
+200 Tests und Offline-Audit bestanden; HTML visuell durch Browser-Dateiprotokollsperre ungeprüft.
+Nicht erneut auf sechs Schweizer Rechts-/ETF-Quellen zurückstufen: weltweite Börsenabdeckung,
+weitere freigegebene Länderquellen, Aktiengattung und ISIN-/Listing-Identität sind die nächsten
+Schritte. FIRDS/Nasdaq/TickerInside-Upstream nicht pauschal freigeben; Rechteprüfung siehe Quellen.
+
 ## 1. Tatsächlich erledigt
 
 Bestehende Architektur erweitert, keine neuen Frameworks, keine Webdesignänderung.

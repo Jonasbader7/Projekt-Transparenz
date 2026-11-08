@@ -7,6 +7,10 @@ selbst beurteilen können, ob ein «nachhaltiger» Fonds zu ihren Wertvorstellun
 Rohdatenfundament aus GLEIF, Zefix/LINDAS und SwissPRTR. Keine Anlageberatung,
 keine Empfehlungen, nicht rechtlich geprüft. Details: [STATUS.md](STATUS.md).
 
+**Neu: lokaler Aktien-/Fonds-Katalog** mit SEC-Originaldaten, Suche und nachvollziehbaren
+ETF-Nachweisen. Das weltweite Universum ist noch unvollständig.
+Start und genaue Abdeckung: [Katalog-Anleitung](docs/GLOBAL_MARKET_CATALOG.md).
+
 ## Was der Prototyp heute kann
 
 1. Eine ETF-Positionsliste (CSV) importieren und validieren

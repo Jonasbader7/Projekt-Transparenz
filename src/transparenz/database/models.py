@@ -36,6 +36,19 @@ class Base(DeclarativeBase):
     pass
 
 
+class MarketRecordRow(Base):
+    """Source observations, distinct from verified ISIN-based screening securities."""
+
+    __tablename__ = "market_records"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    dataset_version_id: Mapped[int] = mapped_column(ForeignKey("dataset_versions.id"), index=True)
+    record_type: Mapped[str] = mapped_column(String(32))
+    record_key: Mapped[str] = mapped_column(String(255))
+    payload_json: Mapped[str] = mapped_column(Text)
+    __table_args__ = (Index("ix_market_version_key", "dataset_version_id", "record_type",
+                            "record_key", unique=True),)
+
+
 class Source(Base):
     """Registrierte Datenquelle (Spiegel der Konfiguration + Lizenzangaben)."""
 

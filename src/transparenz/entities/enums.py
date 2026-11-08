@@ -11,6 +11,7 @@ class DatasetKind(StrEnum):
     ENTITIES = "entities"
     EVIDENCE = "evidence"
     COVERAGE = "coverage"
+    MARKET = "market"
 
 
 class AssetClass(StrEnum):

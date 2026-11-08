@@ -25,6 +25,7 @@ from transparenz.entities.enums import (
 # Liste statt Dict: StrEnum-Werte verschiedener Aufzählungen können gleich lauten
 # («unbekannt», «nicht_anwendbar») und würden sich als Dict-Schlüssel überschreiben.
 _LABEL_ITEMS: tuple[tuple[Enum, str], ...] = (
+    (DatasetKind.MARKET, "Wertpapierkatalog und Registerbeobachtungen"),
     (AssessmentStatus.FESTGESTELLT, "Gerichtlich/behördlich festgestellt"),
     (AssessmentStatus.PRUEFUNG_AUSSTEHEND, "Entscheid gemeldet – unsere Prüfung ausstehend"),
     (AssessmentStatus.VERFAHREN_LAUFEND, "Verfahren laufend (nicht entschieden)"),

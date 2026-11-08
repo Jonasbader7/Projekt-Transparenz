@@ -1,5 +1,15 @@
 # Architektur
 
+## Separater lokaler Aktien-/Fonds-Katalog (D-033)
+
+`market-update` nutzt denselben DataUpdateManager mit `market_sources.toml`, einer separaten
+`markets.sqlite` und der additiven Tabelle `market_records`. SEC-Originale werden unverändert
+archiviert; validierte Quellenbeobachtungen trennen Registrant, Serie, Anteilsklasse und
+Ticker-/Börsenzuordnung. Sie werden nicht zu ISIN-Screening-Wertpapieren umgedeutet.
+`services/market_catalog.py` erzeugt lokale HTML-/JSON-Generationen und eine getrennte aktuelle
+Laufdiagnose. `market-search` sucht offline, exakte Ticker zuerst. Die öffentliche Website nutzt
+weiter den bisherigen Demobestand. Grenzen und Ausbau: `GLOBAL_MARKET_CATALOG.md`.
+
 Modularer Python-Monolith (keine Microservices). Paket `transparenz` im `src/`-Layout.
 
 ```text

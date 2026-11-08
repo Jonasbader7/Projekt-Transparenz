@@ -37,6 +37,10 @@ def build_adapter(
     project_root: Path,
     user_agent: str,
 ) -> SourceAdapter:
+    if config.fetcher == "market":
+        from transparenz.ingestion.markets import build_market_adapter
+
+        return build_market_adapter(config, catalog, project_root, user_agent)
     if config.fetcher == "external":
         from transparenz.ingestion.external import build_external_adapter
 
