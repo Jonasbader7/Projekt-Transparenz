@@ -2,6 +2,19 @@
 
 Neueste Einträge oben.
 
+## 08.11.2026 – Nachbesserung nach PowerShell-Standardlauf
+
+- Der gemeldete 403 war die bekannte Wikidata-Zugangssperre; die übrigen Quellen waren aktuell.
+  Wikidata nun mit sichtbarem Grund im Standardlauf deaktiviert. Explizite Einzelabfrage
+  bleibt möglich und meldet Zugangsfehler weiterhin mit Exitcode 1.
+- Unveränderte Datenversionen verwenden den fertigen Export weiter, ohne erneut Hunderttausende
+  Datensätze zu parsen und grosse Exportdateien zu schreiben. Aktuelle Diagnosen separat in
+  `latest_status.json`; historische Generationen bleiben unverändert.
+- Korrigierten Standardlauf am tatsächlichen Bestand ausgeführt: Exitcode 0,
+  801'647 Rechtseinheiten, vorhandene Exportgeneration wiederverwendet; keine Netzwerkabfrage.
+- Gezielte Regressionstests für Wiederverwendung, neue Versionen, fehlende Dateien,
+  Schemawechsel, expliziten Neuaufbau sowie Standard-/manuelle Quellenauswahl ergänzt.
+
 ## 08.11.2026 – Codex: Schweizer Rohdatenfundament
 
 - Bestehende Architektur/Doku geprüft; Starterkit unter einschlägigen Namen im Projekt und

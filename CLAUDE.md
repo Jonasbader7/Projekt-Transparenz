@@ -56,6 +56,9 @@ Die Website nutzt weiterhin den Demokatalog. Das **lokale Schweizer Rohdatenfund
 läuft separat über `swiss-update`, `config/swiss_sources.toml`, dieselbe DataUpdateManager-
 Architektur und `data/processed/swiss.sqlite`. Funktionsfähige Quellen: GLEIF CH,
 Zefix/LINDAS und SwissPRTR. Wikidata CC0 ist technisch durch HTTP 403 blockiert.
+Wikidata ist deshalb im Schweizer Standardlauf deaktiviert, explizit mit
+`--source wikidata_ch` weiter prüfbar. Unveränderte Exporte werden wiederverwendet;
+aktuelle Laufmeldungen stehen in `data/processed/swiss/latest_status.json`.
 Der Auftrag vom 08.11.2026 autorisiert kostenlose lokale Downloads nach nachgewiesener
 kommerzieller Freigabe; dafür keine erneute Einzelrückfrage. Keine kostenpflichtigen APIs,
 kein Push und keine öffentliche Datenfreigabe. Quellen und Sperren: `docs/DATA_SOURCES.md`.

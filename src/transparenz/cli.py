@@ -204,7 +204,11 @@ def build_parser() -> argparse.ArgumentParser:
 def _cmd_swiss_update(args: argparse.Namespace) -> int:
     from transparenz.services.swiss_foundation import update_foundation
 
-    _, failed = update_foundation(args.force, args.source, args.export_only)
+    try:
+        _, failed = update_foundation(args.force, args.source, args.export_only)
+    except (RuntimeError, ValueError) as exc:
+        print(f"Schweizer Aktualisierung: {exc}", file=sys.stderr)
+        return 1
     return int(failed)
 
 

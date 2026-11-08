@@ -12,6 +12,7 @@ from pathlib import Path
 
 from sqlalchemy import select
 
+from transparenz.config.catalog import SourceConfig
 from transparenz.config.licensing import license_block_reasons
 from transparenz.config.settings import CONFIG_DIR, Settings, get_settings
 from transparenz.database.models import UpdateRun
@@ -22,6 +23,68 @@ from transparenz.ingestion.external import atomic_json, atomic_write, encoded, n
 from transparenz.services.context import AppContext, create_context
 
 log = logging.getLogger(__name__)
+EXPORT_SCHEMA_VERSION = 1  # Increase when parsing/merging changes exported data semantics.
+EXPORT_FILES = (
+    "companies", "identified_companies", "securities", "security_candidates", "funds",
+    "facilities", "possible_duplicates", "identifier_conflicts", "companies_without_lei",
+    "unresolved_relationships", "excluded_records", "quarantined_identifiers",
+)
+
+
+def _source_status(cfg: SourceConfig, last: UpdateRun | None) -> dict:
+    return {
+        "license_block_reasons": license_block_reasons(cfg, datetime.now(UTC).date()),
+        "license": cfg.model_dump(mode="json"), "enabled": cfg.enabled,
+        "disabled_reason": cfg.disabled_reason,
+        "latest_update_status": last.status if last else "never_run",
+        "latest_update_message": last.message if last else None,
+        "latest_update_errors": json.loads(last.errors_json or "[]") if last else [],
+    }
+
+
+def _reuse_current_export(ctx: AppContext) -> dict | None:
+    """Reuse a complete generation only when its data versions and schema still match.
+
+    This is a freshness check, not a full raw-data audit. Immutable generations stay
+    unchanged; current operational/licensing diagnostics go to latest_status.json.
+    """
+    output = ctx.settings.processed_dir / "swiss"
+    try:
+        pointer = json.loads((output / "current.json").read_bytes())
+        generation = (output / pointer["generation"]).resolve()
+        if not generation.is_relative_to((output / "generations").resolve()):
+            return None
+        previous = json.loads((generation / "quality_report.json").read_bytes())
+        if previous.get("export_schema_version", 1) != EXPORT_SCHEMA_VERSION:
+            return None
+        if pointer["counts"] != previous["counts"]:
+            return None
+        if any(not (generation / f"{name}.json").is_file() for name in EXPORT_FILES):
+            return None
+        if set(previous["sources"]) != {cfg.key for cfg in ctx.catalog.sources}:
+            return None
+        report = {**previous, "sources": {}}
+        with ctx.session_factory() as session:
+            versions = active_versions(session)
+            if set(versions) != {k for k, s in previous["sources"].items()
+                                 if s["active_version"] is not None}:
+                return None
+            for cfg in ctx.catalog.sources:
+                old = previous["sources"][cfg.key]
+                active = versions.get(cfg.key)
+                if active is not None and (old["active_version"] != active.id
+                                           or old["manifest_sha256"] != active.content_hash):
+                    return None
+                last = session.scalars(select(UpdateRun).where(UpdateRun.source_key == cfg.key)
+                                       .order_by(UpdateRun.id.desc())).first()
+                report["sources"][cfg.key] = {**old, **_source_status(cfg, last)}
+        report.update(checked_at=datetime.now(UTC).isoformat(), reused_export=True,
+                      generation=pointer["generation"], export_schema_version=EXPORT_SCHEMA_VERSION)
+        atomic_json(output / "latest_status.json", report)
+        return report
+    except (OSError, ValueError, KeyError, TypeError):
+        # A missing/incomplete old export must be regenerated from active versions.
+        return None
 
 
 def create_swiss_context(settings: Settings | None = None) -> AppContext:
@@ -75,12 +138,17 @@ def resolve_companies(attributes: list[dict]) -> tuple[list[dict], list[dict], l
     return sorted(merged.values(), key=lambda r: r["company_key"]), conflicts, duplicates
 
 
-def export_foundation(ctx: AppContext) -> dict:
+def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
     """Export only active, hash-verified versions into an immutable generation.
 
     current.json is atomically switched after all files exist. A failed source can
     coexist with its previous active snapshot and is visible in the quality report.
     """
+    if reuse_existing and (reused := _reuse_current_export(ctx)) is not None:
+        print("Daten unverändert: vorhandener Export wird weiterverwendet.", flush=True)
+        return reused
+    print("Export wird aus aktiven Datenständen aufgebaut; das kann einige Minuten dauern.",
+          flush=True)
     attributes, funds, facilities, unresolved, excluded, candidates = [], [], [], [], [], []
     quarantined = []
     source_conflicts = []
@@ -90,13 +158,7 @@ def export_foundation(ctx: AppContext) -> dict:
         for cfg in ctx.catalog.sources:
             last = session.scalars(select(UpdateRun).where(UpdateRun.source_key == cfg.key)
                                    .order_by(UpdateRun.id.desc())).first()
-            source_reports[cfg.key] = {
-                "license_block_reasons": license_block_reasons(cfg, datetime.now(UTC).date()),
-                "license": cfg.model_dump(mode="json"), "active_version": None,
-                "latest_update_status": last.status if last else "never_run",
-                "latest_update_message": last.message if last else None,
-                "latest_update_errors": json.loads(last.errors_json or "[]") if last else [],
-            }
+            source_reports[cfg.key] = {**_source_status(cfg, last), "active_version": None}
             version = versions.get(cfg.key)
             if version is None:
                 continue
@@ -141,6 +203,7 @@ def export_foundation(ctx: AppContext) -> dict:
     # No unreviewed company-level Wikidata ISIN becomes a confirmed equity mapping.
     securities: list[dict] = []
     report = {
+        "export_schema_version": EXPORT_SCHEMA_VERSION,
         "generated_at": datetime.now(UTC).isoformat(),
         "counts": {"companies_legal_entities": len(companies),
                    "identified_companies": sum(c["identity_status"] == "identified"
@@ -187,6 +250,10 @@ def export_foundation(ctx: AppContext) -> dict:
         atomic_json(generation / f"{name}.json", records)
     atomic_write(output / "current.json", encoded({"generation": f"generations/{stamp}",
                                                   "counts": report["counts"]}))
+    atomic_json(output / "latest_status.json", {
+        **report, "generation": f"generations/{stamp}", "reused_export": False,
+        "checked_at": datetime.now(UTC).isoformat(),
+    })
     return report
 
 
@@ -234,14 +301,17 @@ def _update_foundation(force: bool, source: str | None, export_only: bool) -> tu
         if not export_only:
             configs = [ctx.catalog.source(source)] if source else ctx.catalog.sources
             for cfg in configs:
-                if not cfg.enabled:
+                if not cfg.enabled and source is None:
+                    print(f"{cfg.key}: deaktiviert: "
+                          f"{cfg.disabled_reason or 'in Quellenkonfiguration deaktiviert'}",
+                          flush=True)
                     continue
                 outcome = ctx.updates.run_source(cfg.key, force=force, trigger="swiss-update")
                 print(f"{cfg.key}: {outcome.status.value}: {outcome.message}", flush=True)
                 for error in outcome.errors[:5]:
                     print(f"  {error}", flush=True)
                 failed |= outcome.status in {UpdateStatus.FEHLGESCHLAGEN, UpdateStatus.GESPERRT}
-        report = export_foundation(ctx)
+        report = export_foundation(ctx, reuse_existing=not export_only)
         print(json.dumps(report["counts"], ensure_ascii=False, indent=2))
         print(f"Exportzeiger: {ctx.settings.processed_dir / 'swiss/current.json'}")
         return report, failed

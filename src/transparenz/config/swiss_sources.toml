@@ -52,6 +52,8 @@ description = "Aktive Rechtseinheiten, ohne Adressen/Personenrollen. Extraktion 
 
 [[source]]
 key = "wikidata_ch"
+enabled = false
+disabled_reason = "HTTP 403 beim offiziellen Abfragedienst; vorerst nur explizit mit --source wikidata_ch prüfen."
 name = "Wikidata – Schweizer Unternehmen und SIX-Kandidaten"
 publisher = "Wikidata contributors"
 kind = "entities"

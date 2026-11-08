@@ -69,6 +69,7 @@ class SourceConfig(BaseModel):
     # nur fetcher = "gleif_api": Textdatei mit den abzufragenden LEIs (relativ zum Projekt)
     lei_list: str | None = None
     enabled: bool = True
+    disabled_reason: str = ""
     external_mode: Literal["gleif_ch", "zefix", "wikidata", "swissprtr"] | None = None
     query_file: str | None = None
     supplementary_url: str | None = None

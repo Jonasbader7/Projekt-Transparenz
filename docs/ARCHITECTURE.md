@@ -51,6 +51,11 @@ LEI-/UID-Treffer zusammen. `current.json` wird erst nach fertiger Exportgenerati
 Ergänzende Fonds-/Standort-/Registerattribute liegen in Manifesten und JSON-Exporten, nicht
 in unpassenden Screening-Tabellen. Stammdaten werden in Transaktionsblöcken zu 2'000 Zeilen
 geschrieben. Grosse Läufe nacheinander ausführen. Originale, Datenbank und Exporte sind ignoriert.
+Bei identischen aktiven Versions-IDs/-Hashes und passender Exportschemaversion wird eine
+vollständige Exportgeneration wiederverwendet. Nur `latest_status.json` erhält neue Lauf- und
+Lizenzmeldungen; `current.json` und Generationsdateien bleiben unverändert. `--export-only`
+erzwingt weiterhin vollständiges Parsen/Hashprüfen und Neuaufbauen. Wikidata wird nach bekanntem
+HTTP 403 standardmässig deaktiviert; explizite Einzelquellenaufrufe bleiben möglich und melden Fehler.
 
 `DataUpdateManager` (`services/update_manager.py`):
 

@@ -4,6 +4,17 @@ Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst inne
 
 ## 08.11.2026 – Schweizer Rohdatenfundament (Auftrag an Codex)
 
+### D-031 Standardlauf bei bekannter Sperre und unveränderten Daten verkürzen
+- Nach dem gemeldeten PowerShell-Lauf: Wikidata wegen reproduziertem HTTP 403 standardmässig
+  deaktivieren und den Grund anzeigen. Expliziter Aufruf `--source wikidata_ch` darf den
+  regulären Zugang weiterhin prüfen; echte Fehler bleiben sichtbar und liefern Exitcode 1.
+- Vollständige Exportgeneration bei identischen aktiven Datenversionen und gleicher
+  Exportschemaversion wiederverwenden. Aktuelle Diagnose in `latest_status.json`, keine
+  Änderung an der historischen Generation. Fehlende Dateien/neue Versionen/Schemaversion
+  lösen Neuaufbau aus. `--export-only` erzwingt den bisherigen vollständigen Neuaufbau.
+- Der schnelle Standardlauf ist keine erneute Vollintegritätsprüfung; dafür Offline-Audit
+  oder expliziten Neuaufbau verwenden. `EXPORT_SCHEMA_VERSION` bei semantischen Änderungen erhöhen.
+
 ### D-028 Schweizer Rohdaten lokal und separat vom öffentlichen Demo-Screening
 - **Entscheid (Auftrag Jonas):** kostenlose, nachweisbar kommerziell nutzbare Originaldaten
   tatsächlich laden; dafür keine erneute Einzelrückfrage. Kein Push/Publizieren und keine

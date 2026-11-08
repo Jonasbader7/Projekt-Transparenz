@@ -1,8 +1,9 @@
 # STATUS
 
-**Stand: 08.11.2026 · lokales Schweizer Rohdatenfundament umgesetzt.**
-Die bestehende Website bleibt eine fiktive Demo. Echte Daten wurden ausschliesslich lokal
-importiert; nichts veröffentlicht oder gepusht. Übergabe: `docs/CODEX_TO_CLAUDE_HANDOFF.md`.
+**Stand: 08.11.2026 · lokales Schweizer Rohdatenfundament umgesetzt, Export-Wiederverwendung
+ergänzt (D-031).** Die bestehende Website bleibt eine fiktive Demo. Echte Daten wurden
+ausschliesslich lokal importiert; nichts veröffentlicht oder gepusht.
+Übergabe: `docs/CODEX_TO_CLAUDE_HANDOFF.md`.
 
 ## Tatsächlicher Datenbestand
 
@@ -27,10 +28,16 @@ cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 ```
 
 Einzelne Quelle: `--source gleif_ch`, `--source zefix_lindas`, `--source swissprtr`.
-`--export-only` exportiert ohne Netzwerk; `--force` ignoriert das Importintervall,
+`--export-only` baut den Export vollständig ohne Netzwerk neu auf (mehrere Minuten);
+`--force` ignoriert das Importintervall,
 der 24h-HTTP-Cache bleibt wirksam. Nach Cacheablauf bedingte Requests, soweit unterstützt.
 Ein OS-Dateilock verhindert gleichzeitige Schweizer Import-/Exportläufe.
-Der Gesamtlauf meldet derzeit Exitcode 1 wegen Wikidata HTTP 403, erfolgreiche Quellen bleiben aktiv.
+Wikidata ist im Standardlauf mit sichtbarem Grund deaktiviert; manuell mit
+`--source wikidata_ch` weiterhin prüfbar (HTTP 403 bleibt ein Fehler mit Exitcode 1).
+Unveränderte Daten verwenden die fertige Exportgeneration weiter. Aktuelle Lauf- und
+Lizenzmeldungen: `data/processed/swiss/latest_status.json`. Generation und Daten bleiben dabei
+unverändert; neue Versionen, fehlende Exportdateien oder eine neue Exportschemaversion
+lösen den vollständigen Neuaufbau aus.
 
 - Originaldateien und Lizenz-Sidecars: `data/raw/external/<quelle>/objects/`.
 - Aktivierte Manifeste: `data/raw/external/manifests/<quelle>/`.

@@ -12,7 +12,7 @@ kostenlosen Downloads ausdrücklich. Frühere Einzelrückfragen sind dafür aufg
 |---|---|---|---|---|---|---|
 | `gleif_ch` – LEI-Referenzdaten CC0 | ja | ja | ja | ja | freiwillig; keine Billigung suggerieren | CH-Filter vollständig abgerufen; 25'121 Rechtsträger, 3'254 Fondsrechtsträger; 118 Statusausschlüsse, 2 ungültige LEIs separat |
 | `zefix_lindas` – terms_open | ja | ja | ja | ja | empfohlen; wird mitgeführt | 796'684 gültige Registereinheiten; Mehrsprachigkeit als Namensvarianten; Konflikte/ungültige UID separat |
-| `wikidata_ch` – strukturierte Daten CC0 | ja | ja | ja | ja | freiwillig | Adapter/Abfragen vorbereitet, **kein Import: HTTP 403** |
+| `wikidata_ch` – strukturierte Daten CC0 | ja | ja | ja | ja | freiwillig | **kein Import: HTTP 403**; im Standardlauf deaktiviert, explizit mit `--source wikidata_ch` prüfbar |
 | `swissprtr` – terms_by | ja | ja | ja | ja | **BAFU, Datensatztitel und Link verpflichtend** | 247 Standorte aus GeoPackage; Original-XLSX 2007–2024 archiviert, noch nicht normalisiert |
 
 Offizielle Nachweise und Geltungsbereiche:

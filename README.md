@@ -64,9 +64,12 @@ cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 ```
 
 Nur eine Quelle: `swiss-update --source gleif_ch` bzw. `zefix_lindas` oder `swissprtr`.
-Wikidata ist vorbereitet, liefert in dieser Umgebung aber HTTP 403; ein Gesamtlauf meldet
-deshalb Exitcode 1, während erfolgreiche Quellen gültig bleiben. `--export-only` arbeitet
-ohne Netzwerk. Grosse Läufe **nacheinander**, mit mehreren GB freiem Speicher ausführen.
+Wikidata liefert in dieser Umgebung HTTP 403 und ist deshalb im Standardlauf deaktiviert;
+ein bewusster neuer Versuch ist mit `--source wikidata_ch` möglich. Tatsächlich versuchte,
+fehlgeschlagene Updates melden weiterhin Exitcode 1. Bei unveränderten Daten wird der fertige
+Export wiederverwendet; aktuelle Laufmeldungen stehen in `data/processed/swiss/latest_status.json`.
+`--export-only` baut den Export ausdrücklich vollständig ohne Netzwerk neu auf (mehrere Minuten).
+Grosse Läufe **nacheinander**, mit mehreren GB freiem Speicher ausführen.
 Originale: `data/raw/external/`; separate Datenbank: `data/processed/swiss.sqlite`;
 Exportzeiger und Qualitätszahlen: `data/processed/swiss/current.json`.
 Die Pfade bleiben Git-ignoriert. Übergabe: [CODEX_TO_CLAUDE_HANDOFF.md](docs/CODEX_TO_CLAUDE_HANDOFF.md).

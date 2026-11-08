@@ -27,6 +27,7 @@ Aktiengesellschaften. Die Fondsanzahl ist ausdrücklich kein ETF- oder Anteilskl
 - `swissprtr`: STAC + GeoPackage, 247 Standorte zum 31.12.2024. Amtliche Asset-Checksumme
   geprüft. Zusätzlich Original-XLSX mit Emissionen 2007–2024 heruntergeladen (3'106'306 Bytes).
 - `wikidata_ch`: vorbereitet und synthetisch getestet, **nicht live funktionsfähig: HTTP 403**.
+  Im Standardlauf deaktiviert mit sichtbarem Grund, manuell über `--source wikidata_ch` prüfbar.
   Kein Hostwechsel und keine Sperrumgehung. Abfragen in `data/queries/`.
 
 ## 3. Originale und abgeleitete Daten
@@ -41,6 +42,8 @@ Aktiengesellschaften. Die Fondsanzahl ist ausdrücklich kein ETF- oder Anteilskl
 - `data/processed/swiss/current.json`: **massgeblicher Zeiger** auf fertige Exportgeneration.
   Dort `companies.json`, `identified_companies.json`, `funds.json`, `securities.json`,
   `facilities.json`, `quality_report.json` und die separaten Prüflisten.
+- `data/processed/swiss/latest_status.json`: aktuelle Lauf-/Lizenzmeldungen; das
+  `quality_report.json` einer Generation bleibt deren unveränderlicher Erstellungsstand.
 - Prüflisten: 13'189 mögliche Namensdubletten-Gruppen, 10 Kennungskonflikt-Gruppen,
   776'526 Einheiten ohne LEI, 50'242 ungeklärte Mutter-/Reporting-Exception-Hinweise,
   8 Quarantäneeinträge. Ausnahmebericht ist kein Beleg einer tatsächlichen Mutter.
@@ -85,8 +88,13 @@ cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 .venv\Scripts\python -m ruff check .
 ```
 
-Gesamtlauf derzeit Exitcode 1 wegen Wikidata, erfolgreiche Quellen bleiben gültig. `--force`
-ignoriert das Managerintervall, nicht den 24h-Rohdaten-Cache. `--export-only` benötigt kein Netz.
+Standardlauf überspringt die bekannte Wikidata-Sperre mit sichtbarem Hinweis. Der explizite
+Versuch `--source wikidata_ch` meldet bei HTTP 403 weiterhin Exitcode 1. Erfolgreiche Quellen
+bleiben gültig. Unveränderte aktive Datenversionen verwenden den fertigen Export weiter;
+keine erneute Rohdatenverarbeitung oder Kopie grosser Dateien. `--force` ignoriert das
+Managerintervall, nicht den 24h-Rohdaten-Cache. `--export-only` baut ausdrücklich vollständig
+ohne Netzwerk neu auf und kann mehrere Minuten dauern. Bei Änderungen an Parser-/Fusionssemantik
+`EXPORT_SCHEMA_VERSION` in `swiss_foundation.py` erhöhen, damit alte Exporte neu entstehen.
 Mehrere GB freien Speicher vorhalten; grosse Läufe werden per OS-Lock serialisiert.
 
 ## 7. Tests
