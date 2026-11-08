@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
 from transparenz.database.models import (
@@ -34,16 +35,18 @@ def write_dataset(session: Session, version_id: int, parsed: ParsedDataset) -> i
             for p in r["positions"]
         )
     elif parsed.kind == DatasetKind.ENTITIES:
-        rows.extend(
-            CompanyRow(dataset_version_id=version_id, **c.model_dump()) for c in r["companies"]
-        )
-        rows.extend(
-            SecurityRow(dataset_version_id=version_id, **s.model_dump()) for s in r["securities"]
-        )
-        rows.extend(
-            RelationshipRow(dataset_version_id=version_id, **x.model_dump())
-            for x in r["relationships"]
-        )
+        # Large official registers must not allocate an ORM object per company.
+        # All chunks remain in the manager's single transaction (rollback-safe).
+        count = 0
+        for table, records in ((CompanyRow, r["companies"]), (SecurityRow, r["securities"]),
+                               (RelationshipRow, r["relationships"])):
+            for start in range(0, len(records), 2000):
+                chunk = [{"dataset_version_id": version_id, **item.model_dump()}
+                         for item in records[start:start + 2000]]
+                session.execute(insert(table), chunk)
+                count += len(chunk)
+        session.flush()
+        return count
     elif parsed.kind == DatasetKind.EVIDENCE:
         now = utcnow()
         rows.extend(

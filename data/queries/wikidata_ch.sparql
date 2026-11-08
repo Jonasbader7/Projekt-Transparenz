@@ -1,0 +1,19 @@
+# CC0 structured statements; broad candidate query, no completeness claim.
+# SIX Swiss Exchange = Q12569. No inferred issuer mapping from a company-level ISIN.
+SELECT DISTINCT ?item ?itemLabel ?property ?value WHERE {
+  {
+    SELECT DISTINCT ?item WHERE {
+      { ?item wdt:P17 wd:Q39 }
+      UNION { ?item wdt:P159/wdt:P17 wd:Q39 }
+      UNION { ?item wdt:P414 wd:Q12569 }
+      ?item wdt:P31/wdt:P279* wd:Q783794 .
+    }
+  }
+  VALUES ?property {
+    wdt:P17 wdt:P159 wdt:P1278 wdt:P946 wdt:P414 wdt:P249
+    wdt:P452 wdt:P749 wdt:P31 wdt:P1454 wdt:P1059
+  }
+  ?item ?property ?value .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en,fr,it" }
+}
+ORDER BY ?item ?property ?value

@@ -238,6 +238,7 @@ def gleif_config() -> SourceConfig:
         terms_url="https://www.gleif.org/en/meta/lei-data-terms-of-use",
         license_checked_on=date(2026, 11, 7), commercial_use=CommercialUse.JA,
         redistribution=CommercialUse.JA, attribution="Quelle: GLEIF", is_fictional=False,
+        storage=CommercialUse.JA, derivatives=CommercialUse.JA,
     )
 
 

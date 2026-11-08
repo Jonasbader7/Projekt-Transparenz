@@ -37,6 +37,10 @@ def build_adapter(
     project_root: Path,
     user_agent: str,
 ) -> SourceAdapter:
+    if config.fetcher == "external":
+        from transparenz.ingestion.external import build_external_adapter
+
+        return build_external_adapter(config, catalog, project_root, user_agent)
     fetcher: Fetcher
     if config.fetcher == "local":
         path = Path(config.location)

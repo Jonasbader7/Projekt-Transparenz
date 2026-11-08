@@ -190,6 +190,14 @@ class DataUpdateManager:
             session.commit()
             try:
                 outcome = self._run(session, cfg, run, force)
+            except KeyboardInterrupt:
+                session.rollback()
+                run = session.get(UpdateRun, run.id)
+                run.status = UpdateStatus.FEHLGESCHLAGEN.value
+                run.finished_at = self._clock()
+                run.message = "Lokal abgebrochen; letzter gültiger Stand bleibt aktiv."
+                session.commit()
+                raise
             except Exception as exc:  # unerwarteter Fehler: protokollieren, alten Stand behalten
                 session.rollback()
                 log.exception("Unerwarteter Fehler beim Update von %s", key)

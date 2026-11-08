@@ -25,6 +25,28 @@ die Zuordnung passiert erst beim Screening und wird mit Methode und Vertrauen au
 
 ## Internes Austauschformat (Version 1)
 
+### Schweizer Rohdatenfundament (zusätzlich, ohne Schema-Migration)
+
+- Separate DB `data/processed/swiss.sqlite` mit bestehenden Versions-/Update-/Stammdatentabellen.
+- Manifestformat `transparenz-external/1`: Quellen-ID, Modus, Datenstichtag (nullable),
+  Abdeckungsangaben und Originaldateien mit URL, relativem Pfad, Dateigrösse und SHA-256.
+- Original-Sidecars: Abrufzeit in UTC, Format, Lizenzregister mit fünf Rechten und Prüfdatum,
+  ETag/Last-Modified. Unbekannter Datenstichtag bleibt `null`, Abrufzeit ersetzt ihn nicht.
+- `companies.json`: kanonische LEI-/UID-Identität mit unveränderten Quellenattributen,
+  Name, Namensvarianten, UID, LEI, optional Wikidata-ID, Sitz/Rechtsform und Herkunft.
+  Zefix umfasst Registereinheiten unterschiedlicher Rechtsformen, nicht nur Aktiengesellschaften.
+- `funds.json`: GLEIF-Kategorie FUND separat. Fehlende ISIN, Anbieter, Index und
+  Nachhaltigkeitsbezeichnung bleiben unbekannt. Keine erfundenen Anteilsklassen/Positionen.
+- `securities.json`: nur bestätigte Wertpapierzuordnungen (derzeit leer);
+  `security_candidates.json` für unbestätigte Wikidata-Unternehmensclaims, sofern abrufbar.
+- Separate Prüflisten: `possible_duplicates`, `identifier_conflicts`, `companies_without_lei`,
+  `quarantined_identifiers`, `unresolved_relationships`, `excluded_records`.
+- `facilities.json`: SwissPRTR-Standortattribute mit Standort-ID und Berichtsjahr; keine
+  automatische Namens- oder Mutterzuordnung. Das Original-XLSX enthält Emissionen 2007–2024,
+  wurde aber noch nicht fachlich normalisiert.
+- `quality_report.json` pro Generation: Zahlen, Lizenzen, aktive Versionen, Originaldateien,
+  Abdeckung und letzte Updatefehler. `data/processed/swiss/current.json` zeigt auf die fertige Generation.
+
 Echte Quellen werden später von eigenen Adaptern in dieses Format übersetzt.
 
 ### Positionsliste – CSV (eine Datei = ein Fonds, ein Stichtag)

@@ -1,0 +1,90 @@
+{
+  "checked_on": "2026-11-08",
+  "scope": "Ergänzende Kandidaten. Keine Downloadkonfiguration und keine produktive Freigabe.",
+  "sources": [
+    {
+      "key": "six_securities_and_etfs",
+      "status": "blocked",
+      "terms_url": "https://www.six-group.com/en/services/legal/terms-and-conditions/terms-of-use.html",
+      "license_url": null,
+      "commercial_internal_processing": "not_cleared",
+      "storage": "not_cleared",
+      "derivatives": "not_cleared",
+      "redistribution": "not_cleared",
+      "attribution": "Keine Freigabe durch blosse Quellenangabe.",
+      "reason": "Website nur persönliche Informationsnutzung; kommerzielle Weiterverwendung nicht freigegeben. Separater Datenvertrag müsste den genauen Verwendungszweck abdecken. Keine SIX-Listen heruntergeladen."
+    },
+    {
+      "key": "gleif_anna_isin_lei",
+      "status": "blocked_pending_review",
+      "terms_url": "https://www.gleif.org/en/lei-data/lei-mapping/download-isin-to-lei-relationship-files",
+      "license_url": null,
+      "commercial_internal_processing": "unclear",
+      "storage": "unclear",
+      "derivatives": "unclear",
+      "redistribution": "unclear",
+      "attribution": "Nicht freigegeben; CC0 für LEI-Referenzdaten nicht ungeprüft auf Drittanbieter-Mappings übertragen.",
+      "reason": "Separate Lizenzfrage aus D-026 bleibt offen; keine Nutzung der API-Felder oder Dateien mit ISIN-LEI-Mapping."
+    },
+    {
+      "key": "etf_provider_holdings",
+      "status": "blocked_pending_dataset_specific_rights",
+      "terms_url": null,
+      "license_url": null,
+      "commercial_internal_processing": "unclear",
+      "storage": "unclear",
+      "derivatives": "unclear",
+      "redistribution": "unclear",
+      "attribution": "Je Anbieter und konkreter Datei zu klären.",
+      "reason": "Keine konkrete offen lizenzierte, vollständige Schweizer UCITS-/ETF-Datei verifiziert. Keine Anbieterbestände geladen. Öffentlich zugänglich ist keine pauschale kommerzielle Freigabe."
+    },
+    {
+      "key": "opensanctions",
+      "status": "blocked_commercial_license_required",
+      "terms_url": "https://www.opensanctions.org/docs/bulk/updates/",
+      "license_url": "https://www.opensanctions.org/licensing/",
+      "commercial_internal_processing": "permission_required",
+      "storage": "permission_required_for_commercial_use",
+      "derivatives": "permission_required_for_commercial_use",
+      "redistribution": "permission_required_for_commercial_use",
+      "attribution": "Attribution allein ersetzt die kommerzielle Lizenz nicht.",
+      "reason": "Offizielle Downloadseite verlangt eine Datenlizenz für kommerzielle Nutzung; keine kostenpflichtige API oder Lizenz beauftragt."
+    },
+    {
+      "key": "seco_sanctions",
+      "status": "blocked_pending_rights_and_model",
+      "terms_url": "https://www.seco.admin.ch/de/suche-nach-sanktionsadressaten",
+      "license_url": null,
+      "commercial_internal_processing": "unclear",
+      "storage": "unclear",
+      "derivatives": "unclear",
+      "redistribution": "unclear",
+      "attribution": "SECO; noch keine technische Freigabe.",
+      "reason": "Offizielle XML-Gesamtliste gefunden; die eingesehene Datenseite liefert keinen hinreichend konkreten Nutzungsnachweis für alle fünf Rechte. Sanktionslistung ist kein Beweis eines Menschenrechtsverstosses; keine Namenszuordnung und keine Mutterzurechnung."
+    },
+    {
+      "key": "climate_trace",
+      "status": "blocked_pending_subset_review",
+      "terms_url": "https://climatetrace.org/terms",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_internal_processing": "conditional",
+      "storage": "conditional",
+      "derivatives": "conditional",
+      "redistribution": "conditional",
+      "attribution": "Climate TRACE, Version und Abrufdatum; Änderungen angeben. Zusätzliche Rechte externer Quellen prüfen.",
+      "reason": "CC BY 4.0 mit ausdrücklichen Drittquellen-Ausnahmen, insbesondere Eigentümerdaten. Kein pauschaler Mischdatenimport. Ein sauber abgegrenzter Schweizer Emissions-Teilbestand bleibt zu prüfen."
+    },
+    {
+      "key": "human_rights_company_allegations",
+      "status": "blocked_not_reviewed",
+      "terms_url": "https://www.business-humanrights.org/",
+      "license_url": null,
+      "commercial_internal_processing": "unclear",
+      "storage": "unclear",
+      "derivatives": "unclear",
+      "redistribution": "unclear",
+      "attribution": "BHRRC/SVVK/Urgewald/WBA jeweils separat prüfen.",
+      "reason": "Kein konkreter maschinenlesbarer Bestand mit nachgewiesenen Rechten und sicheren Schweizer Firmenkennungen freigegeben. Nicht als lizenzrechtlich geprüft darstellen."
+    }
+  ]
+}

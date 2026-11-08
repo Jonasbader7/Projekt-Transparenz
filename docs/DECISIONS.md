@@ -2,6 +2,45 @@
 
 Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst innerhalb einer Session.
 
+## 08.11.2026 – Schweizer Rohdatenfundament (Auftrag an Codex)
+
+### D-028 Schweizer Rohdaten lokal und separat vom öffentlichen Demo-Screening
+- **Entscheid (Auftrag Jonas):** kostenlose, nachweisbar kommerziell nutzbare Originaldaten
+  tatsächlich laden; dafür keine erneute Einzelrückfrage. Kein Push/Publizieren und keine
+  kostenpflichtigen APIs. Diese Freigabe ersetzt die ältere Einzel-Download-Rückfrageregel
+  für diesen Auftrag; D-027 zu konkretem US-Fonds und Sanktionsbewertung bleibt offen.
+- Derselbe DataUpdateManager, separater Katalog `swiss_sources.toml` und `swiss.sqlite`.
+  Originale in `data/raw/external/`, aktivierte Manifeste versioniert, Exporte lokal.
+  Keine Framework-/Webdesignänderung; echte Rohdaten werden nicht in die Website gerendert.
+- Lizenzsperre um Speicherung, Ableitungen und offizielle Lizenz-URL ergänzt; vier Rechte
+  plus kommerzielle Verarbeitung und Auflagen getrennt dokumentiert. Abgelaufene oder
+  unklare Freigabe verhindert den Abruf. Kandidaten ohne Rechte bleiben ohne Downloadadapter.
+
+### D-029 Identitäten und Quarantäne statt ungesicherter Fusion
+- Fusion nur über eindeutige LEI/UID. Mehrere LEIs zu einer UID oder mehrere Register-IDs
+  zu derselben UID sind Konflikte; kein willkürlicher erster Treffer. Namensähnlichkeit
+  produziert ausschliesslich Prüflisten. Mehrsprachige Namen derselben Register-ID sind Aliase.
+- Ungültige Originalprüfziffern werden mit Herkunft separiert und nie repariert/importiert.
+  Mehr als 1% Quarantäne (mindestens ein Eintrag toleriert) lehnt den Gesamtstand ab;
+  Struktur-/Hashfehler lehnen unabhängig davon ab. Auch ausgeschlossene Registrierungsstatus
+  bleiben nachvollziehbar in der Originaldatei und separater Liste erhalten.
+- GLEIF FUND separat; keine ETF-/Anteilsklassen-/Positionsbehauptung. Wikidata-ISIN am
+  Unternehmensitem wäre nur Kandidat, keine bestätigte Emittentenzuordnung.
+- Mutterlinks/Reporting Exceptions werden nicht als verifizierte Konzernbeziehungen übernommen.
+  SwissPRTR-Standorte ohne sichere UID bleiben unzugeordnet; kein Namens- oder Muttertransfer.
+
+### D-030 Originaldateien und reproduzierbare lokale Aktualisierung
+- SHA-256-adressierte Originalantworten mit Lizenz-/Download-Sidecars; Manifest verweist auf
+  diese Dateien. GLEIF Cursor-Paginierung mit Gesamtzahl-/Snapshotprüfung, Zefix Keyset-Seiten
+  über vollständige Registeridentitäten und zusätzliche Kontrollzählung; Zefix bleibt zeitversetzt.
+- Mindestens 1.1s zwischen HTTP-Anfragen, begrenzte Wiederholungen und 24h-Cache;
+  403/401 werden nicht umgangen. SwissPRTR-Asset gegen STAC-Prüfsumme geprüft.
+- Stammdaten in 2'000er Blöcken innerhalb derselben Transaktion schreiben. Fertige
+  Exportgeneration erst anschliessend per `current.json` aktivieren. OS-Lock verhindert
+  parallele grosse Läufe; JSON wird gestreamt, um zusätzliche Vollkopien im Speicher zu vermeiden.
+- Keine Vollständigkeitsbehauptung für Schweizer Firmen/Aktien/ETFs aus Quellen-Teilabdeckung.
+  Nachweisbare vollständige API-/Registerabfrage und vollständiger Markt sind verschiedene Dinge.
+
 ## 08.11.2026 – Session 2, Teil 2 (erste echte Datenquelle, parallele Session)
 
 ### D-027 Offen gelassen: US-Fonds (N-PORT) als erster echter Fonds, OFAC im Belegmodell

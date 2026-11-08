@@ -8,6 +8,7 @@ Befehle:
   screen --fund ISIN [--out DATEI] Fonds auswerten, optional Markdown-Bericht schreiben
   build-site [--out site] [--update] statische Website erzeugen (Schnappschuss)
   mapping --fund ISIN             Zuordnungsquote Wertpapier → Unternehmen messen
+  swiss-update                    Schweizer Rohdaten lokal aktualisieren (separate DB)
 """
 
 from __future__ import annotations
@@ -170,6 +171,11 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="transparenz", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="command", required=True)
+    swiss = sub.add_parser("swiss-update", help="Lokales Schweizer Rohdatenfundament")
+    swiss.add_argument("--source")
+    swiss.add_argument("--force", action="store_true")
+    swiss.add_argument("--export-only", action="store_true", help="Ohne Netzwerk neu exportieren")
+    swiss.set_defaults(func=_cmd_swiss_update)
     sub.add_parser("init-db").set_defaults(func=_cmd_init_db)
     up = sub.add_parser("update")
     up.add_argument("--source")
@@ -193,6 +199,13 @@ def build_parser() -> argparse.ArgumentParser:
     bs.add_argument("--update", action="store_true", help="vorher fällige Quellen aktualisieren")
     bs.set_defaults(func=_cmd_build_site)
     return p
+
+
+def _cmd_swiss_update(args: argparse.Namespace) -> int:
+    from transparenz.services.swiss_foundation import update_foundation
+
+    _, failed = update_foundation(args.force, args.source, args.export_only)
+    return int(failed)
 
 
 def main(argv: list[str] | None = None) -> int:

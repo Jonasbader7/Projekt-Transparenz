@@ -1,23 +1,98 @@
 # Datenquellen
 
-**Stand 07.11.2026 (Session 2).** Aktiv sind ausschliesslich fiktive Demoquellen. Die erste
-echte Quelle (GLEIF) ist angebunden und getestet, aber **deaktiviert**, bis ein echter Fonds
-LEIs liefert. Grundsatz: **nur Quellen mit ausdrücklich erlaubter kommerzieller Nutzung oder
-klar dokumentierter öffentlicher Datenfreigabe.** Öffentlich zugänglich heisst nicht
-kommerziell nutzbar.
+**Stand 08.11.2026.** Die Demooberfläche und der lokale Schweizer Rohdatenkatalog sind
+getrennt. `sources.toml` bleibt Demo + deaktivierte LEI-Abfrageliste; produktive lokale
+Registerimporte stehen in `swiss_sources.toml`. Grundsatz: nur nachgewiesene kommerzielle
+Rechte; öffentliche Abrufbarkeit genügt nicht. Der neue Auftrag erlaubt diese lokalen
+kostenlosen Downloads ausdrücklich. Frühere Einzelrückfragen sind dafür aufgehoben.
+
+## Schweizer Fundament: aktuelle Freigaben (geprüft 08.11.2026)
+
+| Quelle | Interne kommerzielle Verarbeitung | Speicherung | Ableitungen | Redistribution | Quellenangabe | Tatsächlicher Stand |
+|---|---|---|---|---|---|---|
+| `gleif_ch` – LEI-Referenzdaten CC0 | ja | ja | ja | ja | freiwillig; keine Billigung suggerieren | CH-Filter vollständig abgerufen; 25'121 Rechtsträger, 3'254 Fondsrechtsträger; 118 Statusausschlüsse, 2 ungültige LEIs separat |
+| `zefix_lindas` – terms_open | ja | ja | ja | ja | empfohlen; wird mitgeführt | 796'684 gültige Registereinheiten; Mehrsprachigkeit als Namensvarianten; Konflikte/ungültige UID separat |
+| `wikidata_ch` – strukturierte Daten CC0 | ja | ja | ja | ja | freiwillig | Adapter/Abfragen vorbereitet, **kein Import: HTTP 403** |
+| `swissprtr` – terms_by | ja | ja | ja | ja | **BAFU, Datensatztitel und Link verpflichtend** | 247 Standorte aus GeoPackage; Original-XLSX 2007–2024 archiviert, noch nicht normalisiert |
+
+Offizielle Nachweise und Geltungsbereiche:
+
+- **GLEIF:** [LEI Data Terms of Use](https://www.gleif.org/en/meta/lei-data-terms-of-use),
+  [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
+  Freigabe betrifft Level-1-/Level-2-Referenzdaten; **keine** pauschale Freigabe des ANNA-Mappings.
+  Die API verlangt für mehr als 10'000 Ergebnisse Cursor-Paginierung (`page[cursor]=*`).
+  Der Import prüft Golden-Copy-Zeitpunkt, Gesamtzahl und eindeutige LEIs über alle Seiten.
+- **Zefix:** [offizielle Linked-Data-Ressource](https://opendata.swiss/de/dataset/zefix-zentraler-firmenindex/resource/ba772d7c-171b-47bf-b958-ee87419090d6),
+  [CKAN-Originalmetadaten](https://ckan.opendata.swiss/api/3/action/package_show?id=zefix-zentraler-firmenindex),
+  [terms_open](https://opendata.swiss/terms-of-use#terms_open).
+  Wichtig: Dataset-Level `license_id=null` bedeutet hier keine fehlende Ressourcenfreigabe.
+  `rights` und `license` der Ressource nennen terms_open; die separate Metadatenressource
+  nennt terms_by. [Offizielles Nutzungsmodell](https://opendata.swiss/en/terms-of-use)
+  erlaubt kommerzielle Nutzung. Speicherung, Bearbeitung und Weitergabe werden als von der
+  offenen Nutzung umfasst eingeordnet, ohne zusätzliche Beschränkung in der Ressource.
+  Kontrollzählung derselben Abfrage: 796'690 Rechtseinheiten; sechs zurückgehaltene
+  Originaleinheiten erklären die Differenz zu 796'684. Kein atomarer Extraktionszeitpunkt,
+  kein Vollständigkeitsnachweis für sämtliche Schweizer Unternehmen oder Börsenkotierungen.
+- **Wikidata:** [Licensing](https://www.wikidata.org/wiki/Wikidata:Licensing),
+  [Datenzugriff](https://www.wikidata.org/wiki/Wikidata:Data_access),
+  [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
+  Nur strukturierte Statements; keine Wikipedia-Artikel oder sonstige lizenzierte Texte.
+  HTTP 403 wird als dauerhafter Zugangsfehler protokolliert, ohne Hostwechsel oder Umgehung.
+- **SwissPRTR:** [offizieller Datensatz](https://opendata.swiss/en/dataset/schadstofffreisetzungs-und-transferregister-der-schweiz-swissprtr),
+  [CKAN-Originalmetadaten](https://ckan.opendata.swiss/api/3/action/package_show?id=schadstofffreisetzungs-und-transferregister-der-schweiz-swissprtr),
+  [terms_by](https://opendata.swiss/terms-of-use#terms_by),
+  [BAFU-Datenpublikation](https://www.bafu.admin.ch/de/swissprtr).
+  Standort-GeoPackage wird über STAC entdeckt und gegen die amtliche SHA-256 geprüft.
+  Die Datenpublikation verlinkt das 3'106'306-Byte-XLSX mit Emissionen bis 2024;
+  2025 wird laut BAFU spätestens Ende März 2027 erwartet. Diese Emissionen sind derzeit
+  **nur archiviert**, nicht im Screening. Standortdaten enthalten keine sichere Betreiber-UID;
+  keine Firmenzuordnung allein nach dem Betriebsnamen, keine Zurechnung zu Mutterkonzernen.
+
+Das Register speichert fünf Rechte getrennt. Bei OGD sind Speicherung/Ableitung/Weitergabe
+eine dokumentierte Auslegung der offenen Nutzung, keine individuell erteilte Rechtsauskunft.
+Originaldateien samt Metadaten: `data/raw/external/<quelle>/objects/` (Git-ignoriert).
+Jede Sidecar-Datei hält offizielle URLs, Rechte, Prüfdatum, Abrufzeit, Format, Grösse und Hash
+fest. Ein unbekannter Datenstichtag wird ausdrücklich nicht durch das Downloaddatum ersetzt.
+
+## Gesperrte oder noch nicht freigegebene Kandidaten
+
+Maschinenlesbar: `src/transparenz/config/source_reviews.json`, geprüft am 08.11.2026.
+Diese Einträge besitzen **keinen produktiven Downloadadapter**.
+
+| Quelle | Status/Grund | Offizieller Nachweis |
+|---|---|---|
+| SIX-Aktien-/ETF-Listen und kommerzielle Referenzdaten | keine kommerzielle Website-Wiederverwendung freigegeben; Datenvertrag erforderlich | [SIX Terms of use](https://www.six-group.com/en/services/legal/terms-and-conditions/terms-of-use.html) |
+| GLEIF/ANNA ISIN–LEI | separate Rechte ungeklärt, D-026 bleibt bestehen | [Mapping-Seite](https://www.gleif.org/en/lei-data/lei-mapping/download-isin-to-lei-relationship-files) |
+| Anbieter-Fondspositionen | keine konkrete vollständige CH-/UCITS-Datei mit allen Rechten verifiziert | je Anbieter und Datei zu prüfen |
+| OpenSanctions | kommerzielle Datenlizenz erforderlich, keine beauftragt | [offizielle Downloadbedingungen](https://www.opensanctions.org/docs/bulk/updates/) |
+| SECO XML | offizieller maschinenlesbarer Bestand gefunden; alle fünf Nutzungsrechte noch nicht belegt; fachliche Einordnung offen | [SECO-Datenseite](https://www.seco.admin.ch/de/suche-nach-sanktionsadressaten) |
+| Climate TRACE | CC BY 4.0 mit expliziten Ausnahmen für Drittquellen/Eigentümerdaten; Schweizer Teilbestand nicht separat geklärt | [Terms](https://climatetrace.org/terms) |
+| BHRRC, SVVK, Urgewald und weitere Firmenvorwürfe | kein konkreter Datensatz mit vollständiger Prüfung und sicherem Firmenmapping freigegeben | noch nicht abschliessend geprüft |
+
+**Lücken:** derzeit 0 bestätigte Wertpapiere, 0 ETF-Anteilsklassen mit ISIN, 0 Fondspositionen.
+Ein GLEIF-Fondsrechtsträger darf nicht als börsengehandelter ETF gezählt werden. Schweizer Sitz,
+SIX-Kotierung, einzelne Aktien, Fondsmantel, Anteilsklasse und Position sind getrennte Begriffe.
+Kein aktuelles Universum zur Messung der Aktien-/ETF-Abdeckung freigegeben. Quellen ohne Belege
+für Unternehmensabdeckung erlauben keine Aussage «keine Hinweise». Länder-/Branchenrisiken
+(z. B. DOL ILAB) sind keine Unternehmensvorwürfe. Sanktionslistungen sind keine Gerichtsurteile.
+
+## Frühere Recherche vom 07.11.2026
+
+Die folgenden Einzelprüfungen bleiben als Vorarbeit erhalten. Aussagen «deaktiviert» betreffen
+den alten Demokatalog; neue lokale Schweizer Freigaben und der Auftrag oben haben Vorrang.
 
 Statuswerte: **aktiv** · **angebunden (deaktiviert)** · **geprüft, geeignet** ·
 **zu prüfen** (Lizenz/Zugang unklar) · **ausgeschlossen**
 
 ## Lizenzregister und automatische Sperre
 
-Jede Quelle in `src/transparenz/config/sources.toml` trägt ihre Lizenzangaben selbst
+Jede Quelle in `sources.toml` und `swiss_sources.toml` trägt ihre Lizenzangaben selbst
 (`license`, `license_url`, `terms_url`, `license_checked_on`, `commercial_use`,
-`redistribution`, `attribution`). Eine **echte** Quelle wird automatisch **gesperrt** (kein
+`storage`, `derivatives`, `redistribution`, `attribution`). Eine **echte** Quelle wird gesperrt (kein
 Abruf, auch kein Trockenlauf, Status «gesperrt» im Update-Protokoll), wenn
 
-- kommerzielle Nutzung oder Weiterveröffentlichung nicht «ja» ist,
-- die Originalseite der Nutzungsbedingungen (`terms_url`) oder die Lizenzbezeichnung fehlt,
+- kommerzielle Verarbeitung, Speicherung, Ableitung oder Weiterveröffentlichung nicht «ja» ist,
+- Nutzungsbedingungen (`terms_url`), offizielle Lizenz-URL oder Lizenzbezeichnung fehlen,
 - das Prüfdatum fehlt, in der Zukunft liegt oder **älter als 365 Tage** ist.
 
 Umgesetzt in `src/transparenz/config/licensing.py`, getestet in `tests/test_licensing.py`.
@@ -174,7 +249,7 @@ URLs sind Einstiegsseiten; die genaue Datenseite wird beim Onboarding verifizier
 ## Regeln
 
 - Keine unzulässigen Scraper, keine Umgehung von Zugangsbeschränkungen (Login, Captcha, Paywall).
-- Vor jedem Download einer echten Quelle: Jonas fragen (Dateiname, Quelle, Grösse).
+- Kostenlose lokale Downloads freigegebener Quellen sind durch den Auftrag 08.11.2026 erlaubt.
 - Ist eine Quelle unklar: Adapter mit fiktiven Testdaten bauen und dokumentieren, was fehlt.
 - Daten, deren Lizenz eine Veröffentlichung ausschliesst, gehören nach `data/licensed/`
   (gitignored) und nie ins Repository.

@@ -52,9 +52,16 @@ Python-Monolith, Paket `transparenz` (src-Layout):
 - Enum-Werte sind ASCII-Schlüssel; deutsche Anzeigetexte nur in `entities/labels.py`.
 
 ## Integrierte Quellen
-Aktiv nur fiktive Demoquellen. GLEIF (CC0) ist angebunden, getestet und deaktiviert (D-026).
-Geprüfte Lizenzen und Kandidaten: `docs/DATA_SOURCES.md`. Vor jedem Download echter Daten Jonas
-fragen (Dateiname, Quelle, Grösse). Nächste Quelle erst, wenn die vorherige zuverlässig läuft.
+Die Website nutzt weiterhin den Demokatalog. Das **lokale Schweizer Rohdatenfundament**
+läuft separat über `swiss-update`, `config/swiss_sources.toml`, dieselbe DataUpdateManager-
+Architektur und `data/processed/swiss.sqlite`. Funktionsfähige Quellen: GLEIF CH,
+Zefix/LINDAS und SwissPRTR. Wikidata CC0 ist technisch durch HTTP 403 blockiert.
+Der Auftrag vom 08.11.2026 autorisiert kostenlose lokale Downloads nach nachgewiesener
+kommerzieller Freigabe; dafür keine erneute Einzelrückfrage. Keine kostenpflichtigen APIs,
+kein Push und keine öffentliche Datenfreigabe. Quellen und Sperren: `docs/DATA_SOURCES.md`.
+**Zuerst `docs/CODEX_TO_CLAUDE_HANDOFF.md` lesen.** Keine Namensfusion; Kennungskonflikte
+und ungültige Prüfziffern bleiben separat. Fondsrechtsträger ≠ ETF-Anteilsklassen ≠ Positionen.
+Grosse Import-/Exportläufe nacheinander ausführen (Speicherbedarf).
 
 ## Tests und Start
 ```powershell
@@ -81,5 +88,8 @@ Temp-Pfaden kann pip an der Windows-Pfadgrenze scheitern → `-VenvPath` mit kur
 Git Bash: bei `git show <ref>:<pfad>` `MSYS_NO_PATHCONV=1` setzen.
 
 ## Grenzen
-Nur fiktive Daten · nicht rechtlich geprüft · keine Anlageberatung · Schwellenwerte offen ·
-keine Migrationen (Alembic) · kein echter Fonds, keine echte Belegquelle.
+Demooberfläche fiktiv; echte Registerdaten nur lokal. Kein vollständiger Aktien-/ETF-Bestand,
+keine Fondspositionen und keine Firmenvorwürfe importiert. SwissPRTR-Standorte ohne sichere
+Betreiber-UID bleiben unzugeordnet; Emissions-XLSX ist archiviert, noch nicht normalisiert.
+Quellenprüfung anhand offizieller Bedingungen, keine externe Rechtsberatung. Keine
+Migrationen (Alembic); bestehendes Screening-Schema unverändert. Daten nicht ungeprüft publizieren.

@@ -3,7 +3,8 @@
 Fondspositionen mit nachvollziehbaren Quellen verbinden, damit Anlegerinnen und Anleger
 selbst beurteilen können, ob ein «nachhaltiger» Fonds zu ihren Wertvorstellungen passt.
 
-**Stand:** Forschungsprototyp mit ausschliesslich **fiktiven Demodaten**. Keine Anlageberatung,
+**Stand:** Website mit **fiktiven Demodaten**, zusätzlich ein separates lokales Schweizer
+Rohdatenfundament aus GLEIF, Zefix/LINDAS und SwissPRTR. Keine Anlageberatung,
 keine Empfehlungen, nicht rechtlich geprüft. Details: [STATUS.md](STATUS.md).
 
 ## Was der Prototyp heute kann
@@ -54,6 +55,22 @@ py -3.12 -m venv .venv
 Linux/macOS: `bash scripts/setup.sh`, danach `.venv/bin/python -m streamlit run app/main.py`.
 
 ## Kommandozeile
+
+Schweizer Rohdaten lokal aktualisieren (keine Veröffentlichung):
+
+```powershell
+cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
+.venv\Scripts\python -m transparenz swiss-update
+```
+
+Nur eine Quelle: `swiss-update --source gleif_ch` bzw. `zefix_lindas` oder `swissprtr`.
+Wikidata ist vorbereitet, liefert in dieser Umgebung aber HTTP 403; ein Gesamtlauf meldet
+deshalb Exitcode 1, während erfolgreiche Quellen gültig bleiben. `--export-only` arbeitet
+ohne Netzwerk. Grosse Läufe **nacheinander**, mit mehreren GB freiem Speicher ausführen.
+Originale: `data/raw/external/`; separate Datenbank: `data/processed/swiss.sqlite`;
+Exportzeiger und Qualitätszahlen: `data/processed/swiss/current.json`.
+Die Pfade bleiben Git-ignoriert. Übergabe: [CODEX_TO_CLAUDE_HANDOFF.md](docs/CODEX_TO_CLAUDE_HANDOFF.md).
+Kein vollständiger Aktien-/ETF-Katalog; GLEIF-Fondsrechtsträger sind keine ETF-Anteilsklassen.
 
 ```text
 python -m transparenz validate            # Quellen prüfen, nichts schreiben

@@ -19,6 +19,9 @@ dist/
 # Daten: nur fiktive Beispieldaten gehören ins Repo
 data/raw/*
 !data/raw/.gitkeep
+# Schweizer Originaldaten, Lizenznachweise und lokale Exportgenerationen bleiben privat.
+data/raw/external/
+data/processed/swiss/
 data/processed/*
 !data/processed/.gitkeep
 data/cache/*

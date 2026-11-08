@@ -1,0 +1,99 @@
+# Lokales Rohdatenfundament, bewusst getrennt von Demo und Website.
+[defaults]
+max_attempts = 3
+backoff_seconds = 3.0
+http_timeout_seconds = 90.0
+
+[[source]]
+key = "gleif_ch"
+name = "GLEIF – Rechtsträger mit Schweizer Rechtsadresse"
+publisher = "GLEIF"
+kind = "entities"
+fetcher = "external"
+format = "external_json"
+external_mode = "gleif_ch"
+location = "https://api.gleif.org/api/v1/lei-records"
+interval_hours = 168
+max_age_days = 30
+license = "CC0 1.0 Universal"
+license_url = "https://creativecommons.org/publicdomain/zero/1.0/"
+terms_url = "https://www.gleif.org/en/meta/lei-data-terms-of-use"
+license_checked_on = 2026-11-08
+commercial_use = "ja"
+storage = "ja"
+derivatives = "ja"
+redistribution = "ja"
+attribution = "GLEIF, LEI reference data, CC0 1.0. Freiwillige Quellenangabe; keine Billigung."
+is_fictional = false
+description = "CH-Rechtsadresse, alle Registrierungsstatus roh; ausgeschlossene Status separat. FUND separat. Keine Vollabdeckung aller Schweizer Unternehmen."
+
+[[source]]
+key = "zefix_lindas"
+name = "Zefix – aktive Rechtseinheiten auf LINDAS"
+publisher = "Eidgenössisches Amt für das Handelsregister (EHRA)"
+kind = "entities"
+fetcher = "external"
+format = "external_json"
+external_mode = "zefix"
+location = "https://lindas.admin.ch/query"
+interval_hours = 168
+max_age_days = 14
+license = "opendata.swiss Open use (terms_open), Ressource Linked Data Query"
+license_url = "https://opendata.swiss/terms-of-use#terms_open"
+terms_url = "https://opendata.swiss/de/dataset/zefix-zentraler-firmenindex/resource/ba772d7c-171b-47bf-b958-ee87419090d6"
+license_checked_on = 2026-11-08
+commercial_use = "ja"
+storage = "ja"
+derivatives = "ja"
+redistribution = "ja"
+attribution = "EHRA, Zefix – Zentraler Firmenindex, https://opendata.swiss/de/dataset/zefix-zentraler-firmenindex (freiwillig; Metadaten terms_by)."
+is_fictional = false
+description = "Aktive Rechtseinheiten, ohne Adressen/Personenrollen. Extraktion nicht atomar. Rechtsformen separat auswerten; Registereintrag ist keine Börsenkotierung."
+
+[[source]]
+key = "wikidata_ch"
+name = "Wikidata – Schweizer Unternehmen und SIX-Kandidaten"
+publisher = "Wikidata contributors"
+kind = "entities"
+fetcher = "external"
+format = "external_json"
+external_mode = "wikidata"
+query_file = "data/queries/wikidata_ch.sparql"
+location = "https://query.wikidata.org/sparql"
+interval_hours = 168
+max_age_days = 45
+license = "CC0 1.0 Universal (structured data only)"
+license_url = "https://creativecommons.org/publicdomain/zero/1.0/"
+terms_url = "https://www.wikidata.org/wiki/Wikidata:Licensing"
+license_checked_on = 2026-11-08
+commercial_use = "ja"
+storage = "ja"
+derivatives = "ja"
+redistribution = "ja"
+attribution = "Wikidata contributors, structured data CC0; keine Übernahme von Wikipedia-Texten."
+is_fictional = false
+description = "Offene Teilabdeckung. HTTP 403 ist ein harter Fehler; keine Umgehung. ISIN am Unternehmensitem ist ein Quellenhinweis und kein bestätigtes Emittentenmapping."
+
+[[source]]
+key = "swissprtr"
+name = "SwissPRTR – Standortdaten (GeoPackage)"
+publisher = "Bundesamt für Umwelt BAFU"
+kind = "entities"
+fetcher = "external"
+format = "external_json"
+external_mode = "swissprtr"
+location = "https://data.geo.admin.ch/api/stac/v0.9/collections/ch.bafu.swissprtr/items/swissprtr"
+supplementary_url = "https://www.bafu.admin.ch/dam/de/sd-web/CXgeZKcf8ez8/swissprtr-daten-2007-2024.xlsx"
+interval_hours = 720
+max_age_days = 730
+license = "opendata.swiss Open use, must provide source (terms_by)"
+license_url = "https://opendata.swiss/terms-of-use#terms_by"
+terms_url = "https://opendata.swiss/en/dataset/schadstofffreisetzungs-und-transferregister-der-schweiz-swissprtr"
+license_checked_on = 2026-11-08
+commercial_use = "ja"
+storage = "ja"
+derivatives = "ja"
+redistribution = "ja"
+attribution = "Bundesamt für Umwelt BAFU, Swiss Pollutant Release and Transfer Register (SwissPRTR), https://www.bafu.admin.ch/de/swissprtr. Änderungen: Extraktion der Standortattribute; keine Konzernzurechnung."
+is_fictional = false
+description = "Standortbestand, kein Verstossnachweis. GeoPackage mit STAC-Checksumme; Original-Emissionsarbeitsmappe 2007–2024 zusätzlich archiviert, noch nicht normalisiert."

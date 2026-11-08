@@ -49,8 +49,8 @@ class SourceConfig(BaseModel):
     name: str
     kind: DatasetKind
     publisher: str
-    fetcher: Literal["local", "http", "gleif_api"]
-    format: Literal["json", "csv", "gleif_json"]
+    fetcher: Literal["local", "http", "gleif_api", "external"]
+    format: Literal["json", "csv", "gleif_json", "external_json"]
     location: str
     interval_hours: float = Field(gt=0)
     max_age_days: int = Field(gt=0)
@@ -61,12 +61,17 @@ class SourceConfig(BaseModel):
     terms_url: str | None = None
     license_checked_on: date | None = None
     redistribution: CommercialUse = CommercialUse.UNKLAR
+    storage: CommercialUse = CommercialUse.UNKLAR
+    derivatives: CommercialUse = CommercialUse.UNKLAR
     attribution: str = ""
     description: str = ""
     coverage_of: str | None = None
     # nur fetcher = "gleif_api": Textdatei mit den abzufragenden LEIs (relativ zum Projekt)
     lei_list: str | None = None
     enabled: bool = True
+    external_mode: Literal["gleif_ch", "zefix", "wikidata", "swissprtr"] | None = None
+    query_file: str | None = None
+    supplementary_url: str | None = None
 
     @model_validator(mode="after")
     def _check_coverage(self) -> SourceConfig:
@@ -78,6 +83,10 @@ class SourceConfig(BaseModel):
             raise ValueError(
                 f"Quelle {self.key}: 'gleif_api' und 'gleif_json' gehören zusammen."
             )
+        if self.fetcher == "external" and (
+            self.format != "external_json" or self.external_mode is None
+        ):
+            raise ValueError("external braucht external_json und external_mode")
         return self
 
 

@@ -42,6 +42,16 @@ Abweichungen vom ursprünglichen Ordnervorschlag sind in `DECISIONS.md` begründ
 
 ## Update-System
 
+Seit 08.11.2026 zusätzlich: `swiss-update` nutzt **denselben** DataUpdateManager mit einem
+separaten Katalog (`config/swiss_sources.toml`) und `data/processed/swiss.sqlite`. Kein neues
+Framework, keine UI-Änderung. `ingestion/external.py` archiviert unveränderte HTTP-Antworten
+mit SHA-256 und Lizenz-Sidecar; der Manager versioniert atomar ein Manifest dieser Originale.
+`services/swiss_foundation.py` exportiert geprüfte aktive Versionen und führt nur eindeutige
+LEI-/UID-Treffer zusammen. `current.json` wird erst nach fertiger Exportgeneration umgeschaltet.
+Ergänzende Fonds-/Standort-/Registerattribute liegen in Manifesten und JSON-Exporten, nicht
+in unpassenden Screening-Tabellen. Stammdaten werden in Transaktionsblöcken zu 2'000 Zeilen
+geschrieben. Grosse Läufe nacheinander ausführen. Originale, Datenbank und Exporte sind ignoriert.
+
 `DataUpdateManager` (`services/update_manager.py`):
 
 - **ein Adapter pro Quelle** (`ingestion/adapters.py`), konfiguriert in `config/sources.toml`

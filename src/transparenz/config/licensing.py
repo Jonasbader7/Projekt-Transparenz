@@ -32,6 +32,12 @@ def license_block_reasons(cfg: SourceConfig, today: date) -> list[str]:
         reasons.append(f"kommerzielle Nutzung «{cfg.commercial_use.value}» (verlangt: ja)")
     if cfg.redistribution != CommercialUse.JA:
         reasons.append(f"Weiterveröffentlichung «{cfg.redistribution.value}» (verlangt: ja)")
+    if cfg.storage != CommercialUse.JA:
+        reasons.append(f"Speicherung «{cfg.storage.value}» (verlangt: ja)")
+    if cfg.derivatives != CommercialUse.JA:
+        reasons.append(f"Ableitungen «{cfg.derivatives.value}» (verlangt: ja)")
+    if not cfg.license_url:
+        reasons.append("Offizielle Lizenz-URL (license_url) fehlt")
     if not cfg.terms_url:
         reasons.append("Originalseite der Nutzungsbedingungen (terms_url) fehlt")
     if not cfg.license.strip():

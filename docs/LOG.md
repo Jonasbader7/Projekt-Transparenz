@@ -2,6 +2,28 @@
 
 Neueste Einträge oben.
 
+## 08.11.2026 – Codex: Schweizer Rohdatenfundament
+
+- Bestehende Architektur/Doku geprüft; Starterkit unter einschlägigen Namen im Projekt und
+  Downloads nicht gefunden. Keine Framework- oder Designänderung, keine Veröffentlichung.
+- Offizielle Rechte geprüft: GLEIF/Wikidata CC0, Zefix-Ressource terms_open,
+  SwissPRTR terms_by. Sperre um Speicher-/Ableitungsrechte erweitert; blockierte Kandidaten
+  maschinenlesbar erfasst. Wikidata ist technisch HTTP 403, keine Umgehung.
+- Originale tatsächlich archiviert: GLEIF CH 28'495 Treffer, Zefix 796'690 Originaleinheiten,
+  SwissPRTR-Standorte und Original-Emissions-XLSX 2007–2024. Rohdaten/DB/Exporte ignoriert.
+- Aktiv: 25'121 GLEIF-Rechtsträger + 796'684 Zefix-Einheiten, nach eindeutiger Kennungsfusion
+  801'647 Rechtseinheiten; separat 3'254 Fondsrechtsträger und 247 Standorte. Keine bestätigten
+  Wertpapiere, ETF-Anteilsklassen oder Positionen. 8 Originaleinträge in Quarantäne.
+- Adapter, Cache, Cursor-/Keyset-Paginierung, Hash-/STAC-Prüfung, Quarantäne, OS-Lock,
+  transaktionales Batchschreiben und atomare lokale Exportgenerationen implementiert.
+- Reale Fehler behandelt: GLEIF-10'000er-Seitengrenze, ungültige LEIs/UIDs, mehrsprachige
+  Zefix-Namen, doppelte UID-Registeridentitäten, SQLite-Dateisperre unter Windows.
+  Gleichzeitige grosse Exporte abgebrochen; danach einzeln exportiert und OS-Lock ergänzt.
+- Bestehende 151 Tests vorab bestanden; erweiterte Tests und Ruff grün (Schlusszahl im Handoff).
+  Offline-Bestandsaudit bestanden: 801'647 eindeutige Schlüssel und 156 Originaldateien
+  hashgeprüft; 0 laufende Updateversuche. Frühere Fehlversuche bleiben protokolliert.
+  Übergabe `docs/CODEX_TO_CLAUDE_HANDOFF.md`, Betrieb über `python -m transparenz swiss-update`.
+
 ## 08.11.2026 – Session 2, Teil 2: Erste echte Datenquelle (parallele Session)
 
 **Erledigt**

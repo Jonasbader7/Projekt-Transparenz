@@ -37,6 +37,7 @@ def real_source(**overrides: object) -> SourceConfig:
         "license": "CC0 1.0", "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
         "terms_url": "https://example.org/terms", "license_checked_on": TODAY,
         "commercial_use": CommercialUse.JA, "redistribution": CommercialUse.JA,
+        "storage": CommercialUse.JA, "derivatives": CommercialUse.JA,
         "is_fictional": False,
     }
     values.update(overrides)
@@ -55,6 +56,9 @@ class TestBlockReasons:
             ({"commercial_use": CommercialUse.NEIN}, "kommerzielle Nutzung"),
             ({"redistribution": CommercialUse.UNKLAR}, "Weiterveröffentlichung"),
             ({"redistribution": CommercialUse.NEIN}, "Weiterveröffentlichung"),
+            ({"storage": CommercialUse.UNKLAR}, "Speicherung"),
+            ({"derivatives": CommercialUse.UNKLAR}, "Ableitungen"),
+            ({"license_url": None}, "license_url"),
             ({"terms_url": None}, "terms_url"),
             ({"license": "  "}, "Lizenzbezeichnung"),
             ({"license_checked_on": None}, "Prüfdatum"),
