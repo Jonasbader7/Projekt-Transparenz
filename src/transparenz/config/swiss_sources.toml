@@ -52,8 +52,6 @@ description = "Aktive Rechtseinheiten, ohne Adressen/Personenrollen. Extraktion 
 
 [[source]]
 key = "wikidata_ch"
-enabled = false
-disabled_reason = "HTTP 403 beim offiziellen Abfragedienst; vorerst nur explizit mit --source wikidata_ch prüfen."
 name = "Wikidata – Schweizer Unternehmen und SIX-Kandidaten"
 publisher = "Wikidata contributors"
 kind = "entities"
@@ -74,7 +72,7 @@ derivatives = "ja"
 redistribution = "ja"
 attribution = "Wikidata contributors, structured data CC0; keine Übernahme von Wikipedia-Texten."
 is_fictional = false
-description = "Offene Teilabdeckung. HTTP 403 ist ein harter Fehler; keine Umgehung. ISIN am Unternehmensitem ist ein Quellenhinweis und kein bestätigtes Emittentenmapping."
+description = "Offene Teilabdeckung, kein SIX-Vollständigkeitsnachweis. Abfrage auf Unternehmen mit Schweizer Landesangabe und ISIN sowie auf SIX-notierte Posten begrenzt (sonst Zeitüberschreitung beim Abfragedienst). HTTP 403/504 bleibt ein harter Fehler; keine Umgehung. ISIN am Unternehmensitem ist ein Quellenhinweis und kein bestätigtes Emittentenmapping."
 
 [[source]]
 key = "swissprtr"

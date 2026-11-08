@@ -2,6 +2,49 @@
 
 Neueste Einträge oben.
 
+## 08.11.2026 – Claude: Wikidata-Wertpapierkandidaten reparieren und durchsuchbar machen
+
+- Auftrag: Jonas meldete, Roche/Nestlé fehlten in der lokalen Suche; geprüft, ob das fehlende
+  Daten oder ein Suchfehler sind. Befund: `wikidata_ch` war technisch kaputt, nicht nur durch
+  einen anhaltenden HTTP 403 blockiert (D-034 im Detail).
+- Drei Bugs in `data/queries/wikidata_ch.sparql`/`wikidata_funds.sparql` gefunden und live
+  gegen `query.wikidata.org` verifiziert: falsche SIX-Swiss-Exchange-ID (Q12569 = Fluss Loire,
+  richtig Q661834), falsche Fondsklassen-IDs (Q927783/Q756898 = Person/Dorf, richtig
+  Q845477/Q4201895), und eine zu teure, transitiv über ganz Wikidata laufende Abfrage. Abfrage
+  auf «SIX-notiert oder CH-ansässig mit ISIN» eingegrenzt → Antwortzeit 1–3 s statt Timeout.
+- Vierter Bug: generischer HTTP-User-Agent ohne Kontaktangabe verletzte Wikimedias Bot-Policy
+  und wurde gelegentlich mit 403 beantwortet. `http_user_agent` in
+  `src/transparenz/config/settings.py` projektweit (GLEIF/Zefix/Wikidata gemeinsam) auf
+  `ProjektTransparenz/0.1 (+https://github.com/Jonasbader7/Projekt-Transparenz)` umgestellt.
+- `_wikidata()` in `src/transparenz/ingestion/external.py` von melted `?property ?value`-Zeilen
+  auf feste Spalten umgebaut (das melted Muster lief beim Live-Test selbst auf der bereits
+  eingegrenzten Subjektmenge wiederholt in Zeitüberschreitung); zusätzlich Ticker-Qualifier
+  (`pq:P249` auf der Börsenangabe) ergänzt, da z. B. Roches Ticker nur als Qualifier, nicht als
+  eigene Aussage vorliegt.
+- Neuer Fund beim echten Lauf: zwei Wikidata-Items können dieselbe LEI tragen (live:
+  «AGEN Holding» / «Aevis Victoria SA»). Neue Quarantänelogik (`lei_shared_by_multiple_
+  wikidata_items`) verhindert, dass das den ganzen Quellenlauf verwirft oder beide über den
+  Namen fusioniert werden.
+- `wikidata_ch` läuft seit diesem Fix im Standardlauf mit (`enabled = false` entfernt).
+  Echtlauf: **287 Datensätze → 293 Wertpapierkandidaten** (u. a. Roche, Nestlé, Novartis, UBS,
+  ABB, Swatch, Credit Suisse, Lindt & Sprüngli), 3 neue LEI-Konfliktgruppen unter Quarantäne.
+  Fonds-/ETF-Teilabfrage lieferte im Schweizer/SIX-Zuschnitt 0 Treffer (weltweit 19) – ehrlich
+  dokumentiert, nicht verschwiegen.
+- Neu durchsuchbar: CLI-Befehl `swiss-search <Begriff>` (`src/transparenz/cli.py`,
+  `search_foundation()`/`security_candidate_rows()` in `swiss_foundation.py`) und eine lokale
+  `security_candidates.html` je Exportgeneration (`src/transparenz/reports/
+  swiss_security_candidates.py`, gleiches Muster wie `reports/market_catalog.py`, aber bewusst
+  getrennt vom SEC-Marktkatalog: andere Lizenzquelle/Vertrauensstufe). Im Browser geprüft:
+  293 Einträge rendern, Suche nach «roche» filtert korrekt auf die zwei Roche-ISINs.
+- Vorher/Nachher per `market-search` dokumentiert: Roche/ABB fanden vorher nur Scheintreffer
+  («Rochester»-Fonds, Ticker `PABBX`); Nestlé 0 Treffer; Novartis/UBS fanden nur US-ADR-Ticker.
+  SEC-Katalog selbst unverändert (44'085 Einträge, D-033 bleibt gültig).
+- Neuer Unit-Test `test_wikidata_security_candidate_and_shared_lei_quarantine` (fiktive QIDs/
+  ISINs/LEIs) deckt Ticker-Qualifier-Extraktion und LEI-Konflikt-Quarantäne ab.
+  **201 Tests bestanden** (200 + 1 neu), Ruff sauber, Offline-Audit bestanden.
+- Keine neuen Abhängigkeiten, keine Änderung an Screening-Engine/Webdesign, nichts
+  veröffentlicht oder gepusht. STATUS/DECISIONS/DATA_SOURCES aktualisiert.
+
 ## 08.11.2026 – Codex: lokaler Aktien-/Fonds-Katalog aus SEC-Originalen
 
 - Auftrag auf alle weltweit börsenkotierten Aktien und ETFs erweitert; nicht vollständig erfüllt.

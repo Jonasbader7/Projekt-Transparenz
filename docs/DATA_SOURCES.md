@@ -54,7 +54,7 @@ Weitere geprüfte Kandidaten, **keine produktiven Imports**:
 |---|---|---|---|---|---|---|
 | `gleif_ch` – LEI-Referenzdaten CC0 | ja | ja | ja | ja | freiwillig; keine Billigung suggerieren | CH-Filter vollständig abgerufen; 25'121 Rechtsträger, 3'254 Fondsrechtsträger; 118 Statusausschlüsse, 2 ungültige LEIs separat |
 | `zefix_lindas` – terms_open | ja | ja | ja | ja | empfohlen; wird mitgeführt | 796'684 gültige Registereinheiten; Mehrsprachigkeit als Namensvarianten; Konflikte/ungültige UID separat |
-| `wikidata_ch` – strukturierte Daten CC0 | ja | ja | ja | ja | freiwillig | **kein Import: HTTP 403**; im Standardlauf deaktiviert, explizit mit `--source wikidata_ch` prüfbar |
+| `wikidata_ch` – strukturierte Daten CC0 | ja | ja | ja | ja | freiwillig | **D-034: 287 Datensätze, 293 Wertpapierkandidaten** (u. a. Roche, Nestlé, Novartis, UBS, ABB); läuft im Standardlauf mit |
 | `swissprtr` – terms_by | ja | ja | ja | ja | **BAFU, Datensatztitel und Link verpflichtend** | 247 Standorte; 22'860 Emissionszeilen 2007–2024 normalisiert (D-032) |
 
 Offizielle Nachweise und Geltungsbereiche:
@@ -79,7 +79,13 @@ Offizielle Nachweise und Geltungsbereiche:
   [Datenzugriff](https://www.wikidata.org/wiki/Wikidata:Data_access),
   [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
   Nur strukturierte Statements; keine Wikipedia-Artikel oder sonstige lizenzierte Texte.
-  HTTP 403 wird als dauerhafter Zugangsfehler protokolliert, ohne Hostwechsel oder Umgehung.
+  **D-034 (08.11.2026):** Der frühere HTTP 403 war grösstenteils selbstverschuldet (falsche
+  Wikidata-IDs in der Abfrage, zu teure Transitivsuche, generischer User-Agent ohne
+  Kontaktangabe – verletzt die [Wikimedia-User-Agent-Policy](https://meta.wikimedia.org/wiki/User-Agent_policy)).
+  Abfrage auf SIX-Notierung (korrekte ID Q661834) bzw. CH-Sitz mit ISIN eingegrenzt; Antwortzeit
+  seitdem 1–3 s. Ein echter, nicht selbstverschuldeter HTTP 403/429 bliebe weiterhin ein harter
+  Fehler, keine Umgehung. 287 Datensätze, 293 ISIN-Kandidaten aktiv; Fonds-/ETF-Teilabfrage im
+  Schweizer/SIX-Zuschnitt 0 Treffer (weltweit 19 instance-of ETF/Investmentfonds mit ISIN).
 - **SwissPRTR:** [offizieller Datensatz](https://opendata.swiss/en/dataset/schadstofffreisetzungs-und-transferregister-der-schweiz-swissprtr),
   [CKAN-Originalmetadaten](https://ckan.opendata.swiss/api/3/action/package_show?id=schadstofffreisetzungs-und-transferregister-der-schweiz-swissprtr),
   [terms_by](https://opendata.swiss/terms-of-use#terms_by),

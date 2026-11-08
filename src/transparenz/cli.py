@@ -9,6 +9,7 @@ Befehle:
   build-site [--out site] [--update] statische Website erzeugen (Schnappschuss)
   mapping --fund ISIN             Zuordnungsquote Wertpapier → Unternehmen messen
   swiss-update                    Schweizer Rohdaten lokal aktualisieren (separate DB)
+  swiss-search ABFRAGE            Wertpapierkandidaten (Wikidata) im Schweizer Fundament durchsuchen
 """
 
 from __future__ import annotations
@@ -186,6 +187,11 @@ def build_parser() -> argparse.ArgumentParser:
     swiss.add_argument("--force", action="store_true")
     swiss.add_argument("--export-only", action="store_true", help="Ohne Netzwerk neu exportieren")
     swiss.set_defaults(func=_cmd_swiss_update)
+    swiss_search = sub.add_parser(
+        "swiss-search", help="Wertpapierkandidaten (Wikidata) im Schweizer Fundament durchsuchen")
+    swiss_search.add_argument("query")
+    swiss_search.add_argument("--limit", type=int, default=20)
+    swiss_search.set_defaults(func=_cmd_swiss_search)
     sub.add_parser("init-db").set_defaults(func=_cmd_init_db)
     up = sub.add_parser("update")
     up.add_argument("--source")
@@ -249,6 +255,24 @@ def _cmd_swiss_update(args: argparse.Namespace) -> int:
         print(f"Schweizer Aktualisierung: {exc}", file=sys.stderr)
         return 1
     return int(failed)
+
+
+def _cmd_swiss_search(args: argparse.Namespace) -> int:
+    import json
+
+    from transparenz.services.swiss_foundation import search_foundation
+
+    if args.limit < 1:
+        print("--limit muss mindestens 1 sein.", file=sys.stderr)
+        return 1
+    try:
+        rows = search_foundation(args.query, args.limit)
+    except (OSError, ValueError) as exc:
+        print(f"Katalog fehlt oder ungültig: {exc}. Zuerst swiss-update ausführen.",
+              file=sys.stderr)
+        return 1
+    print(json.dumps(rows, ensure_ascii=False, indent=2))
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:

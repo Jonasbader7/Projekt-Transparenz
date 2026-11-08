@@ -266,6 +266,10 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
     files["quarantined_identifiers"] = quarantined
     for name, records in files.items():
         atomic_json(generation / f"{name}.json", records)
+    from transparenz.reports.swiss_security_candidates import render_security_candidates
+
+    atomic_write(generation / "security_candidates.html", render_security_candidates(
+        security_candidate_rows(candidates, companies)).encode("utf-8"))
     atomic_write(output / "current.json", encoded({"generation": f"generations/{stamp}",
                                                   "counts": report["counts"]}))
     atomic_json(output / "latest_status.json", {
@@ -273,6 +277,44 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
         "checked_at": datetime.now(UTC).isoformat(),
     })
     return report
+
+
+def security_candidate_rows(candidates: list[dict], companies: list[dict]) -> list[dict]:
+    """Flatten security candidates for display (CLI search and the local HTML viewer).
+
+    Every row is an unverified company-level Wikidata claim (see export_foundation);
+    never treat one as a confirmed issuer/ISIN mapping.
+    """
+    by_wikidata = {c["wikidata_id"]: c for c in companies if c.get("wikidata_id")}
+    rows = []
+    for candidate in candidates:
+        claims = candidate.get("claims", {})
+        company = by_wikidata.get(candidate["wikidata_id"], {})
+        rows.append({
+            "name": candidate["name"], "isin": candidate["isin"],
+            "wikidata_id": candidate["wikidata_id"], "tickers": claims.get("P249", []),
+            "exchange_claims": claims.get("P414", []), "country": company.get("country"),
+            "lei": company.get("lei"), "mapping_status": candidate["mapping_status"],
+            "source_key": candidate["source_key"]})
+    return rows
+
+
+def search_foundation(query: str, limit: int = 20) -> list[dict]:
+    """Substring search over the current export's security candidates (not confirmed equities)."""
+    output = get_settings().processed_dir / "swiss"
+    pointer = json.loads((output / "current.json").read_bytes())
+    generation = (output / pointer["generation"]).resolve()
+    if not generation.is_relative_to((output / "generations").resolve()):
+        raise ValueError("Ungültiger Exportpfad")
+    candidates = json.loads((generation / "security_candidates.json").read_bytes())
+    companies = json.loads((generation / "companies.json").read_bytes())
+    rows = security_candidate_rows(candidates, companies)
+    needle = query.casefold()
+    matches = [r for r in rows if needle in " ".join(
+        [str(r["name"] or ""), str(r["isin"] or ""), str(r["wikidata_id"] or ""),
+         *r["tickers"]]).casefold()]
+    matches.sort(key=lambda m: not any(t.casefold() == needle for t in m["tickers"]))
+    return matches[:limit]
 
 
 @contextmanager
@@ -331,7 +373,14 @@ def _update_foundation(force: bool, source: str | None, export_only: bool) -> tu
                 failed |= outcome.status in {UpdateStatus.FEHLGESCHLAGEN, UpdateStatus.GESPERRT}
         report = export_foundation(ctx, reuse_existing=not export_only)
         print(json.dumps(report["counts"], ensure_ascii=False, indent=2))
-        print(f"Exportzeiger: {ctx.settings.processed_dir / 'swiss/current.json'}")
+        output = ctx.settings.processed_dir / "swiss"
+        print(f"Exportzeiger: {output / 'current.json'}")
+        try:
+            pointer = json.loads((output / "current.json").read_bytes())
+            print(f"Wertpapierkandidaten (Wikidata) öffnen: "
+                  f"{output / pointer['generation'] / 'security_candidates.html'}")
+        except (OSError, ValueError, KeyError):
+            pass
         return report, failed
     finally:
         ctx.engine.dispose()

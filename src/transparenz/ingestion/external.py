@@ -15,6 +15,7 @@ import sqlite3
 import tempfile
 import time
 import zipfile
+from collections import defaultdict
 from collections.abc import Callable
 from contextlib import closing
 from dataclasses import dataclass, field
@@ -392,23 +393,53 @@ def _zefix(body: dict, ds: ExternalDataset) -> None:
         ds.records["companies"].append(CompanyRecord.model_validate(item))
 
 
+_WIKIDATA_COLUMNS = (("lei", "P1278"), ("isin", "P946"), ("exchange", "P414"),
+                     ("ticker", "P249"), ("tickerQ", "P249"), ("country", "P17"),
+                     ("parent", "P749"), ("instanceOf", "P31"))
+
+
 def _wikidata(body: dict, ds: ExternalDataset, role: str) -> None:
+    # Wide columns, not melted property/value rows: the live query service times out
+    # on an unbound-predicate join even for a handful of pre-filtered items (see
+    # data/queries/wikidata_ch.sparql).
     grouped: dict[str, dict] = {}
     for row in body["results"]["bindings"]:
         qid = _value(row, "item").rsplit("/", 1)[-1]
-        item = grouped.setdefault(qid, {"wikidata_id": qid,
-                                       "name": _value(row, "itemLabel") or qid,
-                                       "claims": {}, "source_key": "wikidata_ch"})
-        prop = _value(row, "property").rsplit("/", 1)[-1]
-        item["claims"].setdefault(prop, set()).add(_value(row, "value"))
-    for item in grouped.values():
-        item["claims"] = {k: sorted(v) for k, v in item["claims"].items()}
+        item = grouped.setdefault(qid, {"wikidata_id": qid, "label_de": None, "label_en": None,
+                                       "claims": {prop: set() for _, prop in _WIKIDATA_COLUMNS},
+                                       "source_key": "wikidata_ch"})
+        item["label_de"] = item["label_de"] or _value(row, "labelDe")
+        item["label_en"] = item["label_en"] or _value(row, "labelEn")
+        for field_name, prop in _WIKIDATA_COLUMNS:
+            value = _value(row, field_name)
+            if value:
+                item["claims"][prop].add(value)
+    candidates: dict[str, dict] = {}
+    for qid, item in grouped.items():
+        item["claims"] = {k: sorted(v) for k, v in item["claims"].items() if v}
+        label_de, label_en = item.pop("label_de"), item.pop("label_en")
+        item["name"] = label_de or label_en or item["wikidata_id"]
         leis = item["claims"].get("P1278", [])
         isins = item["claims"].get("P946", [])
         if any(not is_valid_lei(x) for x in leis) or any(not is_valid_isin(x) for x in isins):
             ds.extra.setdefault("identifier_conflicts", []).append(item)
             continue
         item["lei"] = leis[0] if len(leis) == 1 else None
+        candidates[qid] = item
+    # Two different Wikidata items can carry the same LEI (seen live: a holding and an
+    # older/merged item both claim one LEI). Quarantine the shared LEI instead of
+    # rejecting the whole source or merging by name.
+    lei_items: dict[str, list[dict]] = defaultdict(list)
+    for item in candidates.values():
+        if item["lei"]:
+            lei_items[item["lei"]].append(item)
+    shared_leis = {lei for lei, items in lei_items.items() if len(items) > 1}
+    for item in candidates.values():
+        isins = item["claims"].get("P946", [])
+        if item["lei"] in shared_leis:
+            ds.extra.setdefault("identifier_conflicts", []).append(
+                dict(item, reason="lei_shared_by_multiple_wikidata_items"))
+            continue
         item["company_key"] = f"wikidata:{item['wikidata_id']}"
         item["country"] = "CH" if "http://www.wikidata.org/entity/Q39" in (
             item["claims"].get("P17", [])) else None

@@ -16,7 +16,7 @@ from transparenz.config.licensing import license_block_reasons
 from transparenz.config.settings import CONFIG_DIR
 from transparenz.database.models import DatasetVersion, UpdateRun
 from transparenz.entities.enums import UpdateStatus
-from transparenz.entities.identifiers import make_lei
+from transparenz.entities.identifiers import make_isin, make_lei
 from transparenz.ingestion.external import (
     FORMAT,
     ExternalFetcher,
@@ -111,6 +111,43 @@ def test_invalid_lei_is_quarantined_and_never_imported(tmp_path):
     assert parsed.is_valid, parsed.errors
     assert len(parsed.extra["quarantined_identifiers"]) == 1
     assert len(parsed.records["companies"]) == 1
+
+
+def wikidata_binding(qid, *, isin=None, lei=None, ticker_qualifier=None,
+                      exchange="http://www.wikidata.org/entity/Q661834",
+                      country="http://www.wikidata.org/entity/Q39", label_de=None):
+    binding = {"item": {"value": f"http://www.wikidata.org/entity/{qid}"}}
+    for key, value in (("isin", isin), ("lei", lei), ("tickerQ", ticker_qualifier),
+                      ("exchange", exchange), ("country", country), ("labelDe", label_de)):
+        if value is not None:
+            binding[key] = {"value": value}
+    return binding
+
+
+def test_wikidata_security_candidate_and_shared_lei_quarantine(tmp_path):
+    cfg = config("wikidata_ch")
+    shared_lei = make_lei("FIKT00SHARED000001")
+    isin_q1 = make_isin("ZZ00000000A")
+    body = {"results": {"bindings": [
+        wikidata_binding("Q1", isin=isin_q1, lei="549300U41AUUVOAAOB37",
+                         ticker_qualifier="ROG", label_de="Roche Holding (fiktiv)"),
+        wikidata_binding("Q2", isin=make_isin("ZZ00000000B"), lei=shared_lei,
+                         label_de="Alpha AG (fiktiv)"),
+        wikidata_binding("Q3", isin=make_isin("ZZ00000000C"), lei=shared_lei,
+                         label_de="Beta AG (fiktiv)"),
+    ]}}
+    parsed = parse_external(original(tmp_path, cfg, body, None), cfg, tmp_path)
+    assert parsed.is_valid, parsed.errors
+    companies = {c.company_key: c for c in parsed.records["companies"]}
+    assert set(companies) == {"wikidata:Q1"}
+    attributes = {a["company_key"]: a for a in parsed.extra["company_attributes"]}
+    assert attributes["wikidata:Q1"]["claims"]["P249"] == ["ROG"]
+    candidates = {c["isin"]: c for c in parsed.extra["security_candidates"]}
+    assert set(candidates) == {isin_q1}
+    assert candidates[isin_q1]["mapping_status"] == "unverified_company_level_claim"
+    conflicts = parsed.extra["identifier_conflicts"]
+    assert {c["wikidata_id"] for c in conflicts} == {"Q2", "Q3"}
+    assert all(c["reason"] == "lei_shared_by_multiple_wikidata_items" for c in conflicts)
 
 
 def row(key, name="Beispiel AG (fiktiv)", lei=None, uid=None):

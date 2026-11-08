@@ -116,7 +116,8 @@ def main():
               "unique_company_keys": len(seen), "emissions_checked": len(emissions),
               "update_runs_by_status": runs,
               "active_versions_record_counts": dict(active),
-              "note": "Historical failures are retained; Wikidata 403 remains unresolved."}
+              "note": "Historical failures are retained (pre-fix Wikidata 403 attempts included); "
+                      "wikidata_ch now runs by default (D-034)."}
     atomic_json(base / "audit_report.json", result)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

@@ -65,7 +65,7 @@ Quellenkatalog noch in Original-Metadaten oder Git. Keine E-Mail-Nachrichten wer
 |---|---|
 | Börsen-Referenzuniversum je Markt/MIC | nicht vorhanden; ohne Soll-Liste kein belastbarer Vollständigkeitsprozentsatz |
 | Aktienklassifikation der SEC-Ticker | zusätzliche amtliche Gattung/Klasse erforderlich; Warrants, Units, Notes, ADRs und Fonds unterscheiden |
-| Schweizer und europäische Kotierungen | konkrete Nutzungsrechte für SIX bzw. FIRDS und Drittanbieter-Inhalte klären; öffentliche Downloads allein reichen nicht |
+| Schweizer und europäische Kotierungen | SIX selbst weiterhin nicht freigegeben; **Wikidata CC0 liefert seit D-034 einen Teilbestand** (293 Kandidaten, u. a. Roche, Nestlé, Novartis, UBS, ABB) über `swiss-update --source wikidata_ch` / `swiss-search`, getrennt von diesem SEC-Katalog, siehe `docs/DATA_SOURCES.md` |
 | Asien/Pazifik, Amerika ausserhalb SEC, Afrika/Nahost | noch keine integrierten Quellen; Börsen und Länder einzeln erschliessen |
 | Instrument ↔ Listing | ISIN und Anteilsklasse getrennt von MIC, lokalem Ticker, Währung, Listing-Status und Gültigkeitszeitraum |
 | ETF-Mehrklassenserien / UITs / neue Fonds | zusätzliche Meldungen nötig; N-CEN alleine deckt sie nicht vollständig ab |

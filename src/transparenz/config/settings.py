@@ -83,7 +83,7 @@ def load_settings() -> Settings:
         or f"sqlite:///{default_db.as_posix()}",
         log_level=(os.environ.get("TRANSPARENZ_LOG_LEVEL") or "INFO").upper(),
         http_user_agent=os.environ.get("TRANSPARENZ_HTTP_USER_AGENT")
-        or "transparenz-research-prototype/0.1",
+        or "ProjektTransparenz/0.1 (+https://github.com/Jonasbader7/Projekt-Transparenz)",
         sources_config=Path(
             os.environ.get("TRANSPARENZ_SOURCES_CONFIG") or CONFIG_DIR / "sources.toml"
         ),

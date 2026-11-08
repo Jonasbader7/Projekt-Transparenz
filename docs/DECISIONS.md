@@ -2,6 +2,51 @@
 
 Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst innerhalb einer Session.
 
+## 08.11.2026 – Wikidata-Wertpapierkandidaten reparieren (Claude, Auftrag Jonas)
+
+### D-034 wikidata_ch-Bugs beheben statt als dauerhaft gesperrt dokumentieren
+- **Befund:** Der dokumentierte «HTTP 403» war kein anhaltender Zugangsfehler, sondern drei
+  eigene Bugs in `data/queries/wikidata_ch.sparql`/`wikidata_funds.sparql` und im globalen
+  HTTP-User-Agent: (1) Q12569 (SIX Swiss Exchange in der Abfrage) ist tatsächlich der Fluss
+  Loire; (2) Q927783/Q756898 (Fondsklassen) sind eine historische Person und ein Dorf; (3) die
+  Abfrage scannte transitiv (`wdt:P31/wdt:P279*`) über ganz Wikidata mit `P17=Schweiz`, was den
+  Abfragedienst regelmässig in Zeitüberschreitung/Bot-Policy-Sperre laufen liess; (4) der
+  generische HTTP-User-Agent ohne Kontaktangabe verletzte Wikimedias Bot-Policy und wurde
+  gelegentlich mit 403 beantwortet, unabhängig von der Abfrage selbst (live reproduziert: `curl`
+  mit beschreibendem User-Agent erfolgreich, `httpx` mit dem alten generischen UA 403).
+- **Entscheid:** Abfrage auf «SIX-notiert (korrekte QID Q661834) oder CH-ansässig mit ISIN»
+  eingrenzen statt auf «alle Schweizer Unternehmen»; das hält die Abfrage bei 1–3 Sekunden statt
+  Minuten/Timeout. Fondsklassen-QIDs auf Q845477 (ETF)/Q4201895 (Investmentfonds) korrigiert,
+  nur direktes `P31` (kein Transitivabschluss) – im Schweizer/SIX-Zuschnitt dadurch 0 Fondstreffer
+  (weltweit 19), ehrlich dokumentiert statt verschwiegen. Ticker-Symbol wird in Wikidata oft als
+  *Qualifier* der Börsenangabe geführt, nicht als eigene Aussage (z. B. Roche: `P414=SIX` mit
+  Qualifier `P249=ROG`, kein eigenständiges `P249`); zusätzliche `pq:P249`-Abfrage ergänzt.
+  HTTP-User-Agent projektweit (GLEIF/Zefix/Wikidata) auf
+  `ProjektTransparenz/0.1 (+https://github.com/Jonasbader7/Projekt-Transparenz)` umgestellt –
+  die öffentliche Repo-URL, keine private Kontaktadresse, keine neue Nutzerfreigabe nötig.
+  `wikidata_ch` läuft seit diesem Fix standardmässig (nicht mehr `enabled = false`).
+- **Neuer Fund beim Echtlauf:** Zwei Wikidata-Items können dieselbe LEI tragen (live:
+  Q292291 «AGEN Holding» und Q120635425 «Aevis Victoria SA»). Die bestehende generische
+  LEI-Eindeutigkeitsprüfung (`check_entities`) hätte sonst den *gesamten* Quellenlauf verworfen.
+  Nach Zefix/GLEIF-Vorbild unter Quarantäne gestellt (`identifier_conflicts`,
+  `lei_shared_by_multiple_wikidata_items`), nicht die ganze Quelle abgelehnt und nicht über den
+  Namen fusioniert. Ergebnis: 287 Datensätze, 293 Wertpapierkandidaten, 3 neue Konfliktgruppen.
+- **Suchbarkeit:** Neuer CLI-Befehl `swiss-search` und eine eigene lokale `security_candidates.html`
+  (gleiches Muster wie `reports/market_catalog.py`, aber separate Datei/Quelle) – bewusst nicht in
+  den SEC-Marktkatalog oder die Screening-Website gemischt: andere Lizenzquelle, andere
+  Vertrauensstufe (unverifizierter Firmenclaim statt SEC-Meldung), bestehende Architektur
+  (`swiss.sqlite` getrennt von `markets.sqlite`/Demo) bleibt unverändert.
+- **Alternativen:** Melting-Format (`?item ?property ?value` mit `VALUES ?property {...}`)
+  beibehalten und nur die QIDs korrigieren – verworfen, da dieses Muster selbst bei bereits auf
+  ~300 Posten eingegrenztem Subjekt in mehreren Live-Tests regelmässig in Zeitüberschreitung lief
+  (unbound-predicate-Join scheint vom Abfrageoptimierer nicht auf die vorgefilterte
+  Subjektmenge heruntergebrochen zu werden); stattdessen feste Spalten pro Eigenschaft.
+  Shared-LEI-Fälle einfach verwerfen (wie ungültige Prüfziffern) – verworfen: beide Einträge
+  tragen eine gültige LEI, das ist ein Quellendatenfehler, keine ungültige Kennung; Quarantäne
+  mit eigenem Grund ist ehrlicher. Security-Kandidaten in den SEC-Marktkatalog einmischen –
+  verworfen: andere Lizenz/Vertrauensstufe, hätte `markets.sqlite` und dessen Tests angefasst,
+  ohne dass der Auftrag eine Zusammenführung der Kataloge verlangt.
+
 ## 08.11.2026 – Weltweiter Aktien-/ETF-Auftrag (Codex)
 
 ### D-033 SEC-Teilbestand als ausführbarer Katalog, Weltabdeckung offen

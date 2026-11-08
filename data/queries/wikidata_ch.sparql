@@ -1,19 +1,29 @@
-# CC0 structured statements; broad candidate query, no completeness claim.
-# SIX Swiss Exchange = Q12569. No inferred issuer mapping from a company-level ISIN.
-SELECT DISTINCT ?item ?itemLabel ?property ?value WHERE {
+# CC0 structured statements; no completeness claim.
+# SIX Swiss Exchange = Q661834 (the previous Q12569 was wrong: that QID is the Loire river).
+# Item set restricted to "has an ISIN and a Swiss country claim" or "listed on SIX" so the
+# live query service answers in seconds; the old P17=Switzerland + transitive
+# instance-of/subclass-of(enterprise) scan over all of Wikidata timed out (and, with the
+# wrong SIX QID, found zero listings besides). No inferred issuer mapping from a
+# company-level ISIN.
+SELECT DISTINCT ?item ?labelDe ?labelEn ?isin ?lei ?exchange ?ticker ?tickerQ ?country ?parent
+                ?instanceOf WHERE {
   {
     SELECT DISTINCT ?item WHERE {
-      { ?item wdt:P17 wd:Q39 }
-      UNION { ?item wdt:P159/wdt:P17 wd:Q39 }
-      UNION { ?item wdt:P414 wd:Q12569 }
-      ?item wdt:P31/wdt:P279* wd:Q783794 .
+      { ?item wdt:P946 ?anyIsin . ?item wdt:P17 wd:Q39 . }
+      UNION { ?item wdt:P414 wd:Q661834 . }
     }
   }
-  VALUES ?property {
-    wdt:P17 wdt:P159 wdt:P1278 wdt:P946 wdt:P414 wdt:P249
-    wdt:P452 wdt:P749 wdt:P31 wdt:P1454 wdt:P1059
-  }
-  ?item ?property ?value .
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en,fr,it" }
+  OPTIONAL { ?item wdt:P946 ?isin }
+  OPTIONAL { ?item wdt:P1278 ?lei }
+  OPTIONAL { ?item wdt:P414 ?exchange }
+  OPTIONAL { ?item wdt:P249 ?ticker }
+  # Ticker symbol is often a qualifier of the "stock exchange" statement, not a
+  # standalone claim (seen live: Roche's P414=SIX statement carries P249=ROG as a
+  # qualifier, with no top-level P249 statement at all).
+  OPTIONAL { ?item p:P414 ?exchangeStmt . OPTIONAL { ?exchangeStmt pq:P249 ?tickerQ } }
+  OPTIONAL { ?item wdt:P17 ?country }
+  OPTIONAL { ?item wdt:P749 ?parent }
+  OPTIONAL { ?item wdt:P31 ?instanceOf }
+  OPTIONAL { ?item rdfs:label ?labelDe . FILTER(LANG(?labelDe) = "de") }
+  OPTIONAL { ?item rdfs:label ?labelEn . FILTER(LANG(?labelEn) = "en") }
 }
-ORDER BY ?item ?property ?value

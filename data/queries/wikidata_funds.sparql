@@ -1,16 +1,25 @@
 # Separate fund catalogue candidates. Never holdings.
-SELECT DISTINCT ?item ?itemLabel ?property ?value WHERE {
+# The previous fund-class QIDs (Q927783, Q756898) were wrong: they name a historical
+# person and an unrelated village, not any fund concept, so this branch matched nothing
+# on Wikidata regardless of the HTTP 403/timeout. Correct QIDs: Q845477 (exchange-traded
+# fund), Q4201895 (investment fund). Direct P31 only (no P279* transitive closure, which
+# is what made the live query service time out); candidates may be missed if Wikidata
+# models a specific fund type that is not a direct instance of either QID.
+SELECT DISTINCT ?item ?labelDe ?labelEn ?isin ?lei ?exchange ?ticker ?tickerQ ?country WHERE {
   {
     SELECT DISTINCT ?item WHERE {
-      { ?item wdt:P17 wd:Q39 }
-      UNION { ?item wdt:P159/wdt:P17 wd:Q39 }
-      UNION { ?item wdt:P414 wd:Q12569 }
-      VALUES ?fundClass { wd:Q927783 wd:Q756898 }
-      ?item wdt:P31/wdt:P279* ?fundClass .
+      { ?item wdt:P946 ?anyIsin . ?item wdt:P17 wd:Q39 . }
+      UNION { ?item wdt:P414 wd:Q661834 . }
     }
   }
-  VALUES ?property {wdt:P17 wdt:P159 wdt:P1278 wdt:P946 wdt:P414 wdt:P249 wdt:P31}
-  ?item ?property ?value .
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en,fr,it" }
+  VALUES ?fundClass { wd:Q845477 wd:Q4201895 }
+  ?item wdt:P31 ?fundClass .
+  OPTIONAL { ?item wdt:P946 ?isin }
+  OPTIONAL { ?item wdt:P1278 ?lei }
+  OPTIONAL { ?item wdt:P414 ?exchange }
+  OPTIONAL { ?item wdt:P249 ?ticker }
+  OPTIONAL { ?item p:P414 ?exchangeStmt . OPTIONAL { ?exchangeStmt pq:P249 ?tickerQ } }
+  OPTIONAL { ?item wdt:P17 ?country }
+  OPTIONAL { ?item rdfs:label ?labelDe . FILTER(LANG(?labelDe) = "de") }
+  OPTIONAL { ?item rdfs:label ?labelEn . FILTER(LANG(?labelEn) = "en") }
 }
-ORDER BY ?item ?property ?value

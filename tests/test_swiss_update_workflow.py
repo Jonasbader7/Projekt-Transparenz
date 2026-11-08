@@ -58,7 +58,7 @@ def test_unchanged_export_keeps_generation_and_does_not_parse(context, tmp_path,
     assert len(list((output / "generations").iterdir())) == 1
     status = json.loads((output / "latest_status.json").read_bytes())
     assert status["sources"]["gleif_ch"]["latest_update_status"] == "uebersprungen"
-    assert status["sources"]["wikidata_ch"]["enabled"] is False
+    assert status["sources"]["wikidata_ch"]["enabled"] is True
 
 
 def test_new_data_version_rebuilds_export(context, tmp_path):
@@ -100,15 +100,22 @@ def test_export_rebuilds_when_reuse_is_unsafe_or_explicit(context, tmp_path, mon
     assert len(list((output / "generations").iterdir())) == 2
 
 
-def test_default_skips_known_disabled_source_but_manual_attempt_still_fails(
+def test_default_skips_disabled_source_but_manual_attempt_still_fails(
     context, monkeypatch, capsys
 ):
+    # No real swiss source is disabled any more (wikidata_ch's HTTP 403 turned out to be a
+    # query bug, now fixed); exercise the skip logic with a synthetic disabled source.
+    disabled = tuple(
+        s.model_copy(update={"enabled": False, "disabled_reason": "HTTP 403"})
+        if s.key == "swissprtr" else s for s in context.catalog.sources)
+    monkeypatch.setattr(context, "catalog", context.catalog.model_copy(
+        update={"sources": disabled}))
     calls = []
     monkeypatch.setattr(swiss, "create_swiss_context", lambda: context)
 
     def run_source(key, **kwargs):
         calls.append(key)
-        if key == "wikidata_ch":
+        if key == "swissprtr":
             return UpdateOutcome(key, UpdateStatus.FEHLGESCHLAGEN, "HTTP 403", errors=["HTTP 403"])
         return UpdateOutcome(key, UpdateStatus.UEBERSPRUNGEN, "Noch nicht fällig")
 
@@ -116,12 +123,12 @@ def test_default_skips_known_disabled_source_but_manual_attempt_still_fails(
     monkeypatch.setattr(swiss, "export_foundation", lambda *a, **kw: {"counts": {}})
     _, failed = swiss._update_foundation(False, None, False)
     assert not failed
-    assert set(calls) == {"gleif_ch", "zefix_lindas", "swissprtr"}
-    assert "wikidata_ch: deaktiviert: HTTP 403" in capsys.readouterr().out
+    assert set(calls) == {"gleif_ch", "zefix_lindas", "wikidata_ch"}
+    assert "swissprtr: deaktiviert: HTTP 403" in capsys.readouterr().out
     calls.clear()
-    _, failed = swiss._update_foundation(False, "wikidata_ch", False)
+    _, failed = swiss._update_foundation(False, "swissprtr", False)
     assert failed
-    assert calls == ["wikidata_ch"]
+    assert calls == ["swissprtr"]
 
 
 def test_export_only_explicitly_requests_full_rebuild(context, monkeypatch):
