@@ -1,5 +1,13 @@
 # STATUS
 
+## Dokumentationsstand 11.11.2026
+
+KI-Beiträge, Skills und Werkzeuge sind im [README](README.md#ki-unterstützung-skills-und-werkzeuge)
+und in [docs/AI_USAGE.md](docs/AI_USAGE.md) sichtbar. Historische Skill-Aufrufe bleiben als
+nicht erfasst gekennzeichnet. Künftige Sessions ergänzen die Übersicht gemäss `CLAUDE.md`.
+Fachlicher Projektstand und offene Entwicklungsschritte stehen unverändert unten.
+
+
 **Stand: 08.11.2026 · Wikidata-Wertpapierkandidaten reparieren und durchsuchbar machen (D-034).**
 Jonas meldete: Roche und Nestlé fehlen in der lokalen Suche; einige Schweizer Unternehmen
 erscheinen nur über US-Kotierungen. Ursache war **kein** anhaltender HTTP 403, sondern drei

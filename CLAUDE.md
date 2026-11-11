@@ -12,6 +12,9 @@ Gründer: Jonas Bader (BFH Digital Business & AI, ex Bankberater). Nebenprojekt.
 - **Am Ende jeder Session:** `STATUS.md` aktualisieren (Phase, Fortschritt, nächste 3 Schritte,
   offene Fragen), `docs/LOG.md` ergänzen (neueste oben), neue Entscheide in `docs/DECISIONS.md`,
   dann ein Git-Commit mit aussagekräftiger Nachricht.
+- **KI-Transparenz:** Im Sessionlog Assistent, tatsächlich verwendete Skills (Name/Quelle),
+  wesentliche Tools und Prüfergebnisse erfassen; Übersicht `docs/AI_USAGE.md` aktuell halten.
+  Verfügbare Skills nicht als verwendet ausgeben; unbekannte Angaben als «nicht erfasst» markieren.
 - Deutsch, Schweizer Rechtschreibung (ss statt ß). Code-Bezeichner Englisch.
 - Tests ausführen, bevor etwas als fertig gilt. Nicht ausgeführte oder fehlgeschlagene Tests
   ehrlich dokumentieren.

@@ -2,6 +2,16 @@
 
 Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst innerhalb einer Session.
 
+## 11.11.2026 – KI-Transparenz auf GitHub (Auftrag Jonas)
+
+### D-035 KI-Beiträge, Skills und Werkzeuge mit Belegstatus dokumentieren
+- **Entscheid:** Sichtbare Übersicht im README, Details in `docs/AI_USAGE.md`.
+  Künftige Sessions erfassen tatsächlich verwendete Skills und wesentliche Tools im Sessionlog.
+- **Begründung:** Verwendete Assistenten und Arbeitsweisen sollen nachvollziehbar sein.
+  Verfügbare Skills sind kein Nutzungsnachweis; fehlende historische Angaben bleiben offen.
+- **Alternative:** Alle verfügbaren Skills auflisten – verworfen, da dies tatsächliche Nutzung
+  vortäuschen könnte. Keine automatische Telemetrie oder neue Laufzeitabhängigkeit.
+
 ## 08.11.2026 – Wikidata-Wertpapierkandidaten reparieren (Claude, Auftrag Jonas)
 
 ### D-034 wikidata_ch-Bugs beheben statt als dauerhaft gesperrt dokumentieren

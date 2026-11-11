@@ -2,6 +2,24 @@
 
 Neueste Einträge oben.
 
+## 11.11.2026 – Codex: KI-Nutzung, Skills und Werkzeuge auf GitHub sichtbar machen
+
+- Auftrag von Jonas: Im GitHub-Projekt anzeigen, welche Skills und weiteren Werkzeuge
+  verwendet werden. Dieser Auftrag autorisiert die Veröffentlichung dieser Dokumentation.
+- README um eine sichtbare Übersicht ergänzt; `docs/AI_USAGE.md` dokumentiert belegte
+  Claude-/Codex-Beiträge, Skills, technische Werkzeuge, Quellen und Grenzen.
+- Verwendeter Skill: `cloud-environment:cloud-environment-runtime` einschliesslich
+  Netzwerk-/Paketinstallationshinweisen; Quelle in `docs/AI_USAGE.md` verlinkt.
+- Werkzeuge: Git und Shell/Python zum Lesen, Bearbeiten und Prüfen; GitHub-Connector
+  zum Bereitstellen der Änderung. Keine Unteragenten eingesetzt.
+- Frühere konkrete Skill-Aufrufe und Modellversionen sind nicht erfasst; keine nachträgliche
+  Zuschreibung aus der blossen Verfügbarkeit eines Skills.
+- `CLAUDE.md` um Pflegepflicht für Skills/Tools im Sessionlog ergänzt; STATUS aktualisiert.
+- Prüfung: lokale Dokumentationslinks auf vorhandene Ziele geprüft; `git diff --check`
+  bestanden. pytest/Ruff hier nicht ausgeführt: Module in dieser Cloud-Umgebung fehlen.
+  Ausschliesslich Markdown geändert, keine App-, Daten- oder Website-Änderung.
+- Veröffentlichung betrifft die Repository-Dokumentation; kein Pages-Deployment ausgelöst.
+
 ## 08.11.2026 – Claude: Wikidata-Wertpapierkandidaten reparieren und durchsuchbar machen
 
 - Auftrag: Jonas meldete, Roche/Nestlé fehlten in der lokalen Suche; geprüft, ob das fehlende
