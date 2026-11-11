@@ -11,22 +11,6 @@ keine Empfehlungen, nicht rechtlich geprüft. Details: [STATUS.md](STATUS.md).
 ETF-Nachweisen. Das weltweite Universum ist noch unvollständig.
 Start und genaue Abdeckung: [Katalog-Anleitung](docs/GLOBAL_MARKET_CATALOG.md).
 
-## KI-Unterstützung, Skills und Werkzeuge
-
-Das Projekt wird mit **Claude und OpenAI Codex** entwickelt. Dokumentierte Beiträge reichen
-von Datenimport und Identitätsprüfung bis zu Tests und Fehlerbehebung. Die Verantwortung
-für Projektziele, Freigaben und fachliche Entscheide liegt bei Jonas Bader.
-
-| Bereich | Einsatz im Projekt | Nachweis |
-|---|---|---|
-| KI-Assistenten | Claude: SwissPRTR-Normalisierung und Wikidata-Reparatur; Codex: Schweizer Rohdatenfundament und SEC-Katalog | [Sessionlog](docs/LOG.md), [Entscheide](docs/DECISIONS.md) |
-| Skills | Anleitungen für einzelne Arbeitsabläufe; konkrete frühere Skill-Aufrufe sind nicht vollständig protokolliert | [Skill- und Werkzeugübersicht](docs/AI_USAGE.md#skills) |
-| Projektanweisungen | Arbeitsregeln, Status, Entscheide und Übergaben zwischen Sessions | [CLAUDE.md](CLAUDE.md), [STATUS.md](STATUS.md), [Übergabe](docs/CODEX_TO_CLAUDE_HANDOFF.md) |
-| Umsetzung | Python, pandas, Pydantic, SQLAlchemy/SQLite, httpx, Jinja2 und Streamlit | [Abhängigkeiten](pyproject.toml), [Architektur](docs/ARCHITECTURE.md) |
-| Prüfungen und Zusammenarbeit | pytest, Ruff, Git und GitHub Actions | [Tests](tests/), [CI-Workflow](.github/workflows/ci.yml) |
-
-**[Details: KI-Nutzung, verwendete Skills, Werkzeuge und Grenzen](docs/AI_USAGE.md)**
-
 ## Was der Prototyp heute kann
 
 1. Eine ETF-Positionsliste (CSV) importieren und validieren
