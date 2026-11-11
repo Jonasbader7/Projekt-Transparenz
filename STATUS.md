@@ -2,8 +2,7 @@
 
 ## Dokumentationsstand 11.11.2026
 
-KI-Beiträge, Skills und Werkzeuge sind im [README](README.md#ki-unterstützung-skills-und-werkzeuge)
-und in [docs/AI_USAGE.md](docs/AI_USAGE.md) sichtbar. Historische Skill-Aufrufe bleiben als
+Skills und Werkzeuge sind in [docs/AI_USAGE.md](docs/AI_USAGE.md) dokumentiert. Historische Skill-Aufrufe bleiben als
 nicht erfasst gekennzeichnet. Künftige Sessions ergänzen die Übersicht gemäss `CLAUDE.md`.
 Fachlicher Projektstand und offene Entwicklungsschritte stehen unverändert unten.
 
