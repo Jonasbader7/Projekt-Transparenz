@@ -44,7 +44,8 @@ def test_resolve_moved_absolute_path(tmp_path: Path) -> None:
     moved = tmp_path / "data/raw/external/manifests/x/a.json"
     moved.parent.mkdir(parents=True)
     moved.write_text("{}", encoding="utf-8")
-    old = Path("C:/Alt/OneDrive/Projekt/data/raw/external/manifests/x/a.json")
+    # absoluter Pfad am früheren Ort (plattformunabhängig, existiert nicht mehr)
+    old = tmp_path / "alt/OneDrive/Projekt/data/raw/external/manifests/x/a.json"
     assert s.resolve_data_path(old, tmp_path) == moved
-    missing = Path("C:/Alt/OneDrive/Projekt/data/raw/fehlt.json")
+    missing = tmp_path / "alt/OneDrive/Projekt/data/raw/fehlt.json"
     assert s.resolve_data_path(missing, tmp_path) == missing  # nichts erfinden
