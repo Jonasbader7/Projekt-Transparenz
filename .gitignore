@@ -30,6 +30,11 @@ data/cache/*
 *.sqlite3
 *.db
 
+# Menschliche Entscheide zu echten Zuordnungen: lokal, bis über Veröffentlichung entschieden ist
+data/review/
+# Temporäre Testordner
+data/test-temp-*/
+
 # Lizenzierte Daten, die nicht veröffentlicht werden dürfen
 data/licensed/
 
@@ -45,6 +50,7 @@ privat/
 
 # Lokale Werkzeug-Konfiguration (maschinenspezifische Pfade)
 .claude/
+.wrangler/
 
 # Editor / OS
 .vscode/

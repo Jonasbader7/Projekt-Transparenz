@@ -35,6 +35,21 @@ SAMPLE = ROOT / "data" / "sample"
 FUND_ISIN = make_isin("ZZFIKETF001")
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _shield_real_data(tmp_path_factory: pytest.TempPathFactory) -> Iterator[None]:
+    """Sicherheitsnetz: Was ein Test versehentlich in den echten Datenordner schreiben würde,
+    landet in einem Wegwerfordner. Gilt auch für Skripte, die ihren Pfad beim Import lesen."""
+    import os
+
+    previous = os.environ.get("TRANSPARENZ_DATA_DIR")
+    os.environ["TRANSPARENZ_DATA_DIR"] = str(tmp_path_factory.mktemp("datenordner"))
+    yield
+    if previous is None:
+        os.environ.pop("TRANSPARENZ_DATA_DIR", None)
+    else:
+        os.environ["TRANSPARENZ_DATA_DIR"] = previous
+
+
 @pytest.fixture
 def catalog() -> Catalog:
     return load_catalog(CONFIG_DIR / "sources.toml", CONFIG_DIR / "criteria.toml")
@@ -71,10 +86,11 @@ def isolated_project(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterato
 
 
 # ---------------------------------------------------------------- Bausteine
-def criterion(key: str = "kohle", threshold: float | None = None, metric: str | None = None):
+def criterion(key: str = "kohle", threshold: float | None = None, metric: str | None = None,
+              **profile):
     return Criterion(
         key=key, name=key.capitalize(), description="Testkriterium", severity="hoch",
-        metric=metric, metric_unit="%" if metric else None, threshold=threshold,
+        metric=metric, metric_unit="%" if metric else None, threshold=threshold, **profile,
     )
 
 
@@ -109,6 +125,10 @@ def evidence(
     lei: str | None = None,
     metric: tuple[str, float] | None = None,
     reviewed: date | None = date(2026, 10, 1),
+    published: date = date(2026, 1, 15),
+    category: str | None = None,
+    event: date | None = None,
+    consequences_until: date | None = None,
 ) -> SourcedEvidence:
     _counter["n"] += 1
     rec = EvidenceRecord(
@@ -123,12 +143,15 @@ def evidence(
         publisher_type=ptype,
         source_title="Testdokument",
         source_url="https://example.org/test",
-        published_date=date(2026, 1, 15),
+        published_date=published,
         verification_level=verification,
         last_reviewed=reviewed,
         metric_name=metric[0] if metric else None,
         metric_value=metric[1] if metric else None,
         metric_unit="%" if metric else None,
+        category=category,
+        event_date=event,
+        consequences_until=consequences_until,
     )
     return SourcedEvidence(rec, "test_quelle", version_id=1, version_hash="abc123",
                            imported_at=None)

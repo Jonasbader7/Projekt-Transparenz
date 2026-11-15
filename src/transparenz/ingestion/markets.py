@@ -16,6 +16,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from transparenz.config.catalog import Catalog, SourceConfig
+from transparenz.config.settings import local_data_dir
 from transparenz.entities.enums import DatasetKind
 from transparenz.entities.markets import MarketObservation
 from transparenz.ingestion.adapters import SourceAdapter
@@ -164,7 +165,7 @@ class MarketAdapter(SourceAdapter):
             if (bundle["format"] != FORMAT or bundle["source_key"] != self.config.key
                     or bundle["mode"] != self.config.external_mode or not bundle["pages"]):
                 raise ValueError("Ungültiges Marktmanifest")
-            folder = (self.root / "data/raw/external" / self.config.key).resolve()
+            folder = (local_data_dir(self.root) / "raw/external" / self.config.key).resolve()
             seen = {}
             for page in bundle["pages"]:
                 path = (folder / page["path"]).resolve()

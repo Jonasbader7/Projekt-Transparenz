@@ -54,6 +54,11 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--bor
 th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip.conflict { background: transparent; border: 1.5px solid currentColor; color: var(--text); font-weight: 600; }
+tr.group th { background: transparent; color: var(--muted); font-size: .82rem; padding-top: 14px; }
+.finding-line { margin: 2px 0; }
+table.overview td:first-child, table.overview thead th:first-child { position: sticky; left: 0; background: var(--surface); min-width: 11rem; }
+table.overview thead th:first-child { background: var(--surface-2); }
 .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--s-text); }
 .s-festgestellt { background: var(--s-festgestellt); }
 .s-pruefung_ausstehend { background: var(--s-pruefung_ausstehend); }
@@ -95,26 +100,223 @@ label.filter { display: inline-flex; gap: 8px; align-items: center; margin: 8px 
 <p class="lead">Die Methodik ist offen. Diese Seite zeigt dieselben Dokumente, die im Repository
 unter <code>docs/methodik/</code> liegen – es gibt keine zweite, versteckte Version.</p>
 
-<h2>Aktive Ausschlusskriterien</h2>
+<h2 id="profil">Kriterien und Bewertungsprofil</h2>
+<div class="notice"><strong>Strenges Ausschlussprofil (Startprofil), Version 1.1 vom 13.11.2026.</strong> Die Regeln dieses Profils sind unsere Bewertungsentscheidung. Sie legen fest, welche belegten Sachverhalte als Konflikt mit dem Profil gelten. Die Belege selbst stammen aus den genannten Quellen.</div>
+<p class="caption">Technische Quelle: <code>src/transparenz/config/criteria.toml</code> (Schema 2).
+«Entschieden» heisst: Regel festgelegt. «Vorschlag» heisst: Regel vorgeschlagen, noch nicht bestätigt.
+Es gibt keinen Gesamtwert und keine Verrechnung zwischen Kriterien.</p>
+
+<h3>Klima</h3>
+<details>
+  <summary>Kohle <span class="caption">· Regel: entschieden</span></summary>
+  <div class="body">
+    <p>Förderung von Kohle oder Stromerzeugung aus Kohle.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Jede bestätigte Eigentumsbeteiligung auf eigene Rechnung an aktiver Kohleförderung oder Kohleverstromung gilt im strengen Ausschlussprofil als Konflikt. Vermögensverwaltung, Verwahrung und Finanzierung sind keine Eigentumsbeteiligung und haben eigene Regeln (Beziehungstypen).</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Kohleförderung (Minen)</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">Aktive Förderung, unabhängig von der Höhe der Beteiligung.</td></tr><tr><td>Kohleverstromung (Kraftwerke)</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">Aktive Stromerzeugung aus Kohle, unabhängig von der Höhe der Beteiligung.</td></tr><tr><td>Stillgelegte Kohleanlagen</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">entschieden</td><td class="caption">Keine laufende Tätigkeit mehr; wird gezeigt, löst keinen Konflikt aus.</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Beteiligungsanteil in Prozent</li><li>Kontrolle (ab 50 %) ja/nein</li><li>Betreiberrolle</li><li>Status der Anlage (in Betrieb, im Ausbau, stillgelegt)</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Stillgelegte Anlagen: gesondert gezeigt, kein Konflikt</li><li>Verwahrung, Vermögensverwaltung für Kunden und Finanzbeteiligungen von Finanzinstituten mit ungeklärter Rechnung: keine belegte Eigentumsbeteiligung, kein Konflikt</li><li>Beteiligungen mit unbekanntem Anteil: gesondert gezeigt, bis der Anteil belegt ist</li></ul>    <p class="caption"><strong>Quellen:</strong> Global Energy Monitor, Global Energy Ownership Tracker (CC BY 4.0)<br><strong>Lücke:</strong> Umsatzanteil Kohle steht in keiner freigegebenen Quelle.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Beteiligungsschwelle: heute 0 % (jede bestätigte Beteiligung auf eigene Rechnung). Eine Schwelle wird erst auf der bereinigten Grundlage entschieden; der Pilotbericht zeigt die Wirkung von 5, 10, 20 und 50 %.</li><li>Gelten Kohleprojekte im Ausbau ohne laufenden Betrieb ebenfalls als Konflikt? Heute: ja, als aktive Kohle gezählt.</li><li>Metallurgische Kohle (Stahl) gleich behandeln wie Kraftwerkskohle? Heute: ja.</li></ul>  </div>
+</details>
+<details>
+  <summary>Fossile Expansion <span class="caption">· Regel: entschieden</span></summary>
+  <div class="body">
+    <p>Neue fossile Förder-, Transport-, LNG- und Kraftwerkskapazitäten (Öl, Gas, Kohle).</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Bestätigte neue fossile Förder-, Transport-, LNG- und Kraftwerkskapazitäten werden erfasst. Angekündigte, genehmigte und im Bau befindliche neue Kapazität im Eigentum auf eigene Rechnung gilt im strengen Ausschlussprofil als Konflikt. Vermögensverwaltung, Verwahrung und Finanzierung haben eigene Regeln (Beziehungstypen).</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Neue Förderkapazität (Öl- und Gasfelder, Kohleminen)</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Neue Transportkapazität (Pipelines)</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Neue LNG-Terminals (Flüssigerdgas)</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Neue fossile Kraftwerke</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Instandhaltung ohne Kapazitätsausbau</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">entschieden</td><td class="caption">Kein Ausbau; wird gesondert gezeigt.</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Projektphase: Ankündigung, Genehmigung, Bau, Betrieb</li><li>Art der Kapazität: Förderung, Transport (Pipeline), LNG-Terminal, Kraftwerk</li><li>Beteiligungsanteil und Kontrolle</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Reine Instandhaltung oder Ersatz ohne Kapazitätsausbau: gesondert gezeigt, kein Konflikt</li><li>Bestehende Anlagen in Betrieb ohne Ausbau: gezeigt, kein Konflikt unter diesem Kriterium</li><li>Verwahrung, Vermögensverwaltung für Kunden und Finanzbeteiligungen mit ungeklärter Rechnung: kein Konflikt</li><li>Beteiligungen mit unbekanntem Anteil: gesondert gezeigt, bis der Anteil belegt ist</li></ul>    <p class="caption"><strong>Quellen:</strong> Global Energy Monitor, Global Energy Ownership Tracker (CC BY 4.0): Gaskraftwerke, LNG-Terminals, Gas- und Ölpipelines<br><strong>Lücke:</strong> Neue Öl- und Gasfelder: Eigentümer stehen bei GEM nur mit Namen, ohne Kennung. Zuordnung erst über bestätigte Namensentscheide.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Notstromaggregate und Eigenversorgung (z. B. Dieselgeneratoren von Rechenzentren): Zählen sie als neue fossile Kraftwerkskapazität? Heute: ja, mit dem Vermerk «Eigenbedarf» bzw. «Notstrom» gezeigt.</li><li>Beteiligungsschwelle: heute 0 %; Entscheid erst auf der bereinigten Grundlage.</li><li>Ab welchem Datum gilt eine Anlage als «neu» (Stichtag)? Heute: Projektphase laut Quelle zum Datenstand.</li><li>Zählt eine blosse Ankündigung ohne Genehmigung gleich wie ein Bau? Heute: ja, Phase wird getrennt gezeigt.</li></ul>  </div>
+</details>
+<h3>Umwelt</h3>
+<details>
+  <summary>Entwaldung <span class="caption">· Regel: entschieden · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Umwandlung von Wald oder anderen natürlichen Ökosystemen durch eigene Tätigkeit oder in der Lieferkette (z. B. Soja, Palmöl, Rind, Kakao, Holz).</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Nachgewiesene Waldumwandlung mit belegtem Unternehmens- oder Lieferkettenbezug wird erfasst. Satellitensignale allein reichen nicht zur Verantwortungszuweisung. Direkte Tätigkeit und Lieferkettenbezug werden getrennt bewertet.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Direkte Tätigkeit</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Lieferkettenbezug</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">entschieden</td><td class="caption">Getrennt bewertet; ohne eigene bestätigte Feststellung kein Konflikt.</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Direkte Tätigkeit oder Lieferkettenbezug</li><li>Rohstoff und Region</li><li>Art des Nachweises (Behördenentscheid, Gerichtsurteil, dokumentierte Recherche)</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Satellitensignale ohne belegten Unternehmensbezug: kein Beleg</li><li>Lieferkettenbezug ohne bestätigte Feststellung: gezeigt, kein Konflikt</li><li>Dokumentierte Recherchen ohne Behördenentscheid: gezeigt, kein Konflikt</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> Forest 500 nur nicht-kommerziell; Trase nur auf Anfrage; brasilianische Behördendaten (IBAMA) technisch nicht lesbar und Lizenz ungeprüft.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Stichtag (z. B. 31.12.2020 wie in der EU-Entwaldungsverordnung)?</li><li>Gilt ein bestätigter Lieferkettenbezug gleich wie eine direkte Tätigkeit? Heute: getrennt gezeigt, nur die direkte Tätigkeit ist Konflikt.</li></ul>  </div>
+</details>
+<details>
+  <summary>Biodiversität und Ökosysteme <span class="caption">· Regel: Vorschlag, noch zu bestätigen · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Schädigung natürlicher Lebensräume, geschützter Arten und empfindlicher Ökosysteme, auch ausserhalb von Wäldern.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Belegte Schädigung natürlicher Lebensräume, geschützter Arten und empfindlicher Ökosysteme wird erfasst, auch ausserhalb von Wäldern (z. B. Feuchtgebiete, Moore, Savannen, Korallenriffe). Vorschlag: Eine bestätigte Schädigung gilt als Konflikt.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Schädigung natürlicher Lebensräume</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Schädigung geschützter Arten</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Tätigkeit in Schutzgebieten ohne belegten Schaden</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Art des Lebensraums oder der Art</li><li>Ort und Schutzstatus des Gebiets</li><li>Art des Nachweises und Datum</li><li>Belegte Wiederherstellung oder Ausgleich</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Nähe einer Anlage zu einem Schutzgebiet allein: kein Beleg</li><li>Waldumwandlung: wird unter «Entwaldung» geführt, nicht doppelt gezählt</li><li>Tätigkeit in einem Schutzgebiet ohne belegten Schaden: gesondert gezeigt</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> Keine Quelle geprüft.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Gilt jede belegte Tätigkeit in einem streng geschützten Gebiet (z. B. UNESCO-Welterbe) als Konflikt, auch ohne belegten Schaden?</li></ul>  </div>
+</details>
+<details>
+  <summary>Wasser und Meeresressourcen <span class="caption">· Regel: Vorschlag, noch zu bestätigen · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Wasserentnahme und -verbrauch im örtlichen Kontext sowie Auswirkungen auf Gewässer und Meeresökosysteme.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Wasserentnahme und -verbrauch werden im örtlichen Kontext erfasst, insbesondere in Regionen mit Wasserknappheit. Auswirkungen auf Gewässer und Meeresökosysteme werden erfasst. Vorschlag: Eine bestätigte Schädigung von Gewässern oder Meeresökosystemen gilt als Konflikt; Entnahmemengen sind Kennzahlen, kein Konflikt.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Bestätigte Schädigung von Gewässern</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Bestätigte Schädigung von Meeresökosystemen</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Wasserentnahme in Regionen mit Wasserknappheit</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">Kennzahl im örtlichen Kontext; ohne belegten Schaden kein Konflikt.</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Standort und Einzugsgebiet</li><li>Wasserknappheit am Standort (mit Quelle)</li><li>Entnahme und Verbrauch mit Jahr und Einheit</li><li>Betroffenes Gewässer oder Meeresgebiet</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Entnahmemengen ohne örtlichen Kontext: Kennzahl ohne Bewertung</li><li>Konzernweite Wasserzahlen: nicht auf einzelne Standorte umgerechnet</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> Keine Quelle geprüft.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Ab wann gilt eine Region als wasserknapp (welcher Index, welche Stufe)?</li><li>Zählt eine hohe Entnahme in einer wasserknappen Region ohne belegten Schaden als Konflikt? Heute: nein, nur Kennzahl.</li></ul>  </div>
+</details>
+<details>
+  <summary>Umweltverschmutzung und gefährliche Stoffe <span class="caption">· Regel: Vorschlag, noch zu bestätigen · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Schädliche Freisetzungen in Luft, Boden und Wasser sowie entsprechende Behördenentscheide.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Belegte schädliche Freisetzungen in Luft, Boden und Wasser sowie entsprechende Behördenentscheide werden erfasst. Stoffgefährlichkeit, tatsächliche Exposition und nachgewiesener Schaden werden unterschieden. Vorschlag: Nachgewiesener Schaden und bestätigte Behördenentscheide gelten als Konflikt.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Nachgewiesener Schaden</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Bestätigter Behördenentscheid zu einer Freisetzung</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Tatsächliche Exposition ohne nachgewiesenen Schaden</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Gefährlicher Stoff ohne belegte Freisetzung</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Stoff und Medium (Luft, Boden, Wasser)</li><li>Stufe: Stoffgefährlichkeit, tatsächliche Exposition oder nachgewiesener Schaden</li><li>Behörde, Entscheid, Datum und Sanktion</li><li>Belegte Sanierung</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Gemeldete Freisetzungen im Rahmen der Bewilligung: Kennzahl, kein Verstoss</li><li>Herstellung oder Verwendung gefährlicher Stoffe ohne belegte Freisetzung: gesondert gezeigt</li><li>Belegte Exposition ohne nachgewiesenen Schaden: gesondert gezeigt</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> Amtliche Freisetzungsregister (SwissPRTR, EU, USA) liefern Kennzahlen, keine Verstösse. Vollzugsdaten der US-Umweltbehörde EPA sind gemeinfrei, nennen aber nur Namen.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Gilt die Herstellung international verbotener Stoffe (z. B. bestimmte Pestizide, langlebige Schadstoffe) schon ohne Schaden als Konflikt?</li></ul>  </div>
+</details>
+<details>
+  <summary>Ressourcen, Abfall und Kreislaufwirtschaft <span class="caption">· Regel: Vorschlag, noch zu bestätigen · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Rohstoffverbrauch, gefährliche Abfälle, Entsorgung und belegte Verstösse.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Rohstoffverbrauch, gefährliche Abfälle, Entsorgung und belegte Verstösse werden untersucht. Reparierbarkeit, Wiederverwendung und tatsächliche Recyclinganteile sind zusätzliche Kennzahlen. Vorschlag: Bestätigte Verstösse (z. B. illegale Entsorgung oder illegaler Abfallexport) gelten als Konflikt; Kennzahlen lösen keinen Konflikt aus.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Bestätigte Verstösse bei Abfall und Entsorgung</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Kennzahlen zu Verbrauch, Abfall und Kreislauf</td>
+        <td>Kennzahl oder Information</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Art des Abfalls und Menge mit Jahr</li><li>Entsorgungsweg</li><li>Behörde, Entscheid und Datum bei Verstössen</li><li>Kennzahlen: Reparierbarkeit, Wiederverwendung, tatsächlicher Recyclinganteil</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Kennzahlen zu Rohstoffverbrauch, Abfall und Recycling: keine Bewertung</li><li>Angekündigte Recyclingziele: keine Kennzahl, nur tatsächlich erreichte Anteile zählen</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> Keine Quelle geprüft.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Soll ein sehr tiefer tatsächlicher Recyclinganteil je Branche später eine Schwelle erhalten?</li></ul>  </div>
+</details>
+<h3>Soziales</h3>
+<details>
+  <summary>Waffen <span class="caption">· Regel: Vorschlag, noch zu bestätigen · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Belegte Produktion von Waffen und von wesentlichen, speziell dafür bestimmten Komponenten.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Belegte Waffenproduktion und wesentliche, speziell dafür bestimmte Komponenten werden erfasst und in vier Kategorien getrennt. Welche Kategorie als Konflikt gilt, steht je Kategorie; diese Ausschlüsse sind ein begründeter Vorschlag und noch zu bestätigen.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Geächtete Waffen<div class="caption">Streumunition, Antipersonenminen, biologische und chemische Waffen.</div></td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">International geächtet (Übereinkommen über Streumunition, Ottawa-Konvention, Bio- und Chemiewaffenübereinkommen). Das Schweizer Kriegsmaterialgesetz verbietet ihre Finanzierung. Vorschlag: Null-Toleranz, auch für speziell bestimmte Komponenten.</td></tr><tr><td>Kernwaffen<div class="caption">Entwicklung, Herstellung oder Wartung von Kernwaffen und speziell dafür bestimmten Komponenten.</div></td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">Massenvernichtungswaffe; im Schweizer Kriegsmaterialgesetz als verbotenes Kriegsmaterial geführt. Vorschlag: Null-Toleranz. Ob das Sitzland Atomwaffenstaat des Sperrvertrags ist, wird getrennt gezeigt.</td></tr><tr><td>Konventionelle militärische Waffen<div class="caption">Waffensysteme, Munition und speziell dafür bestimmte wesentliche Komponenten für Streitkräfte.</div></td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">Ein strenges Profil soll keine Rüstungsproduktion mitfinanzieren. Weil Umsatzanteile fehlen, stellt der Vorschlag auf belegte Produktion ab, nicht auf eine Schwelle. Wer das zu streng findet, braucht ein zweites, milderes Profil.</td></tr><tr><td>Zivile Schusswaffen<div class="caption">Herstellung von Schusswaffen und Munition für den zivilen Markt.</div></td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">Vorschlag: Hersteller als Konflikt, Handel nur gesondert zeigen. Der Handel ist oft ein kleiner Nebenumsatz grosser Detailhändler und ohne Umsatzdaten nicht fair bewertbar.</td></tr><tr><td>Handel mit zivilen Schusswaffen<div class="caption">Gross- und Detailhandel mit Schusswaffen und Munition für den zivilen Markt, ohne eigene Herstellung.</div></td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">Gesondert gezeigt; ohne Umsatzdaten nicht fair bewertbar.</td></tr><tr><td>Güter mit doppeltem Verwendungszweck ohne belegte Waffenbestimmung<div class="caption">Dual-Use-Güter, allgemeine Zulieferungen (Stahl, Standardelektronik, Software) ohne Beleg, dass sie speziell für Waffen bestimmt sind.</div></td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">entschieden</td><td class="caption">Keine belegte Waffenproduktion; wird gezeigt, löst keinen Konflikt aus.</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Kategorie der Waffe</li><li>Rolle: Hersteller des Waffensystems oder Zulieferer speziell bestimmter Komponenten</li><li>Quelle und Datum des Belegs</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Güter mit doppeltem Verwendungszweck (Dual-Use) ohne belegte Waffenbestimmung: kein Konflikt</li><li>Allgemeine Zulieferer (z. B. Stahl, Standard-Elektronik, Bürosoftware): kein Konflikt</li><li>Handel und Detailhandel mit zivilen Schusswaffen: gesondert gezeigt</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> Keine Quelle mit bestätigter gewerblicher Freigabe gefunden. Kandidaten: SVVK-ASIR (gewerbliche Nutzung nur nach Registrierung), Norges Bank (nur private, nicht gewerbliche Nutzung).</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Die Ausschlüsse je Kategorie sind ein Vorschlag und brauchen deine Bestätigung.</li><li>Kernwaffen: auch Unternehmen aus Atomwaffenstaaten des Atomwaffensperrvertrags ausschliessen? Vorschlag: ja.</li><li>Konventionelle Waffen: ohne Umsatzdaten keine Schwelle möglich; Vorschlag stellt auf belegte Produktion ab.</li></ul>  </div>
+</details>
+<details>
+  <summary>Zwangs- und Kinderarbeit <span class="caption">· Regel: entschieden · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Zwangsarbeit oder ausbeuterische Kinderarbeit im eigenen Betrieb oder in der Lieferkette.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Bestätigte Verstösse gelten als Konflikt. Allgemeine Länder- und Branchenrisiken, Verdachtsmassnahmen und bestätigte Feststellungen werden unterschieden.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Zwangsarbeit</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Ausbeuterische Kinderarbeit</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Rechtmässige Beschäftigung Jugendlicher</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">entschieden</td><td class="caption">Erlaubte Arbeit Jugendlicher ist keine Kinderarbeit.</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Belegstufe: Länder-/Branchenrisiko, Verdachtsmassnahme oder bestätigte Feststellung</li><li>Eigene Tätigkeit oder Lieferkette</li><li>Behörde, Datum und Verfahrensstand</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Länder- und Branchenrisiken: nur Kontext, nie Beleg gegen ein Unternehmen</li><li>Verdachtsmassnahmen (z. B. Einfuhrsperre vor einer Feststellung): gezeigt, kein Konflikt</li><li>Rechtmässige Beschäftigung Jugendlicher nach dem Recht des Landes und den ILO-Übereinkommen 138 und 182: keine Kinderarbeit im Sinn dieses Kriteriums</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> US-Behördenlisten (Einfuhrsperren, UFLPA) sind gemeinfrei, nennen Unternehmen aber nur mit Namen und sind Verdachts- bzw. Verwaltungsmassnahmen. Zuordnung erst über bestätigte Namensentscheide.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Wie tief in der Lieferkette zählt ein bestätigter Verstoss (direkter Zulieferer, weitere Stufen)?</li><li>Wie lange wirkt ein bestätigter Verstoss nach belegter Abhilfe?</li></ul>  </div>
+</details>
+<details>
+  <summary>Arbeitsrechte und Arbeitsschutz <span class="caption">· Regel: Vorschlag, noch zu bestätigen · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Schwere Verstösse gegen Arbeitssicherheit, Vereinigungsfreiheit, Diskriminierungsschutz und geltende Arbeitsbedingungen.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Belegte schwere Verstösse gegen Arbeitssicherheit, Vereinigungsfreiheit, Diskriminierungsschutz und geltende Arbeitsbedingungen werden berücksichtigt. Eigene Beschäftigte und Lieferketten werden unterschieden. Vorschlag: Ein bestätigter schwerer Verstoss bei eigenen Beschäftigten gilt als Konflikt.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Arbeitssicherheit</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Vereinigungsfreiheit</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Diskriminierungsschutz</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Geltende Arbeitsbedingungen (Lohn, Arbeitszeit)</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Verstösse in der Lieferkette</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Bereich: Arbeitssicherheit, Vereinigungsfreiheit, Diskriminierung, Arbeitsbedingungen</li><li>Eigene Beschäftigte oder Lieferkette</li><li>Behörde oder Gericht, Datum, Sanktion</li><li>Belegte Abhilfe</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Verstösse in der Lieferkette: getrennt gezeigt, ohne eigene bestätigte Feststellung kein Konflikt</li><li>Einzelne leichte Verstösse: gezeigt, kein Konflikt</li><li>Zwangs- und Kinderarbeit: eigenes Kriterium, nicht doppelt gezählt</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> Vollzugsdaten des US-Arbeitsministeriums sind gemeinfrei, nennen Unternehmen aber nur mit Namen; Felder noch nicht gelesen.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Was gilt als «schwer» (z. B. Todesfall, wiederholter Verstoss, Mindeststrafe)? Bitte festlegen.</li><li>Wirkungsdauer nach belegter Abhilfe?</li></ul>  </div>
+</details>
+<details>
+  <summary>Menschenrechte und Landrechte <span class="caption">· Regel: Vorschlag, noch zu bestätigen · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Vertreibungen, Verletzungen indigener Rechte und andere schwere Menschenrechtsverletzungen mit nachvollziehbarem Unternehmensbezug.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Belegte Vertreibungen, Verletzungen indigener Rechte und andere schwere Menschenrechtsverletzungen werden erfasst, wenn der Unternehmensbezug nachvollziehbar belegt ist. Vorschlag: Eine bestätigte Feststellung gilt als Konflikt.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Vertreibung und Landnahme</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Verletzung indigener Rechte</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr><tr><td>Andere schwere Menschenrechtsverletzungen</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">Vorschlag, noch zu bestätigen</td><td class="caption">–</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Art der Verletzung</li><li>Ort und betroffene Gemeinschaft</li><li>Unternehmensbezug: eigene Tätigkeit, Tochterfirma, Geschäftspartner</li><li>Gericht, Behörde oder Beschwerdestelle, Datum, Ausgang</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Vorwürfe ohne nachvollziehbaren Unternehmensbezug: kein Beleg</li><li>Dokumentierte Recherchen ohne Feststellung: gezeigt, kein Konflikt</li><li>Zwangs- und Kinderarbeit sowie Arbeitsrechte: eigene Kriterien, nicht doppelt gezählt</li></ul>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> Keine Quelle mit bestätigter gewerblicher Freigabe gefunden.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Gelten Schlussberichte aussergerichtlicher Beschwerdestellen (z. B. OECD-Kontaktstellen) als bestätigte Feststellung?</li></ul>  </div>
+</details>
+<h3>Unternehmensführung</h3>
+<details>
+  <summary>Korruption <span class="caption">· Regel: entschieden · noch keine freigegebene Quelle</span></summary>
+  <div class="body">
+    <p>Bestechung von Amtsträgern oder Privaten und vergleichbare Korruptionsdelikte.</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> Bestätigte Korruptionsfälle werden mit Tatzeitraum, Verfahrensausgang und Abhilfe erfasst. Verdacht, Vergleich und Verurteilung werden unterschieden. Historische Fälle erhalten keine unbegründete dauerhafte Ausschlusswirkung.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody><tr><td>Verurteilung oder Vergleich mit Schuldeingeständnis</td>
+        <td>Konflikt mit dem Profil</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Vergleich ohne Schuldeingeständnis</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">entschieden</td><td class="caption">–</td></tr><tr><td>Verdacht oder laufendes Verfahren</td>
+        <td>gesondert gezeigt, kein Konflikt</td><td class="caption">entschieden</td><td class="caption">–</td></tr></tbody>
+    </table></div>
+<p><strong>Getrennt angezeigt:</strong></p><ul><li>Tatzeitraum</li><li>Verfahrensausgang: Verdacht, Vergleich ohne Schuldeingeständnis, Vergleich mit Schuldeingeständnis, Verurteilung</li><li>Behörde und Datum des Entscheids</li><li>Belegte Abhilfe (z. B. Auflagen erfüllt, Aufsicht beendet)</li></ul><p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul><li>Verdacht und laufende Verfahren: gezeigt, kein Konflikt</li><li>Vergleiche ohne Schuldeingeständnis: gezeigt, eigene Stufe, kein Konflikt</li><li>Historische Fälle nach Ablauf der Wirkungsdauer: gesondert als «historisch» gezeigt</li></ul><p class="caption">Wirkungsdauer eines bestätigten Falls: 5 Jahre ab Entscheid; danach «historisch».</p>    <p class="caption"><strong>Quellen:</strong> noch keine freigegebene Quelle – der Status bleibt «unbekannt».<br><strong>Lücke:</strong> US-Börsenaufsicht SEC (FCPA-Fälle, öffentliche Information) und US-Justizministerium (gemeinfrei) nennen Unternehmen nur mit Namen. Zuordnung erst über bestätigte Namensentscheide. Weltbank-Sperrliste nicht gewerblich nutzbar.</p>
+<p class="caption"><strong>Offen:</strong></p><ul class="caption"><li>Wirkungsdauer fünf Jahre und Mindestdauer drei Jahre bei bestätigter Abhilfe sind ein begründeter Vorschlag. Bitte bestätigen.</li><li>Der Wortlaut von Art. 57 der Richtlinie 2014/24/EU war automatisch nicht abrufbar und ist vor einer Veröffentlichung am Original nachzulesen.</li><li>Zählt ein Vergleich mit Schuldeingeständnis wie eine Verurteilung? Vorschlag: ja.</li></ul>  </div>
+</details>
+
+<h3>Belegstufen</h3>
 <div class="table-wrap"><table>
-  <thead><tr><th>Kriterium</th><th>Beschreibung</th><th>Schwere</th><th>Kennzahl</th><th>Schwellenwert</th><th>Bemerkung</th></tr></thead>
-  <tbody>
-  <tr><td>Kohle</td><td>Abbau von Kraftwerkskohle oder Stromerzeugung aus Kohle, inkl. Ausbau neuer Kohlekapazitäten.</td><td>hoch</td><td>umsatzanteil_kohle</td>
-    <td>offen</td>
-    <td class="caption">Schwellenwert für Umsatzanteil offen (Platzhalter in ausschlusskriterien.md).</td></tr>
-  <tr><td>Öl-/Gas-Expansion</td><td>Erschliessung neuer Öl- oder Gasfelder bzw. Ausbau fossiler Förderkapazitäten.</td><td>hoch</td><td>–</td>
-    <td>offen</td>
-    <td class="caption">Definition «Expansion» und Stichtag offen.</td></tr>
-  <tr><td>Geächtete Waffen</td><td>Herstellung oder Schlüsselkomponenten von Streumunition, Antipersonenminen, biologischen oder chemischen Waffen.</td><td>schwer</td><td>–</td>
-    <td>offen</td>
-    <td class="caption">Kein Umsatz-Schwellenwert vorgesehen (Null-Toleranz-Vorschlag, zu bestätigen).</td></tr>
-  <tr><td>Zwangs- und Kinderarbeit</td><td>Zwangsarbeit oder ausbeuterische Kinderarbeit im eigenen Betrieb oder in der Lieferkette.</td><td>schwer</td><td>–</td>
-    <td>offen</td>
-    <td class="caption">Abgrenzung eigene Tätigkeit vs. Lieferkette offen.</td></tr>
-  <tr><td>Entwaldung</td><td>Beteiligung an Entwaldung oder Umwandlung natürlicher Ökosysteme, inkl. Lieferkette (z. B. Soja, Palmöl, Rind, Kakao).</td><td>hoch</td><td>–</td>
-    <td>offen</td>
-    <td class="caption">Stichtag (Cut-off-Datum) und Lieferketten-Tiefe offen.</td></tr>
-  </tbody>
+  <thead><tr><th>Stufe</th><th>Bedeutung</th></tr></thead>
+  <tbody><tr><td>Länder- oder Branchenrisiko</td><td>Allgemeines Risiko eines Landes, einer Branche oder eines Rohstoffs. Sagt nichts über ein bestimmtes Unternehmen und ist nie ein Beleg gegen ein Unternehmen.</td></tr><tr><td>Verdacht oder laufende Massnahme</td><td>Vorwurf, laufendes Verfahren, vorsorgliche Behördenmassnahme, Medienbericht oder Recherche ohne abschliessende Feststellung. Wird gezeigt, zählt nicht als bestätigter Verstoss.</td></tr><tr><td>Dokumentierter Sachverhalt</td><td>Nachprüfbar dokumentierte Tatsache aus einem Register oder einer Recherche mit Belegen, zum Beispiel eine Beteiligung an einer Anlage oder ein Ausschlussentscheid einer Institution.</td></tr><tr><td>Bestätigte Feststellung</td><td>Abschliessende Feststellung eines Gerichts oder einer Behörde, deren Originaldokument wir geprüft haben.</td></tr></tbody>
+</table></div>
+
+<h3>Sanktionen</h3>
+<p>Eine Sanktionslistung wird als Beleg mit dem amtlichen Sanktionsgrund (Programm, Rechtsgrundlage, Datum) gezeigt und dem Kriterium zugeordnet, zu dem der Grund passt. Passt kein Kriterium, bleibt sie eine Information ohne Konfliktwirkung. <span class="caption">Eine Listung ist eine Behördenmassnahme, kein Gerichtsurteil. Sie wird nie ohne ihren Grund gezeigt.</span></p>
+
+<h3>Kennzahlen ohne Ausschlusswirkung</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kennzahl</th><th>Einheit</th><th>Pflichtangaben</th><th>Regel</th></tr></thead>
+  <tbody><tr><td>Treibhausgasemissionen</td><td class="caption">t CO2e</td><td class="caption">Jahr · Scope oder Abgrenzung · Einheit · Erhebungsmethode (gemeldet, amtlich verifiziert oder geschätzt) · Abdeckung (Anlage, Land oder Konzern) · Quelle mit Stand</td><td class="caption">Werte werden mit Jahr, Scope, Einheit, Erhebungsmethode und Abdeckung gezeigt. Werte verschiedener Methoden oder Abdeckungen werden nie addiert. Ein Ausschlusswert wird erst festgelegt, wenn Vergleichbarkeit und Bewertungsgrundlage tragfähig sind. Ein fehlender Wert heisst nie «keine Emissionen».</td></tr><tr><td>Schadstoff-Freisetzungen und Abfalltransfers</td><td class="caption">je Schadstoff (z. B. kg/a)</td><td class="caption">Jahr · Schadstoff · Medium (Luft, Wasser, Boden) · Einheit · Standort · Quelle mit Stand</td><td class="caption">Amtlich gemeldete Jahreswerte je Standort. Kein Nachweis eines Rechtsverstosses. Kein Ausschlusswert festgelegt.</td></tr><tr><td>Wasserentnahme und Wasserverbrauch</td><td class="caption">m³</td><td class="caption">Jahr · Standort oder Einzugsgebiet · Entnahme oder Verbrauch · Wasserknappheit am Standort mit Quelle · Quelle mit Stand</td><td class="caption">Nur mit örtlichem Kontext gezeigt. Kein Ausschlusswert festgelegt.</td></tr><tr><td>Gefährliche Abfälle</td><td class="caption">t</td><td class="caption">Jahr · Abfallart · Entsorgungsweg · Abdeckung · Quelle mit Stand</td><td class="caption">Gemeldete Mengen, kein Nachweis eines Verstosses. Kein Ausschlusswert festgelegt.</td></tr><tr><td>Rohstoffverbrauch</td><td class="caption">t</td><td class="caption">Jahr · Rohstoff · Abdeckung · Quelle mit Stand</td><td class="caption">Gemeldete Mengen. Kein Ausschlusswert festgelegt.</td></tr><tr><td>Tatsächlicher Recyclinganteil</td><td class="caption">%</td><td class="caption">Jahr · Bezugsgrösse (Abfall, Produkt oder Material) · tatsächlich erreicht, nicht Ziel · Quelle mit Stand</td><td class="caption">Nur tatsächlich erreichte Anteile, keine Ziele. Kein Ausschlusswert festgelegt.</td></tr><tr><td>Reparierbarkeit und Wiederverwendung</td><td class="caption">je Quelle (z. B. Index oder Anteil)</td><td class="caption">Jahr · Produktgruppe · Messmethode · Quelle mit Stand</td><td class="caption">Nur mit benannter Messmethode gezeigt. Kein Ausschlusswert festgelegt.</td></tr></tbody>
+</table></div>
+
+<h3>Vorgeschlagene weitere Kriterien (nicht aktiv)</h3>
+<p class="caption">Diese Kriterien werden nicht ausgewertet. Sie brauchen zuerst einen Entscheid.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kriterium</th><th>Thema</th><th>Beschreibung</th><th>Vorgeschlagene Regel</th></tr></thead>
+  <tbody><tr><td>Ölsand, Arktis und Fracking</td><td class="caption">Klima</td><td>Besonders umweltbelastende Förderung: Ölsand, Bohrungen in der Arktis, Schiefergas und Schieferöl.</td><td class="caption">Vorschlag: Bestätigte Eigentumsbeteiligung an aktiver unkonventioneller Förderung als Konflikt, analog zu Kohle.</td></tr><tr><td>Tabak</td><td class="caption">Soziales</td><td>Herstellung von Tabakprodukten.</td><td class="caption">Vorschlag: Hersteller als Konflikt; Handel gesondert zeigen.</td></tr><tr><td>Irreführende Umweltaussagen (Greenwashing)</td><td class="caption">Unternehmensführung</td><td>Von einer Behörde oder einem Gericht festgestellte irreführende Nachhaltigkeits- oder Umweltaussagen.</td><td class="caption">Vorschlag: Bestätigte Feststellungen als Konflikt. Passt direkt zur Mission «Transparenz statt Greenwashing».</td></tr><tr><td>Tierwohl</td><td class="caption">Umwelt</td><td>Bestätigte schwere Tierschutzverstösse; Pelzproduktion und Tierversuche für Kosmetik als Tätigkeitsfelder.</td><td class="caption">Vorschlag: Bestätigte schwere Tierschutzverstösse als Konflikt; Tätigkeitsfelder gesondert zeigen.</td></tr></tbody>
 </table></div>
 
 <p class="caption">Inhalt:
@@ -380,75 +582,133 @@ zusammen mit Art und Verfahrensstatus des Sachverhalts den Belegstatus
 </section>
 <section class="prose" id="doc-3">
   <hr>
-  <h1>Ausschlusskriterien (Startliste)</h1>
-<p><em>Die Schwellenwerte legt Jonas fest. Bis dahin sind sie bewusst offen: gemeldete Kennzahlen
-werden angezeigt, aber nicht gegen eine Grenze bewertet.</em> Technische Quelle der Kriterien:
-<code>src/transparenz/config/criteria.toml</code>.</p>
+  <h1>Kriterien und Bewertungsprofil</h1>
+<p>Die Kriterien stehen an genau einer Stelle: <code>src/transparenz/config/criteria.toml</code>
+(Schema 2). Screening-Engine, Pilotbericht und Website lesen dieselbe Datei. Die Tabelle oben
+auf dieser Seite wird direkt daraus erzeugt.</p>
+<h2>Zwei Dinge, die getrennt bleiben</h2>
+<ol>
+<li><strong>Belege</strong> stammen aus Quellen. Jede Aussage nennt Quelle und Datum («Laut … vom …»).</li>
+<li><strong>Die Bewertung</strong> ist unsere Entscheidung. Das Profil legt fest, welcher belegte Sachverhalt
+   als «Konflikt mit dem Profil» gilt. Das ist kein Urteil einer Quelle und kein Urteil über
+   ein Unternehmen als Ganzes.</li>
+</ol>
+<p>Wer anders werten will, braucht ein anderes Profil, nicht andere Belege.</p>
+<h2>Startprofil «streng»</h2>
+<p>Zwölf aktive Kriterien in vier Themen:</p>
 <table>
 <thead>
 <tr>
-<th>Kriterium</th>
-<th>Schwere</th>
-<th>Kennzahl</th>
-<th>Schwellenwert</th>
-<th>Offene Definitionsfragen</th>
+<th>Thema</th>
+<th>Kriterien</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Kohle</td>
-<td>hoch</td>
-<td>Umsatzanteil Kohle (%)</td>
-<td><code>[OFFEN: z. B. 0 %, 5 %, 10 %?]</code></td>
-<td>Abbau und Verstromung getrennt? Ausbaupläne unabhängig vom Umsatz ausschliessen?</td>
+<td>Klima</td>
+<td>Kohle · Fossile Expansion</td>
 </tr>
 <tr>
-<td>Öl-/Gas-Expansion</td>
-<td>hoch</td>
-<td>–</td>
-<td><code>[OFFEN]</code></td>
-<td>Was gilt als «Expansion» (neue Felder, neue Lizenzen, Investitionen)? Stichtag?</td>
+<td>Umwelt</td>
+<td>Entwaldung · Biodiversität und Ökosysteme · Wasser und Meeresressourcen · Umweltverschmutzung und gefährliche Stoffe · Ressourcen, Abfall und Kreislaufwirtschaft</td>
 </tr>
 <tr>
-<td>Geächtete Waffen</td>
-<td>schwer</td>
-<td>–</td>
-<td><code>[OFFEN: Vorschlag Null-Toleranz]</code></td>
-<td>Umfang: Streumunition, Antipersonenminen, B- und C-Waffen; Atomwaffen? Schlüsselkomponenten?</td>
+<td>Soziales</td>
+<td>Waffen · Zwangs- und Kinderarbeit · Arbeitsrechte und Arbeitsschutz · Menschenrechte und Landrechte</td>
 </tr>
 <tr>
-<td>Zwangs- und Kinderarbeit</td>
-<td>schwer</td>
-<td>–</td>
-<td><code>[OFFEN]</code></td>
-<td>Eigene Tätigkeit vs. Lieferkette; wie tief in der Lieferkette?</td>
-</tr>
-<tr>
-<td>Entwaldung</td>
-<td>hoch</td>
-<td>–</td>
-<td><code>[OFFEN]</code></td>
-<td>Cut-off-Datum; Rohstoffe (Soja, Palmöl, Rind, Kakao, Holz); Lieferkette?</td>
+<td>Unternehmensführung</td>
+<td>Korruption</td>
 </tr>
 </tbody>
 </table>
+<p>Zwei Arten von Kriterien:</p>
+<ul>
+<li><strong>Tätigkeit oder Beteiligung</strong> (Kohle, fossile Expansion, Waffen): Ein dokumentierter
+  Sachverhalt genügt, zum Beispiel eine belegte Beteiligung an einer Anlage.</li>
+<li><strong>Verhalten</strong> (alle übrigen): Nur eine bestätigte Feststellung eines Gerichts oder einer
+  Behörde, deren Dokument wir geprüft haben, ist ein Konflikt. Verdacht, laufende Verfahren
+  und Medienberichte werden gezeigt, zählen aber nicht.</li>
+</ul>
 <h2>Grundsätze</h2>
 <ul>
-<li>Kriterien werden <strong>einzeln</strong> beurteilt; es gibt keine Gewichtung untereinander.</li>
-<li>«Schwer» heisst: Grundrechte oder internationale Verbote betroffen. Auch das führt nicht zu
-  einem Score – es dient der Priorisierung in der Recherche und Darstellung.</li>
-<li>Ein Schwellenwert gilt als <strong>erreicht ab</strong> dem festgelegten Wert (≥).</li>
-<li>Änderungen an Kriterien und Schwellenwerten werden in <code>docs/DECISIONS.md</code> begründet.</li>
+<li>Kriterien werden <strong>einzeln</strong> beurteilt. Es gibt keinen Gesamtwert und keine Verrechnung.</li>
+<li>«Unbekannt» heisst: Keine freigegebene Quelle deckt das Kriterium ab. Das ist nie
+  «unbedenklich». Für echte Daten ist das heute bei zehn der zwölf Kriterien der Stand; nur
+  Kohle und fossile Expansion haben eine freigegebene Quelle. (Die Website zeigt fiktive
+  Demodaten.)</li>
+<li>Länder- und Branchenrisiken sind Kontext, nie ein Beleg gegen ein Unternehmen.</li>
+<li>Sanktionen sind Belege mit ihrem amtlichen Sanktionsgrund, kein eigenes Kriterium.</li>
+<li>Emissionen und andere Mengen sind <strong>Kennzahlen</strong> mit Jahr, Abgrenzung, Einheit, Methode und
+  Abdeckung. Sie haben keinen Ausschlusswert, solange Vergleichbarkeit fehlt.</li>
+<li><strong>Kategorien entscheiden mit.</strong> Hat ein Kriterium Kategorien mit unterschiedlicher Wirkung
+  (zum Beispiel Waffenarten, Dual-Use-Güter, Handel), löst nur ein Beleg mit einer
+  konfliktauslösenden Kategorie einen Konflikt aus. Nennt ein Beleg keine Kategorie, bleibt
+  die Wirkung offen: kein Konflikt, mit Hinweis.</li>
+<li>Historische Fälle wirken nicht ewig. Bei Korruption beginnt die Wirkung mit dem Abschluss
+  des Verfahrens (oder dem späteren Ende der Tat) und dauert fünf Jahre, so lange wie die
+  Höchstdauer des Ausschlusses von öffentlichen Aufträgen im EU-Vergaberecht. Solange Folgen
+  fortbestehen (Auflagen, Aufsicht, Sperre), endet sie nicht. Hat eine Behörde die Abhilfe
+  bestätigt, endet sie frühestens nach drei Jahren. (Vorschlag, zu bestätigen.)</li>
+<li>Regeln mit dem Vermerk «Vorschlag» sind noch nicht bestätigt. Das betrifft die Ausschlüsse
+  je Waffenkategorie und die Konfliktregeln der sechs neueren Kriterien.</li>
 </ul>
-<h2>Später zu prüfen (nicht Teil des ersten Meilensteins)</h2>
-<p>Tabak, konventionelle Waffen, Atomwaffen, Glücksspiel, Fracking/Ölsand, Menschenrechte allgemein
-(z. B. Landrechte, Gewerkschaftsfreiheit), Korruption, Biodiversität.</p>
+<h2>Beziehung zwischen Unternehmen und Anlage</h2>
+<p>Eine Besitzkette sagt, wer an wem wie viel hält, aber nicht auf wessen Rechnung. Deshalb hat
+jede Art von Beziehung ihre eigene Regel:</p>
+<table>
+<thead>
+<tr>
+<th>Beziehung</th>
+<th>Wirkung im Profil</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Eigentum auf eigene Rechnung (direkt, über Töchter oder eigene Projektbeteiligung)</td>
+<td>Konflikt bei Kohle und fossiler Expansion</td>
+</tr>
+<tr>
+<td>Finanzbeteiligung eines Finanzinstituts, Rechnung ungeklärt (unter 20 % an einer kotierten Gesellschaft)</td>
+<td>gesondert, kein Konflikt (Vorschlag)</td>
+</tr>
+<tr>
+<td>Vermögensverwaltung für Kunden oder Fonds</td>
+<td>gesondert, kein Konflikt</td>
+</tr>
+<tr>
+<td>Verwahrung von Wertpapieren für Dritte</td>
+<td>gesondert, kein Konflikt</td>
+</tr>
+<tr>
+<td>Kreditvergabe und Projektfinanzierung</td>
+<td>gesondert, kein Konflikt (eigene Regel offen)</td>
+</tr>
+<tr>
+<td>Betrieb einer Anlage</td>
+<td>gesondert (Vorschlag: Konflikt bei Kohle, noch offen)</td>
+</tr>
+<tr>
+<td>Stromabnahme und andere Lieferverträge</td>
+<td>gesondert, keine Regel</td>
+</tr>
+</tbody>
+</table>
+<p>Ein Anteil an einer Vermögensverwaltungsgesellschaft ist kein anteiliges Eigentum an den
+Anlagen ihrer Kunden. Eine mögliche Verantwortung durch Verwaltung oder Finanzierung braucht
+eine eigene, offengelegte Regel; sie ist noch nicht festgelegt.</p>
+<h2>Änderungen</h2>
+<p>Jede inhaltliche Änderung erhöht <code>profile_version</code> in <code>criteria.toml</code> und wird in
+<code>docs/DECISIONS.md</code> begründet. Die Website zeigt Profilname, Version und Datum.</p>
+<h2>Vorgeschlagen, noch nicht aktiv</h2>
+<p>Ölsand, Arktis und Fracking · Tabak · Irreführende Umweltaussagen (Greenwashing) · Tierwohl.
+Sie werden nicht ausgewertet, bis ein Entscheid vorliegt.</p>
 </section>
 </main>
 <footer>
   <div class="wrap">
     Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
-    Statischer Schnappschuss, erzeugt am 07.11.2026 23:03 UTC. Aktualisieren:
+    Statischer Schnappschuss, erzeugt am 15.11.2026 20:51 UTC. Aktualisieren:
     <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.<br>
     Cookielose, zusammengefasste Besuchszählung: <a href="https://jonasbader7.github.io/Portfoliopage/analytics/datenschutz.html">Datenschutz &amp; Analytics</a>
   </div>

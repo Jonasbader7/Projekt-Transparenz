@@ -14,7 +14,7 @@ from sqlalchemy import select
 
 from transparenz.config.catalog import SourceConfig
 from transparenz.config.licensing import license_block_reasons
-from transparenz.config.settings import CONFIG_DIR, Settings, get_settings
+from transparenz.config.settings import CONFIG_DIR, Settings, get_settings, resolve_data_path
 from transparenz.database.models import UpdateRun
 from transparenz.database.repository import active_versions
 from transparenz.entities.enums import UpdateStatus
@@ -90,11 +90,11 @@ def _reuse_current_export(ctx: AppContext) -> dict | None:
 
 def create_swiss_context(settings: Settings | None = None) -> AppContext:
     settings = settings or get_settings()
-    root = settings.project_root
+    data = settings.data_dir
     return create_context(replace(
         settings, sources_config=CONFIG_DIR / "swiss_sources.toml",
-        database_url=f"sqlite:///{(root / 'data/processed/swiss.sqlite').as_posix()}",
-        raw_dir=root / "data/raw/external/manifests"))
+        database_url=f"sqlite:///{(data / 'processed/swiss.sqlite').as_posix()}",
+        raw_dir=data / "raw/external/manifests"))
 
 
 def resolve_companies(attributes: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
@@ -164,7 +164,8 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
             version = versions.get(cfg.key)
             if version is None:
                 continue
-            parsed = ctx.updates.adapter(cfg.key).parse(Path(version.raw_path).read_bytes())
+            raw_file = resolve_data_path(version.raw_path, ctx.settings.project_root)
+            parsed = ctx.updates.adapter(cfg.key).parse(raw_file.read_bytes())
             if not parsed.is_valid:
                 raise ValueError(f"Aktive Rohdaten beschädigt: {cfg.key}: {parsed.errors}")
             extra = parsed.extra
@@ -180,7 +181,7 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
             source_reports[cfg.key].update(
                 active_version=version.id, manifest_sha256=version.content_hash,
                 manifest_path=version.raw_path,
-                original_files=json.loads(Path(version.raw_path).read_bytes())["pages"],
+                original_files=json.loads(raw_file.read_bytes())["pages"],
                 data_as_of=str(parsed.data_as_of) if parsed.data_as_of else None,
                 fetched_at=version.fetched_at.isoformat(), coverage=parsed.coverage,
                 companies=len(parsed.records["companies"]),

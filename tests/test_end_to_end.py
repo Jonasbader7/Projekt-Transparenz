@@ -21,9 +21,9 @@ APP = str(ROOT / "app" / "main.py")
 
 # Erwartete Belegstatus der fiktiven Beispieldaten (siehe docs/DATA_MODEL.md)
 EXPECTED = {
-    ("Tiefsee Öl & Gas Beispiel SA", "oel_gas_expansion"): S.FESTGESTELLT,
+    ("Tiefsee Öl & Gas Beispiel SA", "fossile_expansion"): S.FESTGESTELLT,
     ("Waldland Agrar Beispiel Ltd", "entwaldung"): S.FESTGESTELLT,
-    ("Präzisionstechnik Beispiel AG", "geaechtete_waffen"): S.PRUEFUNG_AUSSTEHEND,
+    ("Präzisionstechnik Beispiel AG", "waffen"): S.PRUEFUNG_AUSSTEHEND,
     ("Muster Textil Gruppe AG", "zwangs_kinderarbeit"): S.VERFAHREN_LAUFEND,
     ("Alpenstrom Muster AG", "kohle"): S.DOKUMENTIERT,
     ("Alpenstrom Muster AG 1.5 % 2031", "kohle"): S.DOKUMENTIERT,

@@ -28,6 +28,11 @@ def _find_project_root() -> Path:
     return Path.cwd().resolve()
 
 
+_CODE_ROOT: Path | None = next(
+    (p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").exists()), None
+)
+
+
 def _load_dotenv(path: Path) -> None:
     """Minimaler .env-Leser (KEY=VALUE). Bereits gesetzte Variablen haben Vorrang."""
     if not path.exists():
@@ -43,6 +48,53 @@ def _load_dotenv(path: Path) -> None:
             os.environ[key] = value
 
 
+_DATA_SUBDIRS = ("raw", "processed", "cache", "review")
+
+
+def local_data_dir(project_root: Path | None = None) -> Path:
+    """Ordner für grosse, nicht versionierte Daten (``raw``, ``processed``, ``cache``, ``review``).
+
+    Standard: ``<Projekt>/data``. Für den echten Projektordner kann ``TRANSPARENZ_DATA_DIR``
+    (Umgebung oder ``.env``) einen Ort ausserhalb von OneDrive setzen. Ein anderer Wurzelordner,
+    etwa ``tmp_path`` in Tests, bleibt immer bei ``<root>/data`` – Tests berühren so nie die
+    echten Daten. Versionierte Dateien (``data/sample``, ``data/queries``, ``data/gleif``)
+    bleiben im Projektordner.
+    """
+    real_root = _CODE_ROOT  # bewusst nicht TRANSPARENZ_PROJECT_ROOT: Testordner nie umleiten
+    root = (project_root or _find_project_root()).resolve()
+    if real_root is not None and root == real_root:
+        _load_dotenv(real_root / ".env")
+        override = os.environ.get("TRANSPARENZ_DATA_DIR")
+        if override:
+            return Path(override).resolve()
+    return root / "data"
+
+
+def resolve_data_path(stored: str | Path, project_root: Path | None = None) -> Path:
+    """Löst einen gespeicherten oder eingegebenen Datenpfad auf.
+
+    Ältere Zeiger und Befehle nennen Pfade relativ zum Projekt (``data\\raw\\…``); neue
+    Zeiger relativ zum Datenordner (``raw/…``). Beide landen im aktuellen Datenordner.
+    Ein absoluter Pfad bleibt, wie er ist, solange er existiert. Zeigt er auf den früheren
+    Ort ``…\\data\\raw|processed|cache|review\\…``, der nach einem Umzug fehlt, wird der Rest
+    im aktuellen Datenordner gesucht (Datenbankeinträge vor dem Umzug vom 15.11.2026).
+    """
+    path = Path(stored)
+    if path.is_absolute():
+        if path.exists():
+            return path
+        parts = path.parts
+        for i in range(len(parts) - 2, -1, -1):
+            if parts[i].lower() == "data" and parts[i + 1] in _DATA_SUBDIRS:
+                moved = local_data_dir(project_root).joinpath(*parts[i + 1:])
+                return moved if moved.exists() else path
+        return path
+    parts = Path(str(stored).replace("\\", "/")).parts
+    if parts and parts[0] == "data":
+        parts = parts[1:]
+    return local_data_dir(project_root).joinpath(*parts)
+
+
 @dataclass(frozen=True)
 class Settings:
     display_name: str
@@ -56,7 +108,8 @@ class Settings:
 
     @property
     def data_dir(self) -> Path:
-        return self.project_root / "data"
+        """Grosse, nicht versionierte Daten (siehe ``local_data_dir``)."""
+        return local_data_dir(self.project_root)
 
     @property
     def processed_dir(self) -> Path:
@@ -64,7 +117,8 @@ class Settings:
 
     @property
     def sample_dir(self) -> Path:
-        return self.data_dir / "sample"
+        """Fiktive Beispieldaten, versioniert im Projektordner."""
+        return self.project_root / "data" / "sample"
 
     @property
     def docs_dir(self) -> Path:
@@ -75,7 +129,8 @@ def load_settings() -> Settings:
     """Liest die Einstellungen frisch aus Umgebung und .env (ohne Cache)."""
     root = _find_project_root()
     _load_dotenv(root / ".env")
-    default_db = root / "data" / "processed" / "transparenz.sqlite"
+    data = local_data_dir(root)
+    default_db = data / "processed" / "transparenz.sqlite"
     return Settings(
         display_name=os.environ.get("TRANSPARENZ_DISPLAY_NAME") or DEFAULT_DISPLAY_NAME,
         project_root=root,
@@ -90,7 +145,7 @@ def load_settings() -> Settings:
         criteria_config=Path(
             os.environ.get("TRANSPARENZ_CRITERIA_CONFIG") or CONFIG_DIR / "criteria.toml"
         ),
-        raw_dir=Path(os.environ.get("TRANSPARENZ_RAW_DIR") or root / "data" / "raw"),
+        raw_dir=Path(os.environ.get("TRANSPARENZ_RAW_DIR") or data / "raw"),
     )
 
 

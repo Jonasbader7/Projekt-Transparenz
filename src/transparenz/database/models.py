@@ -200,6 +200,9 @@ class EvidenceRow(_Versioned, Base):
     metric_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
     metric_value: Mapped[float | None] = mapped_column(Float, nullable=True)
     metric_unit: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # Ergänzt am 14.11.2026 (D-047); beim Start in bestehenden Datenbanken nachgetragen.
+    category: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    consequences_until: Mapped[date | None] = mapped_column(Date, nullable=True)
     imported_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 

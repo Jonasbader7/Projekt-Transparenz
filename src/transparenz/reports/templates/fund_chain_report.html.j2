@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pilotbericht: {{ fund.fund_name }}</title>
+<style>
+:root {
+  --bg: #FBFAF7; --surface: #FFFFFF; --surface-2: #F2F0EA; --text: #1F2421;
+  --muted: #5E6661; --border: #E2DFD6; --primary: #2F5D50; --link: #24564A;
+  --warn-bg: #FBF3D6; --warn-text: #5C4A0E;
+  --s-pruefung_ausstehend: #F6D7B0; --s-zuordnung_unsicher: #F3E9B5; --s-dokumentiert: #DCD3EC;
+  --s-unbekannt: #F3E9B5; --s-nicht_anwendbar: #F4F3EF; --s-text: #1F2421;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161917; --surface: #1D2120; --surface-2: #252A28; --text: #E6E8E3;
+    --muted: #A2AAA4; --border: #333937; --primary: #8CC3B2; --link: #9ED1C1;
+    --warn-bg: #3A3320; --warn-text: #F1E2AE;
+    --s-pruefung_ausstehend: #5A4326; --s-zuordnung_unsicher: #4F4721; --s-dokumentiert: #3F3756;
+    --s-unbekannt: #4F4721; --s-nicht_anwendbar: #2A2E2C; --s-text: #F0F1EC;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--link); }
+header.site { background: var(--surface); border-bottom: 1px solid var(--border); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+header.site .wrap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding-top: 14px; padding-bottom: 14px; }
+.brand { font-weight: 700; font-size: 1.1rem; }
+main { padding: 28px 0 48px; }
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 6px; }
+h2 { font-size: 1.35rem; margin: 44px 0 10px; }
+h3 { font-size: 1.1rem; margin: 26px 0 6px; }
+.lead { font-size: 1.1rem; max-width: 760px; }
+.muted, .caption { color: var(--muted); }
+.caption { font-size: .9rem; max-width: 860px; }
+.notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 8px; padding: 12px 16px; margin: 14px 0; max-width: 860px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 18px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card .k { color: var(--muted); font-size: .88rem; }
+.card .v { font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.card .n { color: var(--muted); font-size: .85rem; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); margin: 10px 0; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.nowrap { white-space: nowrap; }
+td.ids { font-size: .82rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .sub { display: block; color: var(--muted); font-size: .82rem; }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; color: var(--s-text); }
+.c-ok { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }
+.s-pruefung_ausstehend { background: var(--s-pruefung_ausstehend); }
+.s-zuordnung_unsicher { background: var(--s-zuordnung_unsicher); }
+.s-unbekannt { background: var(--s-unbekannt); }
+.s-nicht_anwendbar { background: var(--s-nicht_anwendbar); border: 1px solid var(--border); }
+.s-dokumentiert { background: var(--s-dokumentiert); }
+td .path { display: block; color: var(--muted); font-size: .8rem; }
+table.mini { width: auto; margin-top: 4px; font-size: .88rem; }
+table.mini td { padding: 3px 12px 3px 0; border: 0; }
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; }
+details > summary { cursor: pointer; padding: 12px 16px; }
+details > summary strong { font-weight: 600; }
+details > .body { padding: 0 16px 14px; }
+.evidence { border-left: 3px solid var(--border); padding: 4px 0 4px 12px; margin: 12px 0; }
+.evidence .role { font-weight: 600; }
+ul.plain { margin: 6px 0; padding-left: 20px; }
+.prose { max-width: 860px; }
+footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; padding: 18px 0 32px; }
+@media (max-width: 600px) { h1 { font-size: 1.6rem; } .card .v { font-size: 1.4rem; } }
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <span class="brand">Projekt Transparenz</span>
+  <span class="muted">Pilotbericht · lokal erzeugt, nicht veröffentlicht</span>
+</div></header>
+<main><div class="wrap">
+
+<h1>{{ fund.fund_name }}</h1>
+<p class="lead">Was lässt sich über diesen Fonds aus offenen, amtlichen Quellen belegen, und was nicht?</p>
+<p class="muted">Fondsgesellschaft laut Meldung: {{ fund.manager_name }} · Fonds-ISIN {{ fund.fund_isin }} · Bestand zum {{ quarter_end }}</p>
+<div class="notice"><strong>Lokaler Pilot.</strong> Keine Anlageberatung, keine Empfehlung und keine Bewertung. Der Bericht zeigt belegte Angaben mit Quelle und Stichtag und macht Lücken sichtbar. «Unbekannt» heisst nie «unbedenklich».</div>
+
+<div class="cards">
+{% for k, v, n in cards %}
+  <div class="card"><div class="k">{{ k }}</div><div class="v">{{ v }}</div><div class="n">{{ n }}</div></div>
+{% endfor %}
+</div>
+
+<h2 id="fragen">Welche Fragen beantwortet dieser Bericht?</h2>
+<p class="caption">Eine ehrliche Übersicht: Was ein Anleger mit diesem Pilot tatsächlich beantworten kann, was nur teilweise und was gar nicht.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Frage</th><th>Stand</th><th>Antwort</th></tr></thead>
+  <tbody>
+  {% for item in questions %}
+    <tr><td><strong>{{ item.q }}</strong></td><td class="nowrap"><span class="chip {{ item.chip }}">{{ item.status }}</span></td><td>{{ item.a }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h2 id="top">1. Die zehn grössten Positionen</h2>
+<p class="caption">Gewicht laut Fondsmeldung. «Rechtsträger» ist der Name bei GLEIF zum zugeordneten LEI. «Kein Eintrag» bei den Emissionsdaten heisst: keine Anlage in den beiden verwendeten Registern, nicht: keine Emissionen.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Position laut Fondsmeldung</th><th class="num">Gewicht</th><th>Land</th><th>Rechtsträger (GLEIF)</th><th>Zuordnung</th><th>Emissionsdaten</th>{% if gem_loaded %}<th>Kohle laut GEM</th>{% endif %}</tr></thead>
+  <tbody>
+  {% for r in top %}
+    <tr><td>{{ r.name }}</td><td class="num">{{ r.weight }} %</td><td>{{ r.country }}</td><td>{{ r.legal_name }}</td><td><span class="chip {{ r.chip }}">{{ r.label }}</span></td><td>{{ "ja" if r.evidence else "kein Eintrag" }}</td>{% if gem_loaded %}<td>{{ r.coal }}</td>{% endif %}</tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h2 id="zuordnung">2. Zuordnungssicherheit: Welches Unternehmen steckt hinter einer Position?</h2>
+<p class="caption">Die Fondsmeldung nennt je Position eine ISIN (Kennung des Wertpapiers), aber nicht das Unternehmen. Zugeordnet wird automatisch, ohne Einzelfallfreigabe, in dieser Reihenfolge: gespeicherter menschlicher Entscheid (nur Korrekturen) → ISIN → Wikidata-Eintrag → LEI (Kennung des Rechtsträgers) → GLEIF → Registernummer → GLEIF-Namenssuche mit Sitzland. Die Namenssuche wirkt nur, wenn ihre gemessene Präzision die Freigabeschwelle erreicht. Was keine dieser Regeln sicher löst, bleibt offen.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Stufe</th><th>Bedeutung</th><th class="num">Positionen</th><th class="num">Gewicht</th><th>Bestätigte Abdeckung</th></tr></thead>
+  <tbody>
+  {% for t in tiers %}
+    <tr><td><span class="chip {{ t.chip }}">{{ t.label }}</span></td><td>{{ t.text }}</td><td class="num">{{ t.positions }}</td><td class="num">{{ fmt(t.weight_percent) }} %</td><td>{{ "ja" if t.confirmed else "nein" }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+{% set ev = mapping.evaluation %}
+{% if ev %}
+<h3>Wie zuverlässig sind die automatischen Verfahren?</h3>
+<p class="caption">Abdeckung (wie viel zugeordnet wird) und Präzision (wie oft die Zuordnung stimmt) sind zwei verschiedene Zahlen. Die Präzision wird an Referenzfällen gemessen: Positionen, deren Unternehmen über einen anderen, vom geprüften Verfahren unabhängigen Weg feststeht ({% for k, n in ev.reference_sources.items() %}{{ n }} {{ "über Wikidata-Kennung" if k == "isin_wikidata" else "durch menschlichen Entscheid" }}{% if not loop.last %}, {% endif %}{% endfor %}). <strong>Für die Freigabe zählen nur unabhängige Fälle</strong>: aus Fonds, an denen die Regeln nicht entwickelt wurden ({{ ev.name.funds | join(", ") or "noch keiner" }}), ohne ISINs aus den Entwicklungsfonds ({{ ev.development_funds | join(", ") }}). Die Entwicklungsfälle stehen zum Vergleich darunter; sie sind zu günstig, weil die Regeln (Version {{ ev.rule_version }}) an ihren Fehlern angepasst wurden. Die Referenz ist selbst nicht von Hand geprüft; abweichende Fälle stehen unten.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Verfahren</th><th class="num">Referenzfälle</th><th class="num">mit Ergebnis (Abdeckung)</th><th class="num">davon richtig</th><th class="num">falsch</th><th class="num">Präzision</th><th class="num">untere 95-%-Grenze</th><th>Freigabe</th></tr></thead>
+  <tbody>
+  {% for key, label in (("name", "GLEIF-Namenssuche mit Sitzland"), ("register", "Registernummer (Wikidata ↔ GLEIF)")) %}
+    {% set e = ev[key] %}
+    {% set d = e.development %}
+    <tr><td>{{ label }}<span class="sub">nur Entwicklungsfonds: {{ d.correct }} von {{ d.answered }} richtig, {{ d.reference_cases }} Fälle</span></td><td class="num">{{ e.reference_cases }}</td><td class="num">{{ e.answered }}{% if e.coverage is not none %} ({{ fmt(e.coverage * 100, 1) }} %){% endif %}</td><td class="num">{{ e.correct }}</td><td class="num">{{ e.wrong }}</td><td class="num">{% if e.precision is none %}–{% else %}{{ fmt(e.precision * 100, 1) }} %{% endif %}</td><td class="num">{{ fmt(e.precision_lower_bound_95 * 100, 1) }} %</td><td>{% if key == "register" %}immer (Kennung){% else %}{{ "freigegeben" if e.released else "nicht freigegeben" }}{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+<p class="caption">Freigaberegel der Namenssuche: {{ ev.name.release_rule }}. Die Registernummer ist eine Kennung und wirkt wie der LEI ohne Freigabe. Ihre Messung zeigt, wie oft der Weg greift und wie oft Wikidata eine falsche Nummer trägt (etwa die einer Tochtergesellschaft).</p>
+{% set wrong = ev.name.wrong_cases + ev.name.development.wrong_cases + ev.register.wrong_cases + ev.register.development.wrong_cases %}
+{% if wrong %}
+<details><summary><strong>Abweichungen von der Referenz</strong> · {{ wrong | length }} (unabhängige und Entwicklungsfälle, Namenssuche und Registernummer)</summary><div class="body"><div class="table-wrap"><table>
+  <thead><tr><th>Position</th><th>Fonds</th><th>Referenz-LEI</th><th>Verfahren</th></tr></thead>
+  <tbody>{% for c in wrong %}<tr><td>{{ c.position_name }}<span class="sub">{{ c.isin }}</span></td><td>{{ c.fund }}</td><td class="ids">{{ c.reference_lei }}</td><td class="ids">{{ c.predicted_lei }}</td></tr>{% endfor %}</tbody>
+</table></div></div></details>
+{% endif %}
+{% endif %}
+
+<h3>Positionen ohne Kennungsweg: was die zusätzlichen Verfahren lösen</h3>
+<p class="caption">{{ mapping.start_count }} Positionen ({{ mapping.start_weight }} %) haben keinen Wikidata-Eintrag oder einen Eintrag ohne LEI. Ergebnis je Position:</p>
+<table class="mini">{% for label, n in mapping.outcome %}<tr><td>{{ label }}</td><td class="num">{{ n }}</td></tr>{% endfor %}</table>
+<details><summary><strong>Alle {{ mapping.start_count }} Positionen mit Begründung</strong></summary><div class="body"><div class="table-wrap"><table>
+  <thead><tr><th>Position</th><th>Land</th><th class="num">Gewicht</th><th>Ausgangslage</th><th>Ergebnis</th><th>Registernummer</th><th>Namenssuche</th></tr></thead>
+  <tbody>{% for r in mapping.rows %}<tr><td>{{ r.name }}<span class="sub">{{ r.isin }}{% if r.lei != "–" %} → {{ r.lei }}{% endif %}</span></td><td>{{ r.country }}</td><td class="num">{{ r.weight }} %</td><td>{{ r.origin }}</td><td>{{ r.result }}</td><td class="muted">{{ r.register }}</td><td class="muted">{{ r.name_reason }}</td></tr>{% endfor %}</tbody>
+</table></div></div></details>
+
+<h2 id="emissionen">3. Amtliche Emissionsdaten</h2>
+<div class="prose">
+<p>Hier stehen nur Positionen, deren Unternehmen widerspruchsfrei zugeordnet ist und für das ein amtliches Register Emissionen nennt. Das sind <strong>{{ summary.with_confirmed_evidence.positions }} Positionen ({{ fmt(summary.with_confirmed_evidence.weight_percent) }} % des Fondsvermögens)</strong>.</p>
+<ul class="plain">
+  <li><strong>Was die Zahlen sind:</strong> verifizierte bzw. amtlich gemeldete Jahreswerte einzelner Anlagen, im EU-Emissionshandel in Tonnen CO2-Äquivalent.</li>
+  <li><strong>Was sie nicht sind:</strong> keine Gesamtemissionen des Unternehmens, kein Anteil des Fonds und kein Nachweis eines Rechtsverstosses.</li>
+  <li><strong>Konzerntöchter:</strong> Werte einer Tochter zählen nur für Kalenderjahre, in denen die Konzernbeziehung laut GLEIF schon bestand. Frühere Jahre werden nicht zugerechnet (siehe Abschnitt 7).</li>
+  <li><strong>Kontoinhaber:</strong> Das Register zeigt den heutigen Kontoinhaber. Frühere Betreiber einer Anlage sind im Auszug nicht enthalten.</li>
+</ul>
+</div>
+{% for row in emission_rows %}
+<details>
+  <summary><strong>{{ row.name }}</strong> · {{ row.weight }} % · {{ row.line }}</summary>
+  <div class="body">
+    <p class="muted">ISIN {{ row.isin }} · Rechtsträger laut GLEIF: {{ row.legal_name }}</p>
+    {% for e in row.evidence %}
+    <div class="evidence">
+      <div class="role">{{ e.source }}, Stand {{ e.as_of }}</div>
+      <div>Weg: {{ e.path }}{% if e.first_full_year %}; zugerechnet ab {{ e.first_full_year }}{% endif %}.</div>
+      {% if e.holder %}<div>Kontoinhaber im Register: «{{ e.holder }}» (LEI {{ e.lei }})</div>{% endif %}
+      <div>{{ e.headline }}{% if e.older %}; {{ e.older }} Anlage(n) mit älterem letzten Wert{% endif %}</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>{{ "Anlage" if e.holder else "Jahr" }}</th><th>{{ "Bezeichnung" if e.holder else "Stoff" }}</th><th>{{ "Tätigkeit" if e.holder else "Medium" }}</th><th>Jahreswerte</th><th class="num">Letzter Wert</th></tr></thead>
+        <tbody>
+        {% for i in e.rows %}
+          <tr><td class="nowrap">{{ i.id }}</td><td>{{ i.name }}{% if i.revoked %} <span class="muted">(Genehmigung widerrufen {{ i.revoked }})</span>{% endif %}</td><td>{{ i.activity }}</td><td class="nowrap">{{ i.years }}</td><td class="num">{{ i.latest }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+    </div>
+    {% endfor %}
+  </div>
+</details>
+{% endfor %}
+
+{% if gem_loaded %}
+<h2 id="beteiligungen">4. Fossile Anlagen und Beteiligungen (laut Global Energy Monitor)</h2>
+<div class="prose">
+<p>Global Energy Monitor (GEM) verfolgt, wem Kohlekraftwerke, Kohleminen, Gas- und Ölkraftwerke, LNG-Terminals und Pipelines weltweit gehören, über alle Zwischengesellschaften bis zur obersten Mutter. Zugeordnet wird nur über den LEI, den GEM selbst führt. Es erscheinen nur widerspruchsfrei zugeordnete Positionen: <strong>{{ summary.gem_entities.positions }} Positionen ({{ fmt(summary.gem_entities.weight_percent) }} %)</strong> sind bei GEM als Eigentümer erfasst.</p>
+<ul class="plain">
+  <li><strong>Beziehungstyp vor Anteil:</strong> Eine Besitzkette sagt, wer an wem wie viel hält, aber nicht auf wessen Rechnung. Jede Kette wird deshalb zuerst einem Beziehungstyp zugeordnet (Tabelle unten). Nur «Eigentum auf eigene Rechnung» ist eine Eigentumsbeteiligung; bei ihr folgt die Stufe nach dem durchgerechneten Anteil.</li>
+  <li><strong>Erkennung:</strong> Verwahrung und Vermögensverwaltung an Begriffen im Namen eines Kettenglieds; Finanzbeteiligungen an einem Anteil unter 20 % an einer börsenkotierten Gesellschaft (laut GEM), wenn das Unternehmen laut Wikidata ein Finanzinstitut ist. Das ist eine Einordnung bereits über Kennungen zugeordneter Ketten, nie eine Zuordnung.</li>
+  <li><strong>Was fehlt:</strong> Öl- und Gasfelder. GEM nennt deren Eigentümer nur mit Namen, ohne Kennung. Kein Eintrag heisst nicht «keine fossilen Anlagen», sondern «bei GEM nicht als Eigentümer erfasst».</li>
+</ul>
+</div>
+<h3>Beziehungstypen und ihre Regel im Profil (unsere Bewertungsentscheidung)</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Beziehungstyp</th><th>Wirkung im Profil</th><th>Begründung</th><th>Datenlage</th></tr></thead>
+  <tbody>{% for r in relationship_rules %}<tr><td><strong>{{ r.name }}</strong><span class="sub">{{ r.description }}</span></td><td class="nowrap">{{ "Konflikt möglich" if r.effect == "conflict" else "gesondert, kein Konflikt" }}{% if r.decision == "proposed" %}<span class="sub">Vorschlag</span>{% endif %}</td><td>{{ r.reason }}</td><td>{{ r.data_status_label }}<span class="sub">{{ r.data_note }}</span></td></tr>{% endfor %}</tbody>
+</table></div>
+
+<h3>Alle betroffenen Treffer, nach denselben Regeln geprüft</h3>
+<p class="caption">Jede Position mit aktiver Kohle oder neuer fossiler Kapazität laut GEM. «Vorher» ist die Regel bis Profil 1.0 (jede Beteiligung ausser Verwahrung), «jetzt» die Regel mit Beziehungstypen. Die Begründung nennt die angewandte Regel und gegebenenfalls den fehlenden Beleg.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Position</th><th>Beziehungen (Einheiten)</th><th>Kohle vorher → jetzt</th><th>Fossile Expansion vorher → jetzt</th></tr></thead>
+  <tbody>{% for r in reclassified %}<tr><td><strong>{{ r.name }}</strong><span class="sub">{{ r.weight }} % · Branche laut Wikidata: {{ r.industries }}{% if r.financial %} (Finanzinstitut){% endif %}</span></td><td>{{ r.relationships }}</td><td>{{ "Konflikt" if r.coal_old else "–" }} → <strong>{{ "Konflikt" if r.coal_new else "kein Konflikt" }}</strong><span class="sub">{{ r.coal_why }}</span></td><td>{{ "Konflikt" if r.exp_old else "–" }} → <strong>{{ "Konflikt" if r.exp_new else "kein Konflikt" }}</strong><span class="sub">{{ r.exp_why }}{% if r.captive %} {{ r.captive }} der neuen Einheiten auf eigene Rechnung dienen dem Eigenbedarf oder als Notstrom.{% endif %}</span></td></tr>{% endfor %}</tbody>
+</table></div>
+
+<h3>Wirkung einer Beteiligungsschwelle (nur zur Entscheidung, nicht angewandt)</h3>
+<p class="caption">Heute gilt jede belegte Beteiligung auf eigene Rechnung. So viele Positionen wären bei einer Schwelle ein Konflikt (durchgerechneter Eigenanteil je Einheit, Summe über alle eigenen Ketten zur selben Einheit):</p>
+<table class="mini"><tr><td><strong>Schwelle</strong></td><td class="num"><strong>Kohle</strong></td><td class="num"><strong>Fossile Expansion</strong></td></tr>{% for t in sensitivity %}<tr><td>{{ "jede Beteiligung (heute)" if t.threshold == "0" else "ab " ~ t.threshold ~ " %" }}</td><td class="num">{{ t.coal.positions }} ({{ fmt(t.coal.weight_percent) }} %)</td><td class="num">{{ t.exp.positions }} ({{ fmt(t.exp.weight_percent) }} %)</td></tr>{% endfor %}</table>
+
+{% if cases %}
+<h3 id="belegketten">Vollständige Belegketten (Fallbeispiele)</h3>
+<p class="caption">Je Fall alle Einheiten mit aktiver Kohle oder neuer Kapazität: Unternehmen, Anlage, Beziehungstyp mit Begründung, durchgerechneter Anteil, Projektstatus und Kette mit Anteil und Quelle je Glied. <strong>Zeitliche Gültigkeit:</strong> Besitzstand laut GEM-Ausgabe «{{ inputs.get("gem_release") }}», Status und Details laut den Anlagenlisten {{ (inputs.get("gem_tracker_files") or []) | join(", ") }}; Fondsbestand zum {{ quarter_end }}. Beginn und Ende einer Beteiligung nennt die Quelle nicht.</p>
+{% for c in cases %}
+<details>
+  <summary><strong>{{ c.name }}</strong> · {{ c.weight }} % · {{ c.assets | length }} Einheiten · {{ c.by_relationship }}<br><span class="muted">Kohle: {{ c.coal_why }}</span><br><span class="muted">Fossile Expansion: {{ c.exp_why }}</span></summary>
+  <div class="body">
+    <p class="muted">ISIN {{ c.isin }} → LEI {{ c.lei }} («{{ c.legal_name }}», {{ c.mapping }}) → GEM-Eigentümer {{ c.gem_entities }}. Branche laut Wikidata: {{ c.industries }}{% if c.financial %} → als Finanzinstitut behandelt{% elif c.financial is none %} → Branche unbekannt, nicht als Finanzinstitut behandelt{% endif %}.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Anlage</th><th>Status</th><th>Beziehung</th><th class="num">Anteil</th><th>Kette (Anteil je Glied, Quelle)</th></tr></thead>
+      <tbody>{% for a in c.assets %}<tr><td>{{ a.project }}<span class="sub">{{ a.kind }} · {{ a.country }}{% if a.fuel %} · {{ a.fuel }}{% endif %}{% if a.captive %} · {{ a.captive }}{% endif %}{% if a.operator %} · Betreiber {{ a.operator }}{% endif %} · {{ a.criteria }}{% if a.wiki %} · <a href="{{ a.wiki }}">GEM-Wiki</a>{% endif %}</span></td><td>{{ a.status }}{% if a.start_year %}<span class="sub">Inbetriebnahme {{ a.start_year }}</span>{% endif %}</td><td>{{ a.relationship }}<span class="sub">{{ a.reason }}</span></td><td class="num">{{ a.share }}</td><td><span class="path">{% for h in a.hops %}{% if loop.first %}{{ h.holder }}{% endif %} → {% if loop.index0 == a.decisive %}<strong>{{ h.name }}</strong>{% else %}{{ h.name }}{% endif %} [{{ h.share }}{% if h.imputed %}, geschätzt{% endif %}{% if h.url %}, <a href="{{ h.url }}">Quelle</a>{% endif %}]{% endfor %}</span></td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div>
+</details>
+{% endfor %}
+{% endif %}
+{% for row in gem_rows %}
+<details>
+  <summary><strong>{{ row.name }}</strong> · {{ row.weight }} % · {{ row.total }} Einträge{% for line in row.lines %}<br><span class="muted">{{ line }}</span>{% endfor %}</summary>
+  <div class="body">
+    <p class="muted">Eigentümer bei GEM: {{ row.entity }}. Gezeigt sind höchstens 30 Anlagen je Bereich, die stärksten Beteiligungen zuerst.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Anlage</th><th>Art</th><th>Status</th><th>Stufe</th><th class="num">Anteil</th><th class="num">Kapazität</th></tr></thead>
+      <tbody>
+      {% for a in row.assets %}
+        <tr><td>{{ a.project }}<span class="path">{{ a.path }}</span></td><td>{{ a.kind }}</td><td>{{ a.status }}</td><td>{{ a.stake }}</td><td class="num">{{ a.share }}</td><td class="num">{{ a.capacity }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+</details>
+{% endfor %}
+{% endif %}
+
+<h2 id="kriterien">{{ "5" if gem_loaded else "4" }}. Belege für Ausschlusskriterien</h2>
+{% if gem_loaded %}
+<div class="notice">Nur «Kohle» und «Fossile Expansion» sind durch eine Quelle abgedeckt (Global Energy Monitor), und nur für widerspruchsfrei zugeordnete Positionen. «Keine Hinweise in GEM» heisst: GEM führt die Firma nicht als Eigentümerin einer solchen Anlage. Die Spalte «Konflikt mit Profil» ist <strong>unsere Bewertungsentscheidung</strong> ({{ profile }}); die Belege selbst stammen von GEM. Die Emissionsdaten aus Abschnitt 3 sind kein Kriterienbeleg.</div>
+{% else %}
+<div class="notice">Für keines der Ausschlusskriterien liegt im Pilot eine Quelle vor. Der Status ist deshalb überall «Unbekannt (keine Datenabdeckung)», nicht «keine Hinweise». Die Emissionsdaten aus Abschnitt 3 sind kein Beleg für ein Kriterium, auch nicht für «Kohle»: Sie nennen Mengen, keine Tätigkeiten oder Umsatzanteile.</div>
+{% endif %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Kriterium</th><th>Regel im Profil (unsere Bewertung)</th><th>Status</th><th class="num">Positionen mit Beleg</th><th class="num">Konflikt mit Profil</th><th>Quelle und Lücke</th></tr></thead>
+  <tbody>
+  {% for c in criteria %}
+    <tr><td><strong>{{ c.name }}</strong></td><td>{{ c.rule or c.description }}{% if c.rule and not c.rule_decided %} <span class="muted">(Vorschlag, noch zu bestätigen)</span>{% endif %}</td><td><span class="chip {{ c.chip }}">{{ c.status_label }}</span></td><td class="num">{{ c.evidence_count }}</td><td class="num">{% if c.conflict is none %}–{% else %}{{ c.conflict.positions }} ({{ fmt(c.conflict.weight_percent) }} %){% endif %}</td><td class="muted">{{ c.reason }}</td></tr>
+    {% if c.breakdown %}<tr><td></td><td colspan="5"><div class="muted">{{ c.breakdown_title }}</div><table class="mini">{% for label, b in c.breakdown %}<tr><td>{{ label }}</td><td class="num">{{ b.positions }} {{ "Position" if b.positions == 1 else "Positionen" }}</td><td class="num">{{ fmt(b.weight_percent) }} %</td></tr>{% endfor %}</table></td></tr>{% endif %}
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h3>Umsetzungsstand je Kriterium</h3>
+<p class="caption">Fünf getrennte Stufen. «Getestet» heisst: Die Regel ist mit fiktiven Daten automatisch geprüft. «Am Fonds geprüft» heisst: Die Regel lief mit echten, freigegebenen Daten an diesem Fonds.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kriterium</th><th>Regel definiert</th><th>Implementiert</th><th>Getestet</th><th>Mit freigegebenen Daten verbunden</th><th>Am Fonds geprüft</th></tr></thead>
+  <tbody>{% for r in readiness %}<tr><td><strong>{{ r.name }}</strong></td><td>{{ r.defined }}</td><td>{{ r.implemented }}</td><td>{{ r.tested }}<span class="sub">{{ r.tests | join(", ") }}</span></td><td>{{ r.data }}<span class="sub">{{ r.data_note }}</span></td><td>{{ r.fund }}</td></tr>{% endfor %}</tbody>
+</table></div>
+
+<h2 id="separat">{{ "6" if gem_loaded else "5" }}. Separat ausgewiesen, nicht mitgezählt</h2>
+<p class="caption">Die hier gezeigten Angaben sind in keiner Zahl oben enthalten. Sie zeigen, wo die Daten sich widersprechen oder zeitlich nicht passen. Eine Position kann zusätzlich in Abschnitt 3 stehen, wenn sie andere, passende Belege hat.</p>
+
+<h3>{{ "6" if gem_loaded else "5" }}.1 Identitätskonflikte im Register</h3>
+{% if identity_conflicts %}
+<p class="caption">Der LEI im Register gehört laut GLEIF einem Rechtsträger, dessen Name nicht zum Kontoinhaber passt. Vermutlich trägt das Register den LEI einer anderen Konzerngesellschaft.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Position</th><th class="num">Gewicht</th><th>LEI im Register</th><th>Rechtsträger laut GLEIF</th><th>Kontoinhaber laut Register</th><th>Register-Angabe</th></tr></thead>
+  <tbody>
+  {% for r in identity_conflicts %}
+    <tr><td>{{ r.name }}</td><td class="num">{{ r.weight }} %</td><td class="nowrap">{{ r.lei }}</td><td>{{ r.legal_name }}</td><td>{{ r.holder }}</td><td>{{ r.headline }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}<p class="muted">Keine.</p>{% endif %}
+
+<h3>{{ "6" if gem_loaded else "5" }}.2 Prüffälle bei der Zuordnung</h3>
+<p class="caption">Kennungen widersprechen sich nicht, aber der Name der Position passt zu keinem Namen bei GLEIF (auch nicht zu früheren Namen), oder es gibt mehrere mögliche Unternehmen. Häufig sind das Umbenennungen; manchmal ist es eine andere Gesellschaft derselben Gruppe. Eine Person muss entscheiden.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Position laut Fondsmeldung</th><th class="num">Gewicht</th><th>Art</th><th>LEI</th><th>Namen bei GLEIF</th><th>Belege zurückgehalten</th></tr></thead>
+  <tbody>
+  {% for r in mapping_review %}
+    <tr><td>{{ r.name }}<span class="sub">{{ r.isin }} · Wikidata: {{ r.wikidata }}</span></td><td class="num">{{ r.weight }} %</td><td>{{ r.label }}</td><td class="ids">{% for lei in r.leis %}{{ lei }}{% if not loop.last %}<br>{% endif %}{% else %}–{% endfor %}</td><td>{% for n in r.gleif %}{{ n }}{% if not loop.last %}<br>{% endif %}{% else %}–{% endfor %}</td><td>{{ "ja" if r.had_evidence else "–" }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h3>{{ "6" if gem_loaded else "5" }}.3 Emissionsdaten ausserhalb des Beziehungszeitraums</h3>
+{% if timing_blocked %}
+<p class="caption">Die Tochter gehört laut GLEIF heute zum Konzern, aber die vorhandenen Emissionsjahre liegen vor dem gemeldeten Beginn der Beziehung. Sie werden dem Fondsunternehmen nicht zugerechnet.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Position</th><th class="num">Gewicht</th><th>Weg</th><th>Grund</th><th>Vorhandene Daten</th></tr></thead>
+  <tbody>
+  {% for r in timing_blocked %}
+    <tr><td>{{ r.name }}</td><td class="num">{{ r.weight }} %</td><td>{{ r.path }}</td><td>{{ r.reason }}</td><td>{{ r.source }}: {{ r.headline }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}<p class="muted">Keine.</p>{% endif %}
+
+<h3>{{ "6" if gem_loaded else "5" }}.4 Unbestätigte Konzernbeziehungen</h3>
+{% if hints %}
+<p class="caption">GLEIF kennt eine Beziehung zu einer Tochter mit Emissionsdaten, aber sie ist nicht vollständig bestätigt. Es wird kein Beleg übertragen.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Position</th><th class="num">Gewicht</th><th>Tochter</th><th>Fondsunternehmen ist</th><th>Bestätigung bei GLEIF</th><th>Beziehung seit</th><th>Daten bei der Tochter</th></tr></thead>
+  <tbody>
+  {% for h in hints %}
+    <tr><td>{{ h.name }}</td><td class="num">{{ h.weight }} %</td><td>{{ h.child }}</td><td>{{ h.kind }}</td><td>{{ h.corroboration }}</td><td class="nowrap">{{ h.start }}</td><td>{{ h.sources }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% else %}<p class="muted">Keine.</p>{% endif %}
+
+<h2 id="zeit">{{ "7" if gem_loaded else "6" }}. Konzernbeziehungen zeitlich eingeordnet</h2>
+<p class="caption">Alle Beziehungen zwischen einem Unternehmen im Fonds und einer Tochter, für die Emissionsdaten vorliegen. «Seit» ist der Beginn laut GLEIF. Fällt er auf den Tag der LEI-Registrierung, ist er vermutlich nur der früheste dokumentierte Tag; die Beziehung kann älter sein. Zugerechnet werden trotzdem nur volle Kalenderjahre ab diesem Datum.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Unternehmen im Fonds</th><th>Tochter</th><th>Fondsunternehmen ist</th><th>Seit (GLEIF)</th><th>Bestätigung</th><th>Gültig am {{ quarter_end }}</th><th>Daten</th><th>Ergebnis</th></tr></thead>
+  <tbody>
+  {% for r in relationships %}
+    <tr><td>{{ r.position }}<span class="sub">{{ r.weight }} %</span></td><td>{{ r.child }}</td><td>{{ r.kind }}</td><td class="nowrap">{{ r.start }}{% if r.start_is_registration_date %}<span class="sub">= LEI-Registrierung</span>{% endif %}</td><td>{{ r.corroboration }}</td><td>{{ "ja" if r.valid else ("nein" if r.valid is not none else "–") }}</td><td>{{ r.sources }}</td><td>{% if r.outcome.startswith("zugerechnet") %}{{ r.outcome }}{% else %}<span class="chip s-unbekannt">{{ r.outcome }}</span>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<h2 id="alle">{{ "8" if gem_loaded else "7" }}. Alle Positionen</h2>
+<details>
+  <summary><strong>Alle {{ all_positions | length }} Positionen anzeigen</strong> (nach Gewicht)</summary>
+  <div class="body"><div class="table-wrap"><table>
+    <thead><tr><th>Position laut Fondsmeldung</th><th>ISIN</th><th>Land</th><th class="num">Gewicht</th><th>Rechtsträger (GLEIF)</th><th>Zuordnung</th><th>Emissionsdaten</th>{% if gem_loaded %}<th>Kohle laut GEM</th>{% endif %}</tr></thead>
+    <tbody>
+    {% for r in all_positions %}
+      <tr><td>{{ r.name }}</td><td class="nowrap">{{ r.isin }}</td><td>{{ r.country }}</td><td class="num">{{ r.weight }} %</td><td>{{ r.legal_name }}</td><td><span class="chip {{ r.chip }}">{{ r.label }}</span></td><td>{{ "ja" if r.evidence else "kein Eintrag" }}</td>{% if gem_loaded %}<td>{{ r.coal }}</td>{% endif %}</tr>
+    {% endfor %}
+    </tbody>
+  </table></div></div>
+</details>
+
+<h2 id="methode">Methode und Grenzen</h2>
+<div class="prose"><ul class="plain">
+  <li>Ein Fonds, ein Stichtag. Die Positionen stammen aus der Quartalsmeldung an die schwedische Finanzaufsicht; schwedische Fonds sind nicht die Fonds, die Schweizer Anlegerinnen und Anleger typischerweise halten.</li>
+  <li>Zuordnung automatisch über Kennungen (ISIN, LEI, Registernummer). Die GLEIF-Namenssuche mit Sitzland wirkt nur, wenn ihre gemessene Präzision die Freigabe erreicht; ein Name allein ordnet nie zu. Wikidata-Angaben sind Gemeinschaftsdaten und nicht von Hand bestätigt.</li>
+  <li>Konzernbeziehungen zählen nur, wenn GLEIF sie als aktiv, veröffentlicht und vollständig bestätigt führt.</li>
+  <li>Emissionsdaten decken nur meldepflichtige Betriebe in der Schweiz und Anlagen im EU-Emissionshandel ab. Ein fehlender Eintrag bedeutet nicht, dass ein Unternehmen keine Emissionen hat.</li>
+  <li>{% if gem_loaded %}Für Kohle und fossile Expansion nutzt der Pilot die Besitzdaten von Global Energy Monitor; für die übrigen Kriterien, Gerichtsurteile, Behördenentscheide und Sanktionen enthält er keine Quelle.{% else %}Für Ausschlusskriterien, Gerichtsurteile, Behördenentscheide und Sanktionen enthält der Pilot keine Quelle.{% endif %}</li>
+  <li>Keine Scores, keine Rangliste, keine Summen über Unternehmen hinweg.</li>
+</ul></div>
+
+<h2 id="herkunft">Herkunft der Eingabedateien</h2>
+<p class="caption">Jede Datei, aus der dieser Bericht entstand, mit Prüfsumme (SHA-256, gekürzt; vollständig im technischen Bericht). Die Prüfsumme wird bei jedem Lauf neu berechnet und mit der Begleitdatei vom Download verglichen; weicht sie ab, bricht die Auswertung ab. «nicht erfasst» heisst: Zu dieser Datei gibt es keine festgehaltene Prüfsumme.</p>
+{% if provenance %}<div class="table-wrap"><table>
+  <thead><tr><th>Quelle</th><th>Datei</th><th>Grösse</th><th>Prüfsumme</th><th>Prüfung</th><th>Lizenz</th><th>Stand</th></tr></thead>
+  <tbody>
+  {% for r in provenance %}
+    <tr><td>{{ r.source }}</td><td>{{ r.path }}</td><td class="nowrap">{{ r.size }}</td><td><code title="{{ r.sha256 }}">{{ r.sha_short }}…</code></td><td>{{ r.status }}</td><td>{{ r.licence }}</td><td class="nowrap">{{ r.retrieved }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>{% else %}<p>Für diesen Bericht wurden keine Eingabedateien erfasst.</p>{% endif %}
+
+<h2 id="quellen">Quellen und Lizenzen</h2>
+<div class="prose"><ul class="plain">
+  <li>Positionen: {{ attribution.positions }}. Bedingungen: <a href="{{ attribution.terms }}">{{ attribution.terms }}</a> (Quelle FI und Datum anzugeben).</li>
+  <li>Zuordnung: Wikidata (strukturierte Daten, CC0 1.0); GLEIF LEI-Daten und Beziehungsdatei (CC0 1.0){% if inputs.get("gleif_rr") %}, Datei {{ inputs.get("gleif_rr") }}{% endif %}.</li>
+  {% if attribution.get("eu_ets") %}<li>Emissionshandel: {{ attribution.eu_ets[0] }}. Nutzungsbedingungen laut verlinktem Rechtshinweis der Europäischen Kommission (CC BY 4.0, Auslegung, nicht ausdrücklich für diese Dateien): <a href="{{ attribution.eu_ets[1] }}">{{ attribution.eu_ets[1] }}</a>. Daten gefiltert und umgeformt.</li>{% endif %}
+  {% if attribution.get("gem") %}<li>Fossile Anlagen und Beteiligungen: {{ attribution.gem[0] }}. Lizenz: <a href="{{ attribution.gem[1] }}">Creative Commons Attribution 4.0</a>. Diese Auswertung stammt von Projekt Transparenz und ist nicht von Global Energy Monitor geprüft oder unterstützt.</li>{% endif %}
+  <li>Emissionen Schweiz: Bundesamt für Umwelt BAFU, Schadstofffreisetzungs- und Transferregister der Schweiz (SwissPRTR), <a href="https://opendata.swiss/en/dataset/schadstofffreisetzungs-und-transferregister-der-schweiz-swissprtr">opendata.swiss</a>.</li>
+</ul></div>
+
+</div></main>
+<footer><div class="wrap">Erzeugt mit <code>scripts/pilot_fund_chain.py</code> aus lokal gespeicherten Originaldaten. Nicht weitergeben, solange Lizenzfragen offen sind.</div></footer>
+</body>
+</html>

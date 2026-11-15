@@ -3,7 +3,10 @@
 ## Mission
 Fondspositionen mit nachvollziehbaren Quellen verbinden, damit Anleger:innen selbst beurteilen
 können, ob ein nachhaltiger Fonds zu ihren Werten passt. Transparenz statt Greenwashing:
-keine Scores, keine Urteile ohne Belege, keine Empfehlungen, keine Renditeversprechen.
+kein Gesamtscore, keine Aussage ohne Beleg, keine Empfehlungen, keine Renditeversprechen.
+Belege (aus Quellen) und Bewertung (unser Profil, ausdrücklich als eigene Entscheidung
+bezeichnet) bleiben immer getrennt. Ziel: ein weitgehend automatisches Werkzeug, das nur bei
+unsicheren Fällen einen Menschen Ja oder Nein fragen muss und den Entscheid danach behält.
 Gründer: Jonas Bader (BFH Digital Business & AI, ex Bankberater). Nebenprojekt.
 
 ## Arbeitsregeln
@@ -22,6 +25,10 @@ Gründer: Jonas Bader (BFH Digital Business & AI, ex Bankberater). Nebenprojekt.
   solange die Grundlagen nicht zuverlässig laufen. Keine Platzhalterfunktionen, die fertig wirken.
 - Vorher fragen: Kosten, Dateien ausserhalb des Projekts, Löschen, externe Dienste, Veröffentlichen
   (inkl. GitHub-Push).
+- **Echte Ergebnisse bleiben lokal (D-053):** Fonds- oder Firmennamen zusammen mit Befunden
+  (Konflikte, Emissionen, Beteiligungen, Zuordnungsfehler einzelner Firmen) nie in versionierte
+  Dateien. Sie gehören nach `C:\TransparenzDaten\notizen\PILOT_ERGEBNISSE.md`. In STATUS, LOG,
+  DECISIONS und DATA_SOURCES nur Methode und Messwerte ohne Namen. Vor jedem Push prüfen.
 - Niemals reale Daten erfinden. Fiktive Daten eindeutig kennzeichnen (ISIN `ZZ…`, LEI `FIKT00…`,
   `example.org`). ISIN (Wertpapier) ≠ LEI (Rechtsträger).
 - Lizenz jeder Quelle prüfen und in `docs/DATA_SOURCES.md` festhalten. Keine unzulässigen Scraper.
@@ -39,9 +46,17 @@ Python-Monolith, Paket `transparenz` (src-Layout):
 | `src/transparenz/config/sources.toml` | Datenquellen, Intervalle, **Lizenzregister je Quelle** |
 | `src/transparenz/config/licensing.py` | Lizenzsperre: echte Quellen ohne geprüfte Lizenz werden nicht abgerufen |
 | `src/transparenz/ingestion/gleif.py` | GLEIF-Adapter (erste echte Quelle, deaktiviert bis zum ersten echten Fonds) |
-| `src/transparenz/config/criteria.toml` | Ausschlusskriterien, Schwellenwerte (offen) |
-| `src/transparenz/screening/engine.py` | Belegstatus-Logik |
+| `src/transparenz/config/criteria.toml` | **Kriterienmodell (Schema 2), einzige Stelle für Kriterien, Profilregeln, Kennzahlen**; Änderung = `profile_version` erhöhen + Eintrag in DECISIONS (D-043) |
+| `src/transparenz/config/catalog.py` | lädt und prüft Quellen und Kriterienmodell (`load_criteria_model`) |
+| `src/transparenz/screening/engine.py` | Belegstatus-Logik; wendet die Profilregel an («Konflikt mit Profil») |
+| `src/transparenz/services/review_decisions.py`, `scripts/review_mapping.py` | Entscheid-Speicher für Korrekturen und Referenzfälle (D-042), freiwillige Ja/Nein-Abfrage |
+| `src/transparenz/services/entity_matching.py` | Automatische Zuordnung: Registernummer, GLEIF-Namenssuche mit Sitzland, Präzisionsmessung und Freigabe (D-046) |
+| `src/transparenz/services/ownership.py` | Beziehungstypen in Besitzketten: eigene Rechnung, Finanzbeteiligung, Vermögensverwaltung, Verwahrung (D-045) |
 | `src/transparenz/services/update_manager.py` | DataUpdateManager |
+| `src/transparenz/services/global_candidates.py` | Lokale Suche über den globalen Wikidata-Firmen-/Ticker-Rohbestand (`global-candidates-build`/`-search`); getrennt von `swiss_foundation.py` und `market_catalog.py` |
+| `scripts/pilot_fund_chain.py` | Befehlszeile des Pilots «Position → Unternehmen → Beleg» an echten Fonds (FI Schweden + Wikidata + GLEIF + SwissPRTR + EU-Emissionshandel + GEM-Besitzketten, D-037–D-040); nicht im Screening, nicht auf der Website. Logik seit 15.11.2026 im Paket: `ingestion/fi_holdings.py`, `wikidata_isin.py`, `gleif_lookup.py`, `eu_ets.py`, `gem.py`; `services/fund_chain.py`, `fund_findings.py`, `mapping_reference.py`, `provenance.py`; `reports/fund_chain_report.py` mit `reports/templates/fund_chain_report.html.j2` |
+| `scripts/pilot_regression.py` | Vergleichslauf: sechs Pilotfonds offline von eingefrorenem Eingang rechnen und zwei Läufe vergleichen; Pflicht vor und nach jedem Umbau der Kette |
+| `TRANSPARENZ_DATA_DIR` (`.env`) | Datenordner ausserhalb OneDrive (lokal `C:\TransparenzDaten`): `raw`, `processed`, `cache`, `review`. Nur über `settings.local_data_dir()`/`resolve_data_path()` ansprechen |
 | `site/` | **statische Website (Hauptoberfläche)**, erzeugt mit `python -m transparenz build-site`; nach jeder Daten- oder Darstellungsänderung neu erzeugen und mitcommitten |
 | `src/transparenz/site/` | Website-Generator und Jinja2-Vorlagen |
 | `app/main.py`, `app/views/` | Streamlit-App (lokal, z. B. manuelle Updates) |
@@ -51,34 +66,43 @@ Python-Monolith, Paket `transparenz` (src-Layout):
 ## Konventionen
 - Typannotationen, Logging über `logging`, Pydantic-Validierung für alle importierten Daten.
 - Engine bleibt rein funktional (keine DB, keine Uhr) – Eingaben werden übergeben.
-- Texte immer quellenbasiert («Laut Gerichtsurteil … vom …»); nie eigene Urteile.
+- Belegtexte immer quellenbasiert («Laut Gerichtsurteil … vom …»). Die Bewertung
+  «Konflikt mit Profil» stammt nur aus `criteria.toml` und wird immer als unsere
+  Bewertungsentscheidung bezeichnet; nie eine Bewertung im Code verstecken.
 - Enum-Werte sind ASCII-Schlüssel; deutsche Anzeigetexte nur in `entities/labels.py`.
 
-## Integrierte Quellen
-Der Nutzerauftrag umfasst jetzt **alle weltweit börsenkotierten Aktien und ETFs**.
-Erster lokaler Teilbestand: `market-update` / `market-search`, `market_sources.toml`,
-`markets.sqlite`, `data/processed/market/`. Anleitung und offene Weltabdeckung:
-`docs/GLOBAL_MARKET_CATALOG.md` (D-033). 44'085 Quellen-/Klasseneinträge, keine Zahl
-weltweit eindeutiger Wertpapiere. 4'168 ETF-Klassen durch datierte Ein-Klassen-N-CEN-Meldung
-belegt; Mehrklassenserien bleiben auf Klassenebene offen. SEC-Ticker nicht pauschal Aktien.
-CIK ≠ Serie ≠ Anteilsklasse ≠ Listing. Keine Namens- oder Tickerfusion. Kontakt nur lokal
-`TRANSPARENZ_SEC_CONTACT` in `.env`, vom Nutzer für SEC-Anfragen autorisiert; nie committen.
-`market_records` separat vom ISIN-Screening. Keine Handelsaktivität, ISIN oder Weltquote erfinden.
-SEC hat eine Schema-3.1-Abdeckungslücke. 200 Tests, Offline-Audit der sieben Originaldateien
-und aller 4'168 ETF-Nachweise bestanden. HTML visuell noch nicht geprüft (Browser blockiert file:).
+## Integrierte Quellen und Datenstand
+Aktueller Stand, Zahlen und offene Entscheide stehen in `STATUS.md` (kurz halten: nur Stand,
+kein Verlauf). Auftrag: **alle weltweit börsenkotierten Aktien und ETFs**; bisher Teilbestände.
 
-Die Website nutzt weiterhin den Demokatalog. Das **lokale Schweizer Rohdatenfundament**
-läuft separat über `swiss-update`, `config/swiss_sources.toml`, dieselbe DataUpdateManager-
-Architektur und `data/processed/swiss.sqlite`. Funktionsfähige Quellen: GLEIF CH,
-Zefix/LINDAS und SwissPRTR. Wikidata CC0 ist technisch durch HTTP 403 blockiert.
-Wikidata ist deshalb im Schweizer Standardlauf deaktiviert, explizit mit
-`--source wikidata_ch` weiter prüfbar. Unveränderte Exporte werden wiederverwendet;
-aktuelle Laufmeldungen stehen in `data/processed/swiss/latest_status.json`.
-Der Auftrag vom 08.11.2026 autorisiert kostenlose lokale Downloads nach nachgewiesener
-kommerzieller Freigabe; dafür keine erneute Einzelrückfrage. Keine kostenpflichtigen APIs,
-kein Push und keine öffentliche Datenfreigabe. Quellen und Sperren: `docs/DATA_SOURCES.md`.
-**Zuerst `docs/CODEX_TO_CLAUDE_HANDOFF.md` lesen.** Keine Namensfusion; Kennungskonflikte
+- **Schweiz** (`swiss-update`, `config/swiss_sources.toml`, `data/processed/swiss.sqlite`):
+  GLEIF CH, Zefix/LINDAS, SwissPRTR, Wikidata CH. Alle vier funktionsfähig (Wikidata seit D-034).
+- **SEC-Marktkatalog** (`market-update`/`market-search`, `markets.sqlite`,
+  `docs/GLOBAL_MARKET_CATALOG.md`, D-033): US-Fokus, keine Weltabdeckung. CIK ≠ Serie ≠
+  Anteilsklasse ≠ Listing. Kontakt nur lokal `TRANSPARENZ_SEC_CONTACT` in `.env`; nie committen.
+- **Wikidata weltweit** (`global-candidates-build`/`-search`, D-036): unbestätigte Hinweise.
+- **Pilot echter Fonds** (`scripts/pilot_fund_chain.py`, D-037–D-043): FI Schweden, Wikidata,
+  GLEIF, SwissPRTR, EU-Emissionshandel, GEM. Nur lokal, nicht im Update-System.
+- `docs/CODEX_TO_CLAUDE_HANDOFF.md` ist historisch (Stand 08.11.2026), nicht mehr massgebend.
+
+**Lizenzmassstab (D-041):** Verwendet wird nur, was an der Originalseite eine benannte Lizenz
+oder ausdrückliche Gemeinfreiheit trägt, die gewerbliche Nutzung, Speicherung, Ableitung und
+Weitergabe erlaubt. «Öffentlich abrufbar» oder eine Auslegung genügt nicht. Unklare Quellen:
+schriftlich nachfragen oder weglassen. Keine kostenpflichtigen APIs, kein Push, keine
+öffentliche Datenfreigabe ohne Zustimmung. Der Auftrag vom 08.11.2026 erlaubt kostenlose
+lokale Downloads freigegebener Quellen; Dateiname, Quelle und Grösse trotzdem vorher nennen.
+
+**Zuordnung (D-042, D-046):** Automatisch, ohne Einzelfallfreigabe. Kennungen (ISIN → LEI,
+Registernummer) wirken immer. Ein Name ist nie ein Schlüssel: Die GLEIF-Namenssuche (gleicher
+Name, Sitzland, aktiv, eindeutig) wirkt nur, solange ihre an Referenzfällen gemessene
+Präzision die Freigabe erreicht (≥ 100 Fälle, untere 95-%-Grenze ≥ 97 %); sonst bleibt der
+Fall offen. Präzision und Abdeckung immer getrennt ausweisen. Menschliche Entscheide
+(`data/review/mapping_decisions.csv`) gehen vor und dienen als Referenzfälle. Kennungskonflikte
 und ungültige Prüfziffern bleiben separat. Fondsrechtsträger ≠ ETF-Anteilsklassen ≠ Positionen.
+
+**Beteiligungen (D-045):** Besitzketten erst nach Beziehungstyp einordnen. Nur Eigentum auf
+eigene Rechnung ist eine Eigentumsbeteiligung; Vermögensverwaltung, Verwahrung, Finanzierung,
+Betrieb und Lieferverträge haben eigene Regeln in `criteria.toml` (`relationship_type`).
 Grosse Import-/Exportläufe nacheinander ausführen (Speicherbedarf).
 
 ## Tests und Start
@@ -106,9 +130,10 @@ Temp-Pfaden kann pip an der Windows-Pfadgrenze scheitern → `-VenvPath` mit kur
 Git Bash: bei `git show <ref>:<pfad>` `MSYS_NO_PATHCONV=1` setzen.
 
 ## Grenzen
-Demooberfläche fiktiv; echte Register-/SEC-Daten nur lokal. Kein vollständiger Aktien-/ETF-Bestand,
-keine Fondspositionen und keine Firmenvorwürfe importiert. SwissPRTR-Standorte ohne sichere
+Demooberfläche fiktiv; echte Register-/SEC-Daten nur lokal. Kein vollständiger Aktien-/ETF-Bestand;
+Fondspositionen nur im Pilot; keine Firmenvorwürfe importiert. Keine API. SwissPRTR-Standorte ohne sichere
 Betreiber-UID bleiben unzugeordnet; die Emissions-XLSX ist normalisiert (D-032), Verknüpfung
 nur über die eigene, prüfzifferngeprüfte Betriebs-UID, nicht über den Namen.
 Quellenprüfung anhand offizieller Bedingungen, keine externe Rechtsberatung. Keine
-Migrationen (Alembic); bestehendes Screening-Schema unverändert. Daten nicht ungeprüft publizieren.
+Migrationen (Alembic); neue Spalten nur leer erlaubt und additiv (`add_missing_columns`, D-047).
+Daten nicht ungeprüft publizieren.

@@ -197,10 +197,14 @@ class EvidenceRecord(_Record):
     metric_name: str | None = None
     metric_value: float | None = None
     metric_unit: str | None = None
+    # Kategorie des Kriteriums (Schlüssel aus criteria.toml, z. B. «geaechtete_waffen»).
+    category: str | None = None
+    # Bis wann Folgen des Entscheids fortbestehen (Auflagen, Aufsicht, Sperre).
+    consequences_until: date | None = None
 
     @field_validator(
         "lei", "isin", "event_date", "last_reviewed", "metric_name", "metric_value",
-        "metric_unit", mode="before",
+        "metric_unit", "category", "consequences_until", mode="before",
     )
     @classmethod
     def _clean(cls, v: object) -> object:

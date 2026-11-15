@@ -4,17 +4,61 @@
 <p class="lead">Die Methodik ist offen. Diese Seite zeigt dieselben Dokumente, die im Repository
 unter <code>docs/methodik/</code> liegen – es gibt keine zweite, versteckte Version.</p>
 
-<h2>Aktive Ausschlusskriterien</h2>
+<h2 id="profil">Kriterien und Bewertungsprofil</h2>
+<div class="notice"><strong>{{ model.profile_label }}.</strong> {{ model.statement }}</div>
+<p class="caption">Technische Quelle: <code>src/transparenz/config/criteria.toml</code> (Schema {{ model.schema_version }}).
+«Entschieden» heisst: Regel festgelegt. «Vorschlag» heisst: Regel vorgeschlagen, noch nicht bestätigt.
+Es gibt keinen Gesamtwert und keine Verrechnung zwischen Kriterien.</p>
+
+{% for group, items in model.grouped() %}
+<h3>{{ group }}</h3>
+{% for c in items %}
+<details>
+  <summary>{{ c.name }} <span class="caption">· Regel: {{ decision_labels[c.decision] }}{% if not c.sources %} · noch keine freigegebene Quelle{% endif %}</span></summary>
+  <div class="body">
+    <p>{{ c.description }}</p>
+    <p><strong>Regel im Profil (unsere Bewertungsentscheidung):</strong> {{ c.rule }}</p>
+    {% if c.categories %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kategorie</th><th>Wirkung im Profil</th><th>Stand</th><th>Begründung</th></tr></thead>
+      <tbody>{% for k in c.categories %}<tr><td>{{ k.name }}{% if k.description %}<div class="caption">{{ k.description }}</div>{% endif %}</td>
+        <td>{{ effects[k.effect] }}</td><td class="caption">{{ decision_labels[k.decision] }}</td><td class="caption">{{ k.reason or "–" }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+    {% if c.display %}<p><strong>Getrennt angezeigt:</strong></p><ul>{% for item in c.display %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+    {% if c.separate %}<p><strong>Gesondert behandelt (kein Konflikt):</strong></p><ul>{% for item in c.separate %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+    {% if c.conflict_expiry_years %}<p class="caption">Wirkungsdauer eines bestätigten Falls: {{ c.conflict_expiry_years }} Jahre ab Entscheid; danach «historisch».</p>{% endif %}
+    <p class="caption"><strong>Quellen:</strong> {% if c.sources %}{{ c.sources|join("; ") }}{% else %}noch keine freigegebene Quelle – der Status bleibt «unbekannt».{% endif %}
+    {% if c.source_gap %}<br><strong>Lücke:</strong> {{ c.source_gap }}{% endif %}</p>
+    {% if c.open_questions %}<p class="caption"><strong>Offen:</strong></p><ul class="caption">{% for q in c.open_questions %}<li>{{ q }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+</details>
+{% endfor %}
+{% endfor %}
+
+<h3>Belegstufen</h3>
 <div class="table-wrap"><table>
-  <thead><tr><th>Kriterium</th><th>Beschreibung</th><th>Schwere</th><th>Kennzahl</th><th>Schwellenwert</th><th>Bemerkung</th></tr></thead>
-  <tbody>
-  {% for c in criteria %}
-  <tr><td>{{ c.name }}</td><td>{{ c.description }}</td><td>{{ c.severity }}</td><td>{{ c.metric or "–" }}</td>
-    <td>{% if c.threshold is not none %}{{ c.threshold }} {{ c.metric_unit or "" }}{% else %}offen{% endif %}</td>
-    <td class="caption">{{ c.threshold_note }}</td></tr>
-  {% endfor %}
-  </tbody>
+  <thead><tr><th>Stufe</th><th>Bedeutung</th></tr></thead>
+  <tbody>{% for e in model.evidence_levels %}<tr><td>{{ e.name }}</td><td>{{ e.description }}</td></tr>{% endfor %}</tbody>
 </table></div>
+
+<h3>Sanktionen</h3>
+<p>{{ model.sanctions.rule }} <span class="caption">{{ model.sanctions.note }}</span></p>
+
+<h3>Kennzahlen ohne Ausschlusswirkung</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kennzahl</th><th>Einheit</th><th>Pflichtangaben</th><th>Regel</th></tr></thead>
+  <tbody>{% for m in model.metrics %}<tr><td>{{ m.name }}</td><td class="caption">{{ m.unit }}</td><td class="caption">{{ m.required_fields|join(" · ") }}</td><td class="caption">{{ m.rule }} {{ m.note }}</td></tr>{% endfor %}</tbody>
+</table></div>
+
+{% if model.proposed %}
+<h3>Vorgeschlagene weitere Kriterien (nicht aktiv)</h3>
+<p class="caption">Diese Kriterien werden nicht ausgewertet. Sie brauchen zuerst einen Entscheid.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kriterium</th><th>Thema</th><th>Beschreibung</th><th>Vorgeschlagene Regel</th></tr></thead>
+  <tbody>{% for c in model.proposed %}<tr><td>{{ c.name }}</td><td class="caption">{{ c.group_label }}</td><td>{{ c.description }}</td><td class="caption">{{ c.rule }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endif %}
 
 <p class="caption">Inhalt:
 {% for title, _ in documents %}<a href="#doc-{{ loop.index }}">{{ title }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>

@@ -27,6 +27,12 @@ Grundsätze, die hier im Code umgesetzt sind:
   nur, wenn eine Quelle das Unternehmen für das Kriterium nachweislich geprüft hat.
 * Belege zu einer Muttergesellschaft werden nur über VERIFIZIERTE Konzernbeziehungen
   übernommen. Unverifizierte Beziehungen werden angezeigt, aber nicht übernommen.
+* **Kategorien entscheiden mit.** Hat ein Kriterium Kategorien mit unterschiedlicher Wirkung
+  (z. B. Waffenarten, Dual-Use), löst nur ein Beleg mit einer Kategorie der Wirkung
+  «conflict» einen Konflikt aus. Fehlt die Kategorie, bleibt die Wirkung offen (kein Konflikt).
+* **Wirkungsdauer** (z. B. Korruption) beginnt mit dem Abschluss des Verfahrens oder dem
+  späteren Ende der Tat, verlängert sich um fortbestehende Folgen und verkürzt sich bei
+  behördlich bestätigter Abhilfe auf die Mindestdauer (Regeln in criteria.toml).
 
 Die Engine ist rein funktional (keine Datenbank, keine Uhr): alle Eingaben werden
 übergeben. Das macht sie deterministisch und testbar.
@@ -136,6 +142,9 @@ class CriterionAssessment:
     covered_by: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
     decisive: EvidenceMatch | None = None  # stärkster sicher zugeordneter Beleg
+    # Wirkung im Profil (criteria.toml): unsere Bewertungsentscheidung, keine Quellenaussage
+    profile_conflict: bool = False
+    profile_note: str = ""
 
     @property
     def has_finding(self) -> bool:
@@ -158,6 +167,11 @@ class PositionResult:
         return [a.status for a in self.assessments.values()]
 
     @property
+    def profile_conflicts(self) -> list[str]:
+        """Schlüssel der Kriterien, bei denen der Beleg im Profil als Konflikt zählt."""
+        return [key for key, a in self.assessments.items() if a.profile_conflict]
+
+    @property
     def strongest_status(self) -> AssessmentStatus:
         """Stärkster Beweisstatus über alle Kriterien – nur zur Sortierung/Anzeige."""
         return min(self.statuses(), key=lambda s: STATUS_DISPLAY_ORDER[s])
@@ -172,6 +186,8 @@ class CriterionSummary:
     criterion: Criterion
     weight_by_status: dict[AssessmentStatus, float]
     count_by_status: dict[AssessmentStatus, int]
+    conflict_weight: float = 0.0
+    conflict_count: int = 0
 
 
 @dataclass
@@ -209,6 +225,95 @@ class FundScreeningResult:
     @property
     def weight_with_finding(self) -> float:
         return sum(p.position.weight_pct for p in self.positions if p.has_finding)
+
+    @property
+    def weight_with_profile_conflict(self) -> float:
+        """Gewicht der Positionen mit mindestens einem Konflikt im Profil."""
+        return sum(p.position.weight_pct for p in self.positions if p.profile_conflicts)
+
+
+def _add_years(day: date, years: int) -> date:
+    return day.replace(year=day.year + years,
+                       day=28 if (day.month, day.day) == (2, 29) else day.day)
+
+
+def category_effect(criterion: Criterion, record: EvidenceRecord) -> tuple[str, str]:
+    """Wirkung der Kategorie eines Belegs: «conflict», «separate», «info» oder «unknown»."""
+    if not criterion.categories:
+        return "conflict", ""
+    category = criterion.category(record.category)
+    if category is None:
+        if criterion.category_decides:
+            shown = f"«{record.category}» ist keine Kategorie dieses Kriteriums" \
+                if record.category else "Der Beleg nennt keine Kategorie"
+            return "unknown", (f"{shown}. Ob er einen Konflikt auslöst, hängt von der Kategorie "
+                               "ab; deshalb kein Konflikt, bis sie belegt ist.")
+        return "conflict", ""
+    if category.effect != "conflict":
+        return category.effect, (f"Kategorie «{category.name}»: im Profil gesondert gezeigt, "
+                                 "kein Konflikt.")
+    return "conflict", ""
+
+
+def conflict_end(criterion: Criterion, record: EvidenceRecord,
+                 context: Sequence[EvidenceMatch], as_of: date) -> tuple[date | None, str]:
+    """Letzter Tag der Konfliktwirkung (``None`` = unbefristet) und die Begründung.
+
+    Beginn: Abschluss des Verfahrens (Veröffentlichung des Entscheids), oder das spätere Ende
+    der Tat (``event_date``). Ende: Beginn + ``conflict_expiry_years``, mindestens bis zum Ende
+    fortbestehender Folgen (``consequences_until``). Behördlich bestätigte Abhilfe (Beleg der
+    Art «abhilfe» von Gericht oder Behörde) verkürzt auf ``conflict_min_years_with_remediation``,
+    nie aber vor das Datum der Abhilfe oder das Ende der Folgen.
+    """
+    years = criterion.conflict_expiry_years
+    if years is None:
+        return None, ""
+    start = max(record.published_date, record.event_date or record.published_date)
+    end = _add_years(start, years)
+    why = f"Wirkung ab {start:%d.%m.%Y} für {years} Jahre"
+    if record.consequences_until and record.consequences_until > end:
+        end = record.consequences_until
+        why += f", verlängert bis zum Ende der Folgen am {end:%d.%m.%Y}"
+    remediated = sorted(m.record.published_date for m in context
+                        if m.record.evidence_type == EvidenceType.ABHILFE
+                        and m.tier == SourceTier.GERICHT_BEHOERDE
+                        and start <= m.record.published_date <= as_of)
+    minimum = criterion.conflict_min_years_with_remediation
+    if remediated and minimum:
+        early = max(_add_years(start, minimum), remediated[0],
+                    record.consequences_until or start)
+        if early < end:
+            end = early
+            why += (f"; behördlich bestätigte Abhilfe am {remediated[0]:%d.%m.%Y} verkürzt "
+                    f"auf mindestens {minimum} Jahre")
+    return end, why
+
+
+def _profile_effect(criterion: Criterion, usable: Sequence[EvidenceMatch],
+                    context: Sequence[EvidenceMatch], as_of: date) -> tuple[bool, str]:
+    """Zählt ein Beleg im Profil als Konflikt? Regel, Kategorien und Dauer: criteria.toml.
+
+    Die Engine urteilt nicht selbst: Sie wendet nur die dort festgelegte, als unsere
+    Bewertungsentscheidung bezeichnete Regel an. Geprüft werden alle sicher zugeordneten
+    Belege, die stärksten zuerst; der erste, der Status, Kategorie und Dauer erfüllt, zählt.
+    """
+    notes: list[str] = []
+    ordered = sorted(usable, key=lambda m: (STATUS_DISPLAY_ORDER[m.level],
+                                            -m.record.published_date.toordinal()))
+    for match in ordered:
+        if not criterion.is_conflict(match.level):
+            continue
+        effect, note = category_effect(criterion, match.record)
+        if effect != "conflict":
+            notes.append(note)
+            continue
+        end, why = conflict_end(criterion, match.record, context, as_of)
+        if end is not None and as_of > end:
+            notes.append(f"Historischer Fall: {why}; Wirkung endete am {end:%d.%m.%Y}. Im "
+                         "Profil kein Konflikt mehr.")
+            continue
+        return True, why
+    return False, " ".join(dict.fromkeys(notes))
 
 
 def _threshold_check(criterion: Criterion, record: EvidenceRecord) -> ThresholdCheck:
@@ -363,6 +468,8 @@ class ScreeningEngine:
         else:
             a.status = AssessmentStatus.KEINE_HINWEISE if covered else AssessmentStatus.UNBEKANNT
 
+        a.profile_conflict, a.profile_note = _profile_effect(criterion, usable, a.context,
+                                                             as_of)
         a.flags = self._flags(a, issuer_confident, as_of)
         return a
 
@@ -480,11 +587,15 @@ class ScreeningEngine:
         for c in self.criteria:
             weights = dict.fromkeys(AssessmentStatus, 0.0)
             counts = dict.fromkeys(AssessmentStatus, 0)
+            conflicts = [r for r in results if r.assessments[c.key].profile_conflict]
             for r in results:
                 status = r.assessments[c.key].status
                 weights[status] += r.position.weight_pct
                 counts[status] += 1
-            summaries[c.key] = CriterionSummary(c, weights, counts)
+            summaries[c.key] = CriterionSummary(
+                c, weights, counts,
+                conflict_weight=sum(r.position.weight_pct for r in conflicts),
+                conflict_count=len(conflicts))
         low_conf = [
             r for r in results
             if r.company is not None and not _is_confident(r.issuer_resolution.confidence)

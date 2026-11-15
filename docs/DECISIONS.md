@@ -1,10 +1,378 @@
 # Entscheidungslog
 
+## 15.11.2026 – Phase 0: Fundament für den weltweiten Bestand (Claude, Auftrag Jonas)
+
+### D-053 Echte Pilotergebnisse nie in versionierte Dateien
+- **Entscheid (Jonas, vor dem ersten Push der Pilotarbeit):** Ergebnisse mit Fonds- oder
+  Firmennamen bleiben lokal (`C:\TransparenzDaten\notizen\`). Die öffentliche Dokumentation
+  nennt Methode und Messwerte ohne Namen. Die bis dahin lokalen Commits wurden vor dem Push zu
+  einem Commit zusammengefasst, damit die Namen nie auf GitHub lagen; die vollständigen
+  Fassungen sind lokal gesichert.
+- **Begründung:** Lizenzen von FI und EU-Emissionshandel sind für eine Veröffentlichung nicht
+  bestätigt (D-041), und die Bewertung «Konflikt mit Profil» über reale Fonds und Unternehmen
+  wird nicht ungeprüft publiziert. Fondsnamen als Konfiguration im Code (Entwicklungs- und
+  Testfonds) bleiben, weil sie ohne Ergebnis nichts aussagen.
+
+### D-052 Herkunft jeder Eingabedatei wird bei jedem Lauf geprüft
+- **Entscheid:** Vor der Verwendung wird jede Rohdatei neu gehasht und mit der Prüfsumme in
+  ihrer Begleitdatei (`*.metadata.json`, `source.metadata.json`) verglichen; entpackte Dateien
+  über CRC-32 des Archiveintrags. Abweichung = Abbruch. Ohne Begleitdatei steht «nicht erfasst»,
+  nichts wird ergänzt. Der Bericht führt jede Eingabe mit Pfad, Grösse, SHA-256, Lizenzangabe
+  und Abrufdatum (`services/provenance.py`).
+- **Begründung:** Für ein Produkt muss jede Aussage bis zur Originaldatei zurückverfolgbar sein,
+  und veränderte Rohdaten dürfen nie still in ein Ergebnis einfliessen.
+
+### D-051 Pilot als Paketmodule; Umbau nur mit Vergleichslauf
+- **Entscheid:** Die Logik des Pilot-Skripts liegt in Paketmodulen (Quellen in `ingestion/`,
+  Kette und Messung in `services/`, Bericht in `reports/`, Anzeigetexte in
+  `entities/labels.py`). Das Skript ist nur noch Befehlszeile. Jeder Umbau der Kette wird mit
+  `scripts/pilot_regression.py` geprüft: sechs Fonds offline vom eingefrorenen Eingang,
+  vorher/nachher ohne Abweichung.
+- **Begründung:** N-PORT und weitere Fondsquellen brauchen dieselbe Kette; ein 2'700-Zeilen-
+  Skript ist dafür weder testbar noch wiederverwendbar.
+- **Alternative:** neu schreiben – verworfen, weil das Ergebnisse unbemerkt verändern kann.
+  Die Funktionen wurden unverändert verschoben (maschinell, mit Abhängigkeitsprüfung).
+
+### D-050 Datenordner ausserhalb OneDrive
+- **Entscheid (Jonas):** Grosse Daten liegen in `C:\TransparenzDaten` (`TRANSPARENZ_DATA_DIR`
+  in `.env`); versionierte Beispiel- und Abfragedateien bleiben im Projekt. 14 alte Schweizer
+  Exportstände gelöscht (neueste zwei behalten), rund 6 GB frei.
+- **Umsetzung:** einzige Stelle `settings.local_data_dir()`; alte Pfadangaben (`data\…`,
+  absolute Pfade in Datenbanken) findet `resolve_data_path()`. Tests leiten den Datenordner
+  immer in einen Wegwerfordner um.
+
+### D-049 Keine Einzelfallarbeit für Jonas; Referenz aus unabhängigen Kennungen
+- **Entscheid (Jonas):** Jonas beantwortet keine Zuordnungsfälle und keine langen Listen von
+  Detailregeln. Referenzen für die Präzisionsmessung kommen aus unabhängigen Kennungsquellen
+  (geplant: vom Fonds gemeldete Emittenten-LEI in SEC N-PORT, Konsens mehrerer Meldender).
+  Bewertungsregeln setzen wir mit begründetem Standard als unsere Bewertungsentscheidung.
+  Jonas entscheidet Grundsätzliches: Kosten, Lizenzen, Downloads, Veröffentlichung.
+- **Folge:** Die Frageliste der acht Abweichungen (`mapping_disputes.json`) ist keine Aufgabe
+  mehr für Jonas; sie bleibt als Prüfmaterial. Plan: `docs/ROADMAP.md`.
+
+## 14.11.2026 – Beziehungstypen, automatische Zuordnung, Kategorien (Claude, Auftrag Jonas)
+
+### D-048 Korruption: Wirkungsdauer mit Beginn, Folgen und Abhilfe (Vorschlag)
+- **Regel (criteria.toml, `expiry_reason`):** Beginn mit dem Abschluss des Verfahrens
+  (Veröffentlichung des Entscheids) oder dem späteren Ende der Tat (`event_date`). Dauer fünf
+  Jahre. Fortbestehende Folgen (`consequences_until`: Auflagen, Aufsicht, Sperre) verlängern
+  bis zu ihrem Ende. Eine von Gericht oder Behörde bestätigte Abhilfe (Beleg der Art
+  «abhilfe») verkürzt auf mindestens drei Jahre, nie vor das Abhilfedatum oder das Ende der
+  Folgen. Vom Unternehmen selbst gemeldete Abhilfe verkürzt nichts.
+- **Begründung der fünf Jahre:** Das EU-Vergaberecht schliesst ein rechtskräftig wegen
+  Bestechung verurteiltes Unternehmen höchstens fünf Jahre ab der Verurteilung von
+  öffentlichen Aufträgen aus und lässt bei nachgewiesener Selbstreinigung früher wieder zu
+  (Richtlinie 2014/24/EU, Art. 57). Der Wortlaut war automatisch nicht abrufbar (EUR-Lex lieferte
+  eine leere Antwort) und ist vor einer Veröffentlichung am Original nachzulesen. Die drei Jahre
+  bei Abhilfe sind unsere Setzung, keine Übernahme einer Quelle.
+- **Grenze:** Abhilfebelege sind nicht mit einem bestimmten Fall verknüpft; jede bestätigte
+  Abhilfe zum selben Kriterium nach Beginn der Wirkung zählt. Vorschlag, von Jonas zu bestätigen.
+
+### D-047 Kategorien je Beleg in der Engine; additive Spalten statt Migrationen
+- **Entscheid:** Ein Beleg trägt eine Kategorie (`category`, Schlüssel aus criteria.toml).
+  Hat ein Kriterium Kategorien mit unterschiedlicher Wirkung, löst nur eine Kategorie mit
+  `effect = "conflict"` einen Konflikt aus; ohne Kategorie bleibt die Wirkung offen (kein
+  Konflikt, Hinweis). Die Engine prüft alle sicher zugeordneten Belege, nicht nur den
+  stärksten, damit ein Dual-Use-Beleg keinen Kernwaffen-Beleg verdeckt.
+- **Waffen:** zwei neue Kategorien mit Wirkung «gesondert»: Handel mit zivilen Schusswaffen
+  (Vorschlag) und Dual-Use ohne belegte Waffenbestimmung (bisher schon als Abgrenzung
+  entschieden).
+- **Schema:** zwei neue, leer erlaubte Spalten (`category`, `consequences_until`).
+  `init_db` trägt fehlende leer erlaubte Spalten in bestehenden Datenbanken nach
+  (`add_missing_columns`); nicht leer erlaubte neue Spalten brechen ab. Ersetzt für additive
+  Änderungen die Regel «keine Schemaänderung ohne Migrationen» (D-004). Fiktive Beispielbelege
+  tragen jetzt Kategorien (BEL-016 bewusst ohne, als Beispiel).
+- **Überblick:** Der Pilotbericht zeigt je Kriterium getrennt: Regel definiert,
+  implementiert, getestet (mit fiktiven Daten), mit freigegebenen Daten verbunden, am Fonds
+  geprüft. `data_status` je Kriterium in criteria.toml.
+
+### D-046 Automatische Zuordnung ohne Einzelfallfreigabe, mit gemessener Präzision
+- **Entscheid (Auftrag Jonas):** Hohe nachgewiesene Zuverlässigkeit ohne verpflichtende
+  manuelle Freigabe im normalen Betrieb. Der Entscheid-Speicher bleibt für Korrekturen und
+  Referenzfälle.
+- **Verfahren:** (1) ISIN → Wikidata → LEI → GLEIF (bisher). (2) Registernummer: Wikidata nennt
+  OpenCorporates-Nummer, australische ACN/ABN, japanische Unternehmensnummer oder
+  neuseeländische NZBN; GLEIF führt genau einen aktiven Rechtsträger mit dieser Nummer in
+  derselben Rechtsordnung → automatisch (Kennung). (3) GLEIF-Namenssuche mit Sitzland:
+  normalisierter Name gleich (nicht ähnlich), Sitz im Land der ISIN oder laut Fondsmeldung,
+  aktiv, kein Fonds und keine Zweigniederlassung, eindeutig; bei Gleichnamigen nur die
+  GLEIF-Mutter der übrigen. (4) Zwei unabhängige Wege mit demselben LEI lösen Mehrdeutigkeit
+  und Namensabweichung auf.
+- **Freigabe der Namenssuche:** nur wenn an **unabhängigen** Referenzfällen (Positionen, deren
+  LEI über Wikidata-Kennung oder menschlichen Entscheid feststeht; nie über die Namenssuche
+  selbst) mindestens 100 Ergebnisse vorliegen und die untere einseitige 95-%-Grenze der
+  Präzision (Clopper-Pearson) mindestens 97 % beträgt. Unabhängig heisst: aus einem Fonds, an
+  dessen Fehlern die Regeln nicht angepasst wurden, und mit einer ISIN, die in keinem
+  Entwicklungsfonds vorkommt (`DEVELOPMENT_FUNDS`, `RULE_VERSION` in entity_matching.py).
+  Jede Regeländerung erhöht die Version und macht den betroffenen Fonds zum Entwicklungsfonds.
+- **Vorgehen und Ergebnis am 14.11.:** Die Regeln wurden an den Fehlern der zwei
+  Entwicklungsfonds verbessert (Rechtsformen «Public Limited Company», «S.p.A.», «A/S»,
+  Kurzformen in Klammern, Länderprüfung bei Registernummern). Erst danach, ohne weitere
+  Anpassung, lief ein dritter Fonds als Test. Ergebnis dort: 60 von 61 richtig, untere
+  Grenze 92.5 %, weniger als 100 Fälle → **nicht freigegeben**. Die Namensvorschläge bleiben
+  offen und stehen in der freiwilligen Frageliste. Zahlen im LOG 14.11.2026.
+- **Weitere Testfonds (Auftrag Jonas «Ja, weitere Fonds», 14.11.):** Messregel vorher ergänzt
+  (dieselbe ISIN zählt in Testfonds nur einmal), dann ohne Regeländerung drei weitere
+  Testfonds gerechnet (Schwellenländer, Asien, Nordeuropa).
+  Unabhängig zusammen mit dem ersten Testfonds: 196 von 201 richtig (97.5 %), untere Grenze 94.8 % →
+  **weiterhin nicht freigegeben**. Bei mindestens drei der fünf Abweichungen liegt die
+  Namenssuche richtig und die Wikidata-Referenz falsch (LEI einer Tochter, einer
+  Landesgesellschaft bzw. der alten Gesellschaft); offen sind zwei Fälle (Referenz-LEI bei
+  GLEIF nicht gefunden; zwei gleichnamige GLEIF-Einträge).
+- **Korrektur der Referenz nur durch einen Menschen:** Alle Abweichungen stehen mit beiden
+  Kandidaten in `mapping_disputes.json` (`review_mapping.py --queue …`). Antworten werden
+  Referenzfälle der Quelle «Entscheid»; die Messung rechnet sich beim nächsten Lauf neu. Wir
+  zählen unsere eigene Einschätzung nie als Referenz. Rechnerisch: Mit drei korrigierten
+  Referenzen läge die untere Grenze knapp unter, mit vier knapp über 97 %.
+- **Registernummern:** GLEIF sucht exakt; deshalb werden die Schreibweisen der Register
+  mitgesucht (australische ACN in Dreiergruppen, japanische Nummer zwölfstellig mit
+  Bindestrichen). Registernummern wirken wie der LEI ohne Freigabe; ihre gemessene Präzision
+  wird trotzdem ausgewiesen (Wikidata kann eine falsche Nummer tragen, z. B. die einer Tochter).
+- **Präzision ≠ Abdeckung:** Die bisherige Angabe «80.42 %» ist Abdeckung (Fondsgewicht mit
+  Zuordnung), keine Genauigkeit. Beide werden getrennt ausgewiesen.
+- **Ehrliche Grenze:** Die Referenz ist selbst nicht von Hand geprüft (Wikidata-Kennung plus
+  GLEIF-Namenskontrolle). Abweichungen werden je Fall gezeigt. Menschliche Entscheide gehen
+  allem vor und verbessern die Referenz.
+- **Ersetzt** in D-042 die Regel «Name gültig erst durch menschlichen Entscheid».
+
+### D-045 Beziehungstypen statt «jede Beteiligung»
+- **Befund:** Die vielen Kohle- und Expansionstreffer bei Banken und Vermögensverwaltern
+  stammen aus GEM-Besitzketten über Verwahrbanken und Nominee-Gesellschaften, Fonds- und
+  Pensionsverwalter (Infrastrukturfonds, Pensionskassen) und gemeldete Aktienbestände von
+  unter 10 % an kotierten Versorgern. GEM zählt nach eigener Methodik solche Bestände als Beteiligung, sagt aber
+  nicht, auf wessen Rechnung.
+- **Entscheid:** Jede Kette wird genau einem Beziehungstyp zugeordnet (services/ownership.py):
+  Verwahrung → Vermögensverwaltung → Finanzbeteiligung eines Finanzinstituts mit ungeklärter
+  Rechnung (unter 20 % an einer laut GEM kotierten Gesellschaft; Finanzinstitut laut
+  Wikidata-Branche) → sonst Eigentum auf eigene Rechnung. Nur Eigentum auf eigene Rechnung
+  mit belegtem Anteil löst bei Kohle und fossiler Expansion einen Konflikt aus. Finanzierung,
+  Betrieb und Lieferverträge sind eigene Typen mit eigener (offener) Regel und entstehen nie
+  aus einer Besitzkette. Profil 1.1.
+- **Kategorien angewendet:** Kohle (Förderung/Verstromung) und Expansion
+  (Förderung/Transport/LNG/Kraftwerke) werten die Wirkung der Kategorie aus criteria.toml aus.
+- **Schwelle:** bleibt 0 % («jede belegte Beteiligung auf eigene Rechnung»). Der Bericht zeigt
+  die Wirkung von 5, 10, 20 und 50 % zur Entscheidung; angewendet wird keine.
+- **Notstrom und Eigenbedarf:** zählen als neue Kraftwerkskapazität, werden aber ausgewiesen
+  (offene Frage im Kriterienmodell). Anlass im Pilot: Bei einem Technologiekonzern sind laut
+  GEM-Anlagenliste die neuen Einheiten überwiegend Dieselaggregate (teils ausdrücklich
+  Notstrom) und ein Gaskraftwerk, alle zur Eigenversorgung von Rechenzentren.
+- **Grenze:** Verwahrung und Vermögensverwaltung werden an Begriffen im Namen eines
+  Kettenglieds erkannt (nur Einordnung bereits über Kennungen zugeordneter Ketten). Branche
+  unbekannt → keine Annahme zu Gunsten des Unternehmens. Zwei Fehlgriffe der Muster wurden am
+  zweiten Fonds gefunden und behoben («Pte Ltd» ist die Rechtsform in Singapur; kotierte
+  «… Infrastructure Partners LP» sind keine Verwalter). Ketten über Vermögensverwalter ohne
+  erkennbaren Namen bleiben «eigene Rechnung»: Bei einer Depotbank hängt ein verbleibender
+  Kohlekonflikt an einer solchen Kette (über zwei Vermögensverwalter, durchgerechnet 0.07 %). Die Schwellentabelle zeigt, dass ab 5 % kein solcher Fall
+  mehr zählt.
+
+## 13.11.2026 – Kriterienmodell, Lizenzmassstab, Entscheid-Speicher (Claude, Auftrag Jonas)
+
+### D-044 Fondsseite unabhängig von der Zahl der Kriterien
+- **Entscheid:** Die Übersicht zeigt Kriterien als Zeilen (nach Thema gruppiert) und
+  Belegstatus als Spalten; die Positionstabelle zeigt je Position nur die Kriterien mit Beleg
+  und zählt den Rest («geprüft ohne Hinweise», «unbekannt»).
+- **Grund:** Mit zwölf Kriterien als Spalten war die Seite nicht mehr lesbar.
+- **Geprüft:** im Browser bei 1024 px und 375 px, dunkel; Seite läuft nicht über, breite
+  Tabellen scrollen im Rahmen, Kriterienspalte bleibt stehen.
+
+### D-043 Kriterienmodell Schema 2 mit Startprofil «streng» 1.0
+- **Entscheid (Jonas):** `criteria.toml` ist die zentrale, versionierte Grundlage. Zwölf aktive
+  Kriterien: Kohle, fossile Expansion, Waffen, Zwangs-/Kinderarbeit, Entwaldung, Korruption,
+  Biodiversität und Ökosysteme, Wasser und Meeresressourcen, Umweltverschmutzung und
+  gefährliche Stoffe, Ressourcen/Abfall/Kreislaufwirtschaft, Arbeitsrechte und Arbeitsschutz,
+  Menschenrechte und Landrechte. Emissionen sind Kennzahlen ohne Ausschlusswert. Sanktionen
+  sind Belege mit Sanktionsgrund, kein Kriterium.
+- **Startprofil (ausdrücklich unsere Bewertungsentscheidung):** Kohle: jede bestätigte
+  Eigentumsbeteiligung an aktiver Förderung oder Verstromung ist ein Konflikt; stillgelegte
+  Anlagen gesondert. Fossile Expansion: neue Förder-, Transport-, LNG- und
+  Kraftwerkskapazität; Ankündigung, Genehmigung, Bau und Betrieb getrennt; Instandhaltung
+  gesondert. Verhaltenskriterien: nur bestätigte Feststellungen sind Konflikt.
+- **Umsetzung:** Tätigkeitskriterien (Kohle, Expansion, Waffen) zählen «dokumentiert» und
+  «festgestellt», Verhaltenskriterien nur «festgestellt». Die Engine setzt je Kriterium
+  `profile_conflict`; bei Korruption endet die Wirkung fünf Jahre nach dem Beleg (Vorschlag).
+  Schlüssel umbenannt: `oel_gas_expansion` → `fossile_expansion`, `geaechtete_waffen` →
+  `waffen` (geächtete Waffen sind jetzt eine Kategorie). Fiktive Beispieldaten neu erzeugt.
+- **Als Vorschlag markiert, nicht entschieden:** Ausschlüsse je Waffenkategorie (alle vier als
+  Konflikt, Handel mit zivilen Schusswaffen gesondert), Konfliktregeln der sechs neueren
+  Kriterien, Wirkungsdauer Korruption, vier Zusatzkriterien (inaktiv).
+- **Auslegung, die Jonas prüfen soll:** «Bestätigte Beteiligung» = Stufen Kontrolle, bedeutend
+  und klein laut GEM. Unbekannter Anteil und Treuhand zählen nicht. Kohleprojekte im Ausbau
+  zählen als aktive Kohle. Folge am Pilotfonds: Banken und Vermögensverwalter mit kleinen
+  Portfolio-Anteilen sind Konflikte.
+- **Nicht umgesetzt:** Kategorie je Beleg in der Engine (braucht ein Feld im Belegschema und
+  damit Migrationen, D-004); eine API gibt es nicht.
+- **Verhältnis zu früher:** ersetzt D-011 (Schwellenwerte offen) für Kohle und beantwortet
+  die offene Definition von «Expansion» aus D-040. Die Mission «keine Urteile» wird
+  präzisiert: Belege bleiben quellenbasiert, die Bewertung ist getrennt und benannt.
+
+### D-042 Namen nur als Vorschlag; menschliche Entscheide werden gespeichert und wiederverwendet
+- **Entscheid (Jonas):** Ziel ist ein weitgehend automatisches Werkzeug. Bei unsicheren
+  Zuordnungen entscheidet ein Mensch einmal Ja oder Nein; danach läuft es automatisch weiter.
+- **Umsetzung:** `data/review/mapping_decisions.csv` (ISIN, LEI, ja/nein, Datum, Signal).
+  Nur ergänzend; der jüngste Entscheid je Paar gilt; zwei «ja» für eine ISIN werden
+  abgelehnt. «Ja» löst Mehrdeutigkeit und Namensabweichung auf und kann ein Unternehmen
+  liefern, das Wikidata nicht kennt. «Nein» streicht den Kandidaten. Ein Entscheid kann
+  keinen LEI gültig machen, den GLEIF nicht führt.
+- **«Lernen» ohne Blackbox:** Die Statistik je Signal zählt Ja und Nein. Eine automatische
+  Regel entsteht erst, wenn ein Signal oft genug und immer gleich entschieden wurde, und dann
+  als ausdrücklicher Entscheid in dieser Datei. Kein statistisches Modell.
+- **Ersetzt** die absolute Regel «keine Namensfusion» (D-013): Namen bleiben nie ein
+  automatischer Schlüssel, dürfen aber Vorschläge erzeugen. Das öffnet Quellen, die
+  Unternehmen nur mit Namen nennen (US-Behördendaten).
+- **Ehrliche Grenze:** «100 % richtig ohne Prüfung» gibt es nicht. Automatisch bestätigt wird
+  nur, wo Kennungen übereinstimmen; der Rest ist eine kurze Frageliste.
+
+### D-041 Lizenzmassstab: nur ausdrücklich gewerblich freigegebene Quellen
+- **Entscheid (Jonas):** Es wird nur verwendet, was nachweislich gewerblich genutzt werden
+  darf, damit ein späterer Verkauf keine Rechtsprobleme auslöst.
+- **Massstab:** benannte Lizenz oder ausdrückliche Gemeinfreiheit an der Originalseite, die
+  gewerbliche Nutzung, Speicherung, Ableitung und Weitergabe erlaubt. Auslegungen genügen
+  nicht.
+- **Folge für bestehende Pilotquellen (nicht geändert, aber zu klären):** FI Schweden nennt
+  «kommerziell» nicht wörtlich; beim EU-Emissionshandel ist die CC-BY-Regel der Kommission
+  eine Auslegung. Beide vor einer Veröffentlichung schriftlich bestätigen lassen.
+- **Recherche:** rund 40 Quellen, Ergebnis in `docs/DATA_SOURCES.md` (oben).
+
+## 12.11.2026 – GEM-Beteiligungen im Pilot (Claude, Auftrag Jonas)
+
+### D-040 Beteiligungen gestuft zeigen, auch indirekte; Kohle als erstes Kriterium mit Quelle
+- **Entscheid (Jonas):** Auch kleine und indirekte Beteiligungen sind wichtig und werden
+  gezeigt. Umsetzung: Jede Beteiligung an einer Anlage steht in einer Stufe nach dem von GEM
+  durchgerechneten Anteil: Kontrolle (≥ 50 %), bedeutende Beteiligung (20–50 %), kleine
+  Beteiligung (< 20 %), Anteil unbekannt, treuhänderisch gehalten. Stufen werden nie
+  zusammengezählt; jede Angabe zeigt die Besitzkette mit Prozenten.
+- **Treuhand:** Ketten über Verwahr- oder Nominee-Gesellschaften («Nominees», «Custody»,
+  «Securities Clearing», «Depository») gelten nicht als Beteiligung. GEM hat dafür kein Feld;
+  die Namensregel dient nur der Beschriftung, nie der Zuordnung. Stichprobe 12.11.2026: Die
+  ausgelösten Namen sind echte Verwahrstellen (Nominee-Gesellschaften von Banken und
+  Zentralverwahrer).
+- **Zuordnung:** Fondsposition → LEI (widerspruchsfrei, D-039) → GEM-Entität nur über die
+  LEI-Spalte von GEM selbst (CC BY 4.0). Die GLEIF-GEM-Datei (Lizenz unbenannt) wird nicht
+  verwendet. GEMs Besitzketten gelten als Quelle («laut GEM»), unabhängig von der
+  GLEIF-Bestätigungsregel (D-012), weil GEM jede Beteiligung mit Quellen-URL recherchiert.
+- **Kriterium Kohle:** «Belegt laut GEM (Teilabdeckung)» je Position mit der stärksten Stufe
+  an aktiven Kohleanlagen (in Betrieb oder im Ausbau; Kraftwerke ab 30 MW, Minen). Fehlt die
+  Firma bei GEM, heisst das «keine Hinweise in GEM», nur für widerspruchsfrei zugeordnete
+  Positionen; sonst «unbekannt» (D-014). Schwellenwert weiterhin offen (D-011).
+- **Öl-/Gas-Expansion:** bleibt «unbekannt», weil GEM Eigentümer von Öl-/Gasfeldern nur mit
+  Namen nennt. Gaskraftwerke, LNG-Terminals und Pipelines erscheinen als Fakten im Bericht,
+  nicht als Kriterienbeleg, bis Jonas die Definition von «Expansion» festlegt.
+- **Alternativen:** nur Mehrheitsbesitz zeigen (verworfen: Jonas will indirekte Beteiligungen
+  sehen); alle Anteile ungestuft (verworfen: Banken erschienen als Kohlebetreiber).
+
+## 11.11.2026 – Verständlicher Pilotbericht (Claude, Auftrag Jonas)
+
+### D-039 Bestätigte Abdeckung, separate Fälle und zeitliche Zurechnung im Pilotbericht
+- **Zuordnungsstufen:** «Bestätigte Abdeckung» heisst: genau ein Wikidata-Eintrag, genau ein
+  LEI, LEI bei GLEIF vorhanden und der Positionsname teilt mit dem GLEIF-Rechtsnamen oder
+  einem bei GLEIF geführten früheren, anderssprachigen oder transliterierten Namen ein
+  nicht allgemeines Wort. LEI nicht erneuert (LAPSED) bleibt bestätigt, wird aber angezeigt.
+  Keine Zuordnung ist von Hand geprüft; das steht im Bericht.
+- **Identitätskonflikte separat:** Passen Kontoinhaber im Register und GLEIF-Namen des LEI
+  nicht zusammen, zählt der Beleg nicht und steht in einem eigenen Abschnitt.
+  Gleiches gilt für Belege von Positionen, deren Zuordnung ein Prüffall ist.
+- **Zeitliche Zurechnung:** Emissionen einer Tochter zählen nur für Kalenderjahre, in denen
+  die Beziehung laut GLEIF («RELATIONSHIP_PERIOD») das ganze Jahr bestand, und nur, wenn sie
+  am Fondsstichtag gültig war. Fällt der gemeldete Beginn auf den Tag der LEI-Registrierung,
+  wird das angezeigt, aber nicht zu Gunsten einer Zurechnung ausgelegt.
+- **Ausschlusskriterien getrennt:** Alle Kriterien aus `criteria.toml` erscheinen mit Status
+  «Unbekannt (keine Datenabdeckung)» (D-014). Emissionsmengen sind ausdrücklich kein Beleg
+  für ein Kriterium.
+- **Bericht:** HTML für Laien (`scripts/templates/pilot_report.html.j2`, Gestaltung der
+  Website übernommen) plus technische Markdown-Fassung. Lokal, Git-ignoriert, nicht publiziert.
+- **Alternativen:** Namensabweichungen ohne GLEIF-Altnamen als Konflikt werten (verworfen:
+  hätte Umbenennungen wie Anthem → Elevance als Fehler gezeigt); Zurechnung ab dem Jahr des
+  Beginns statt ab dem ersten vollen Jahr (verworfen: rechnet Teiljahre zu).
+
+## 11.11.2026 – Zweite Belegquelle im Pilot (Claude, Auftrag Jonas «Mach eigenständig weiter»)
+
+### D-038 EU-Emissionshandelsregister als zweite Belegquelle, nur über LEI
+- **Entscheid:** Das Pilot-Skript liest die öffentlichen Tagesauszüge der Union Registry
+  (`--ets-dir`) und die GLEIF-Beziehungsdatei (`--gleif-rr`) lokal. Verknüpfung allein über
+  den prüfzifferngültigen LEI des Kontoinhabers; Tochterbelege nur über aktiv, veröffentlicht
+  und vollständig bestätigte Beziehungen (D-012). Ein Beleg entsteht nur bei mindestens einem
+  verifizierten Jahreswert. Sachverhaltsart `emission_trading_verified_not_violation`.
+- **Namensvergleich nur als Warnung:** Teilen Kontoinhabername und GLEIF-Rechtsname kein Wort,
+  wird der Beleg als «Sichtprüfung nötig» markiert, aber weder entfernt noch umgeordnet (keine
+  Namensfusion, D-013).
+- **Begründung:** Einzige geprüfte Belegquelle ausserhalb der Schweiz mit harter
+  Unternehmenskennung. EEA-Industrieemissionen nennen Unternehmen nur als Namen.
+- **Bewusst offen:** Lizenz ist eine Auslegung (CC BY 4.0 der Kommissionsseite, keine Angabe
+  an den Dateien). Daher nur lokal; vor jeder Veröffentlichung klären. Registernummer-Brücke
+  (98 % der Zeilen) nicht gebaut. Nicht im Update-System, nicht im Screening.
+- **Alternativen:** EEA-Industrieemissionen über ETS-Kennung als Brücke (später möglich);
+  Namensabgleich (verworfen, D-013); GLEIF-API für jede Beziehung (zu viele Abfragen für
+  3'141 Register-LEIs, daher lokale Golden Copy).
+
+## 11.11.2026 – Datenversorgung und erster echter Fonds (Claude, Auftrag Jonas)
+
+### D-037 Erster echter Fonds als lokales Pilot-Skript mit FI-Positionen
+- **Entscheid (Umsetzung Claude, Produktentscheid Jonas offen):** Die Kette Position →
+  Unternehmen → Beleg wird zuerst als eigenständiges Skript `scripts/pilot_fund_chain.py`
+  geprüft, nicht im Screening und nicht auf der Website. Positionen aus dem Register
+  «Fondinnehav» der schwedischen Finanzaufsicht FI; Zuordnung nur über exakte ISIN; Belege
+  über LEI/UID. Belege von Tochterfirmen zählen nur bei einer von GLEIF als aktiv,
+  veröffentlicht und vollständig bestätigt geführten Beziehung (dieselbe Regel wie D-012/D-026).
+- **Begründung:** FI ist die einzige gefundene EU-Quelle mit vollständigen UCITS-Positionen
+  und ausdrücklicher Freigabe zur Weiterverwendung. Ein Skript beweist die Kette, ohne das
+  Screening-Schema (keine Migrationen) oder die Lizenzsperre vorschnell zu erweitern.
+- **Bewusst offen:** FI steht noch nicht in `sources.toml`; vor einer Aufnahme muss Jonas
+  entscheiden, ob schwedische Fonds im Produkt erscheinen sollen und ob die Freigabe ohne
+  wörtliches «kommerziell» genügt. Produkteinstieg für Schweizer Fonds (Nutzer-Upload) ist
+  ein Vorschlag, kein Entscheid.
+- **Alternativen:** SEC N-PORT als Pilot (D-027, von Jonas vorerst abgelehnt);
+  Jahresberichte von Schweizer Anbietern extrahieren (Rechte ungeklärt, Swiss Fund Data
+  verlangt schriftliche Zustimmung); kommerzielle API (Anzeige nach aussen erst ab
+  Enterprise-Vertrag bzw. gar nicht erlaubt).
+
+## 11.11.2026 – Globalen Wikidata-Rohbestand durchsuchbar machen (Claude, Auftrag Jonas)
+
+### D-036 Eigenes, drittes Modul statt Einbau in Swiss- oder Market-Katalog
+- **Entscheid:** `services/global_candidates.py` + `reports/global_candidates.py` als eigenes
+  Modul, eigener Ordner `data/processed/global_candidates/`, eigene CLI-Befehle
+  (`global-candidates-build`/`-search`) statt Einbau in `swiss_foundation.py`/`swiss.sqlite`
+  oder `market_catalog.py`/`markets.sqlite`.
+- **Begründung:** `swiss.sqlite` ist laut CLAUDE.md explizit das Schweizer Fundament
+  (Länderbezug im Namen/Architektur); `markets.sqlite`/`MarketObservation` ist fest auf das
+  SEC-Datenschema (CIK/Series/Class) zugeschnitten. Der globale Wikidata-Bestand hat ein
+  eigenes, einfacheres Schema (Item/Name/Börse/Ticker, kein ISIN, kein Fondsschema) und eine
+  andere Vertrauensstufe (ein Wikidata-Statement pro Zeile) – passt in keines der beiden
+  bestehenden Schemata, ohne sie zu verbiegen.
+- **Börsenlabel-Cache bleibt real und damit git-ignoriert**, nicht im Repo committet: laut
+  `.gitignore`-Kommentar «nur fiktive Beispieldaten gehören ins Repo»; `data/processed/*` ist
+  bereits ignoriert, also passt `data/processed/global_candidates/exchange_labels.json` ohne
+  Ausnahmeregel dorthin. Ursprünglich unter `data/reference/` angelegt (würde committet) –
+  verworfen und nach `data/processed/` verschoben.
+- **Keine Fusion über Namen/Ticker, keine ISIN-Ergänzung:** explizite Vorgabe von Jonas,
+  passt zum bestehenden Grundsatz im Schweizer Fundament (`resolve_companies`: nur exakte
+  Kennungen verschmelzen, Namensgleichheit nur als Prüfhinweis). Gleicher Mechanismus
+  (`normalize_company_name`) für die «mögliche Dubletten»-Liste wiederverwendet statt neu
+  erfunden.
+- **Alternativen:** Börsen-Land live bei jeder Suche von Wikidata nachschlagen – verworfen,
+  würde die Suche online-abhängig machen (Vorgabe: lokal durchsuchbar); stattdessen einmaliger
+  Cache, nur fehlende/erzwungene IDs werden nachgeladen. CVM-Brasilien direkt mit einbauen –
+  verworfen, Jonas wollte es vorerst getrennt halten.
+
+## 08.11.2026 – Firmenabdeckung empirisch prüfen (Codex, Auftrag Jonas)
+
+### D-035 Firmenhinweis, Heimatlisting und bestätigtes Wertpapier getrennt zählen
+- 100 Zufallsziehungen aus explizitem, kuratiertem 120er-Pool in zehn Märkten, Seed 20261108.
+  Explorativ, keine repräsentative Weltquote. Ergebnis: 57 Firmenhinweise / 43 ohne Treffer;
+  50 SEC, 10 Schweizer Kandidaten, 3 Überschneidungen.
+- Tochter-/Namensfirmen manuell verworfen; Daimler/Mercedes-Benz-Umbenennung mit Emittentenbeleg
+  berücksichtigt. Namensvarianten nur im Audit, keine automatische Produktfusion.
+- Alle 10'419 SEC-Originaltupel gegen Export geprüft: exakt gleich. Fehlende Quellenabdeckung,
+  kein hier belegter Importverlust. Keine neuen Produktionsquellen aktiviert.
+- Einzelbefunde, Grenzen und Ausbauwege: `COVERAGE_AUDIT_100.md`; reproduzierbarer Abgleich:
+  `scripts/company_coverage_probe.py`. Prüfdaten lokal unter `data/processed/coverage_audit/`.
+
 Format: Datum · Entscheid · Begründung · Alternativen. Neueste zuoberst innerhalb einer Session.
 
 ## 11.11.2026 – KI-Transparenz auf GitHub (Auftrag Jonas)
 
-### D-035 KI-Beiträge, Skills und Werkzeuge mit Belegstatus dokumentieren
+### D-035b KI-Beiträge, Skills und Werkzeuge mit Belegstatus dokumentieren
+- **Hinweis (15.11.2026):** Die Nummer D-035 wurde auf zwei Ständen parallel vergeben; dieser
+  Entscheid heisst deshalb D-035b. Inhalt unverändert.
 - **Entscheid:** Sichtbare Übersicht im README, Details in `docs/AI_USAGE.md`.
   Künftige Sessions erfassen tatsächlich verwendete Skills und wesentliche Tools im Sessionlog.
 - **Begründung:** Verwendete Assistenten und Arbeitsweisen sollen nachvollziehbar sein.

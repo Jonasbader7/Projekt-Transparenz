@@ -54,6 +54,11 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--bor
 th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip.conflict { background: transparent; border: 1.5px solid currentColor; color: var(--text); font-weight: 600; }
+tr.group th { background: transparent; color: var(--muted); font-size: .82rem; padding-top: 14px; }
+.finding-line { margin: 2px 0; }
+table.overview td:first-child, table.overview thead th:first-child { position: sticky; left: 0; background: var(--surface); min-width: 11rem; }
+table.overview thead th:first-child { background: var(--surface-2); }
 .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--s-text); }
 .s-festgestellt { background: var(--s-festgestellt); }
 .s-pruefung_ausstehend { background: var(--s-pruefung_ausstehend); }
@@ -136,12 +141,14 @@ Details auf der Seite <a href="methodik.html">Methodik</a>.</p>
 
 <h2>Datenlage</h2>
 <p>6 aktive Datenstände.
-Keine Quelle ist veraltet.<a href="datenquellen.html">Details zu Quellen und Aktualität</a></p>
+<span class="notice" style="display:inline-block">Veraltet oder ohne gültigen Stand:
+Fiktiver ETF «Muster Nachhaltigkeit Welt» – Positionen</span>
+<a href="datenquellen.html">Details zu Quellen und Aktualität</a></p>
 </main>
 <footer>
   <div class="wrap">
     Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
-    Statischer Schnappschuss, erzeugt am 07.11.2026 23:03 UTC. Aktualisieren:
+    Statischer Schnappschuss, erzeugt am 15.11.2026 20:51 UTC. Aktualisieren:
     <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.<br>
     Cookielose, zusammengefasste Besuchszählung: <a href="https://jonasbader7.github.io/Portfoliopage/analytics/datenschutz.html">Datenschutz &amp; Analytics</a>
   </div>

@@ -64,11 +64,13 @@ EVIDENCE_COLUMNS = (
     "metric_name",
     "metric_value",
     "metric_unit",
+    "category",
+    "consequences_until",
 )
 EVIDENCE_REQUIRED = tuple(
     c for c in EVIDENCE_COLUMNS
     if c not in {"lei", "isin", "event_date", "last_reviewed", "metric_name", "metric_value",
-                 "metric_unit"}
+                 "metric_unit", "category", "consequences_until"}
 )
 HOLDINGS_COLUMNS = (
     "fund_isin",

@@ -6,10 +6,12 @@ import json
 import sqlite3
 from pathlib import Path
 
+from transparenz.config.settings import local_data_dir
 from transparenz.entities.identifiers import is_valid_isin, is_valid_lei
 from transparenz.ingestion.external import atomic_json, normalize_uid
 
 ROOT = Path(__file__).resolve().parents[1]
+DATA = local_data_dir(ROOT)  # Datenordner (TRANSPARENZ_DATA_DIR, sonst data/)
 
 
 def array_items(path):
@@ -52,7 +54,7 @@ def array_items(path):
 
 
 def main():
-    base = ROOT / "data/processed/swiss"
+    base = DATA / "processed/swiss"
     pointer = json.loads((base / "current.json").read_bytes())
     folder = base / pointer["generation"]
     quality = json.loads((folder / "quality_report.json").read_bytes())
@@ -99,7 +101,7 @@ def main():
     for key, report in quality["sources"].items():
         assert not report["license_block_reasons"], key
         for entry in report.get("original_files", []):
-            path = ROOT / "data/raw/external" / key / entry["path"]
+            path = DATA / "raw/external" / key / entry["path"]
             digest = hashlib.sha256()
             with path.open("rb") as handle:
                 while chunk := handle.read(1024 * 1024):
@@ -107,7 +109,7 @@ def main():
             assert digest.hexdigest() == entry["sha256"], path
             assert path.stat().st_size == entry["bytes"], path
             originals += 1
-    with sqlite3.connect(ROOT / "data/processed/swiss.sqlite") as conn:
+    with sqlite3.connect(DATA / "processed/swiss.sqlite") as conn:
         runs = dict(conn.execute("SELECT status, COUNT(*) FROM update_runs GROUP BY status"))
         assert not runs.get("laufend"), runs
         active = conn.execute("SELECT source_key, record_count FROM dataset_versions "

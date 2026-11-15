@@ -27,6 +27,7 @@ from pathlib import Path
 import markdown
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
 
+from transparenz.config.catalog import CATEGORY_EFFECTS, DECISION_LABELS
 from transparenz.database.repository import recent_runs
 from transparenz.entities.enums import (
     FINDING_STATUSES,
@@ -126,6 +127,9 @@ def build_site(ctx: AppContext, out_dir: Path, as_of: date | None = None) -> Bui
             "Keine Fondsdaten im aktiven Datenstand. Zuerst «python -m transparenz update» "
             "ausführen."
         )
+    model = ctx.catalog.criteria_model
+    if model is None:
+        raise SiteBuildError("Kriterienmodell fehlt (criteria.toml nicht geladen).")
     out_dir.mkdir(parents=True, exist_ok=True)
     env = _environment()
     built_at = utcnow()
@@ -139,6 +143,7 @@ def build_site(ctx: AppContext, out_dir: Path, as_of: date | None = None) -> Bui
         "funds": funds,
         "data_versions": versions,
         "privacy_url": PRIVACY_URL,
+        "profile_label": model.profile_label,
     }
     result_files: list[Path] = []
 
@@ -170,6 +175,7 @@ def build_site(ctx: AppContext, out_dir: Path, as_of: date | None = None) -> Bui
                 r=result,
                 slug=slug,
                 statuses=[s for s in AssessmentStatus if s != AssessmentStatus.NICHT_ANWENDBAR],
+                criteria_groups=model.grouped(),
                 with_findings=[p for p in result.positions if p.has_finding],
                 unknown=[p for p in result.positions if p.applicable and p.company is None],
                 hints=_gap_hints(result),
@@ -190,7 +196,8 @@ def build_site(ctx: AppContext, out_dir: Path, as_of: date | None = None) -> Bui
     write(
         "methodik.html",
         env.get_template("methodology.html").render(
-            **common, page="methodik", title="Methodik", criteria=ctx.catalog.criteria,
+            **common, page="methodik", title="Methodik", model=model,
+            effects=CATEGORY_EFFECTS, decision_labels=DECISION_LABELS,
             documents=[(t, _render_markdown(docs / f)) for f, t in METHODOLOGY_DOCS],
         ),
     )

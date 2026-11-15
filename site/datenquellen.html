@@ -54,6 +54,11 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--bor
 th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip.conflict { background: transparent; border: 1.5px solid currentColor; color: var(--text); font-weight: 600; }
+tr.group th { background: transparent; color: var(--muted); font-size: .82rem; padding-top: 14px; }
+.finding-line { margin: 2px 0; }
+table.overview td:first-child, table.overview thead th:first-child { position: sticky; left: 0; background: var(--surface); min-width: 11rem; }
+table.overview thead th:first-child { background: var(--surface-2); }
 .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--s-text); }
 .s-festgestellt { background: var(--s-festgestellt); }
 .s-pruefung_ausstehend { background: var(--s-pruefung_ausstehend); }
@@ -96,7 +101,7 @@ label.filter { display: inline-flex; gap: 8px; align-items: center; margin: 8px 
 stehen deshalb bei jeder Quelle. Aktiv sind <strong>ausschliesslich fiktive Demoquellen</strong>.
 Echte Quellen werden erst nach Prüfung der Lizenz an der Originalseite angebunden und bleiben
 deaktiviert, bis sie gebraucht werden.</p>
-<p class="caption">Diese Seite ist ein Schnappschuss vom 07.11.2026 23:03 UTC.</p>
+<p class="caption">Diese Seite ist ein Schnappschuss vom 15.11.2026 20:51 UTC.</p>
 
 <div class="table-wrap"><table>
   <thead><tr><th>Quelle</th><th>Art</th><th>Herausgeber</th><th>Fiktiv</th><th>Lizenz</th><th>Kommerziell nutzbar</th>
@@ -106,17 +111,17 @@ deaktiviert, bis sie gebraucht werden.</p>
     <td>Fiktiver ETF «Muster Nachhaltigkeit Welt» – Positionen</td><td>Fondspositionen</td><td>Fiktiver ETF-Anbieter (Demo)</td>
     <td>ja</td><td class="caption">Fiktive Demodaten, frei verwendbar</td>
     <td>ja</td><td>30.09.2026</td>
-    <td class="caption">07.11.2026 22:28 UTC</td>
-    <td class="num">38</td><td class="num">45</td>
-    <td>aktuell</td>
+    <td class="caption">15.11.2026 20:51 UTC</td>
+    <td class="num">46</td><td class="num">45</td>
+    <td><span class="chip s-unbekannt">veraltet</span></td>
     <td class="caption">#1 · 2c389ff192</td>
   </tr>
   <tr>
     <td>Fiktive Stammdaten (Unternehmen, Wertpapiere, Konzernbeziehungen)</td><td>Stammdaten</td><td>Projekt Transparenz (Demo)</td>
     <td>ja</td><td class="caption">Fiktive Demodaten, frei verwendbar</td>
     <td>ja</td><td>07.11.2026</td>
-    <td class="caption">07.11.2026 22:28 UTC</td>
-    <td class="num">0</td><td class="num">90</td>
+    <td class="caption">15.11.2026 20:51 UTC</td>
+    <td class="num">8</td><td class="num">90</td>
     <td>aktuell</td>
     <td class="caption">#2 · fc644da661</td>
   </tr>
@@ -124,37 +129,37 @@ deaktiviert, bis sie gebraucht werden.</p>
     <td>Fiktive Ausschlussliste «Fiktiver Ethikrat für Anlagen»</td><td>Sachverhalte</td><td>Fiktiver Ethikrat für Anlagen</td>
     <td>ja</td><td class="caption">Fiktive Demodaten, frei verwendbar</td>
     <td>ja</td><td>01.09.2026</td>
-    <td class="caption">07.11.2026 22:28 UTC</td>
-    <td class="num">67</td><td class="num">120</td>
+    <td class="caption">15.11.2026 20:51 UTC</td>
+    <td class="num">75</td><td class="num">120</td>
     <td>aktuell</td>
-    <td class="caption">#3 · 7578ad9b68</td>
+    <td class="caption">#11 · 7c2c36c0de</td>
   </tr>
   <tr>
     <td>Abdeckung der fiktiven Ausschlussliste</td><td>Abdeckung</td><td>Fiktiver Ethikrat für Anlagen</td>
     <td>ja</td><td class="caption">Fiktive Demodaten, frei verwendbar</td>
     <td>ja</td><td>01.09.2026</td>
-    <td class="caption">07.11.2026 22:28 UTC</td>
-    <td class="num">67</td><td class="num">120</td>
+    <td class="caption">15.11.2026 20:51 UTC</td>
+    <td class="num">75</td><td class="num">120</td>
     <td>aktuell</td>
-    <td class="caption">#4 · 91182b968b</td>
+    <td class="caption">#8 · 98a5a816fe</td>
   </tr>
   <tr>
     <td>Fiktive Belegsammlung (Gerichte, Behörden, NGOs, Medien)</td><td>Sachverhalte</td><td>Projekt Transparenz (Demo-Recherche)</td>
     <td>ja</td><td class="caption">Fiktive Demodaten, frei verwendbar</td>
     <td>ja</td><td>01.10.2026</td>
-    <td class="caption">07.11.2026 22:28 UTC</td>
-    <td class="num">37</td><td class="num">180</td>
+    <td class="caption">15.11.2026 20:51 UTC</td>
+    <td class="num">45</td><td class="num">180</td>
     <td>aktuell</td>
-    <td class="caption">#5 · 0a10a22f54</td>
+    <td class="caption">#12 · d2eb075539</td>
   </tr>
   <tr>
     <td>Recherche-Abdeckung der fiktiven Belegsammlung</td><td>Abdeckung</td><td>Projekt Transparenz (Demo-Recherche)</td>
     <td>ja</td><td class="caption">Fiktive Demodaten, frei verwendbar</td>
     <td>ja</td><td>01.10.2026</td>
-    <td class="caption">07.11.2026 22:28 UTC</td>
-    <td class="num">37</td><td class="num">180</td>
+    <td class="caption">15.11.2026 20:51 UTC</td>
+    <td class="num">45</td><td class="num">180</td>
     <td>aktuell</td>
-    <td class="caption">#6 · 04ea782247</td>
+    <td class="caption">#10 · 34609fd80e</td>
   </tr>
   <tr>
     <td>GLEIF – LEI-Stammdaten und Konzernbeziehungen (API)</td><td>Stammdaten</td><td>Global Legal Entity Identifier Foundation (GLEIF), Basel</td>
@@ -173,6 +178,42 @@ deaktiviert, bis sie gebraucht werden.</p>
 <div class="table-wrap"><table>
   <thead><tr><th>Start</th><th>Quelle</th><th>Auslöser</th><th>Ergebnis</th><th class="num">Versuche</th><th>Meldung</th></tr></thead>
   <tbody>
+  <tr><td class="caption">15.11.2026 20:51 UTC</td><td>fiktiv_belegsammlung_abdeckung</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">15.11.2026 20:51 UTC</td><td>fiktiv_belegsammlung</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">15.11.2026 20:51 UTC</td><td>fiktiv_ausschlussliste_abdeckung</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">15.11.2026 20:51 UTC</td><td>fiktiv_ausschlussliste</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">15.11.2026 20:51 UTC</td><td>fiktiv_stammdaten</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">15.11.2026 20:51 UTC</td><td>fiktiv_etf</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">14.11.2026 09:41 UTC</td><td>fiktiv_belegsammlung_abdeckung</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">14.11.2026 09:41 UTC</td><td>fiktiv_belegsammlung</td><td>manuell</td>
+    <td>erfolgreich (neuer Datenstand)</td><td class="num">1</td><td class="caption">Neuer Datenstand mit 18 Datensätzen aktiviert (1 Warnungen).</td></tr>
+  <tr><td class="caption">14.11.2026 09:41 UTC</td><td>fiktiv_ausschlussliste_abdeckung</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">14.11.2026 09:41 UTC</td><td>fiktiv_ausschlussliste</td><td>manuell</td>
+    <td>erfolgreich (neuer Datenstand)</td><td class="num">1</td><td class="caption">Neuer Datenstand mit 3 Datensätzen aktiviert.</td></tr>
+  <tr><td class="caption">14.11.2026 09:41 UTC</td><td>fiktiv_stammdaten</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">14.11.2026 09:41 UTC</td><td>fiktiv_etf</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">13.11.2026 08:08 UTC</td><td>fiktiv_belegsammlung_abdeckung</td><td>manuell</td>
+    <td>erfolgreich (neuer Datenstand)</td><td class="num">1</td><td class="caption">Neuer Datenstand mit 30 Datensätzen aktiviert.</td></tr>
+  <tr><td class="caption">13.11.2026 08:08 UTC</td><td>fiktiv_belegsammlung</td><td>manuell</td>
+    <td>erfolgreich (neuer Datenstand)</td><td class="num">1</td><td class="caption">Neuer Datenstand mit 18 Datensätzen aktiviert (1 Warnungen).</td></tr>
+  <tr><td class="caption">13.11.2026 08:08 UTC</td><td>fiktiv_ausschlussliste_abdeckung</td><td>manuell</td>
+    <td>erfolgreich (neuer Datenstand)</td><td class="num">1</td><td class="caption">Neuer Datenstand mit 32 Datensätzen aktiviert.</td></tr>
+  <tr><td class="caption">13.11.2026 08:08 UTC</td><td>fiktiv_ausschlussliste</td><td>manuell</td>
+    <td>erfolgreich (neuer Datenstand)</td><td class="num">1</td><td class="caption">Neuer Datenstand mit 3 Datensätzen aktiviert.</td></tr>
+  <tr><td class="caption">13.11.2026 08:08 UTC</td><td>fiktiv_stammdaten</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
+  <tr><td class="caption">13.11.2026 08:08 UTC</td><td>fiktiv_etf</td><td>manuell</td>
+    <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
   <tr><td class="caption">07.11.2026 22:28 UTC</td><td>fiktiv_belegsammlung_abdeckung</td><td>manuell</td>
     <td>erfolgreich (unverändert)</td><td class="num">1</td><td class="caption">Inhalt identisch mit aktivem Datenstand.</td></tr>
   <tr><td class="caption">07.11.2026 22:28 UTC</td><td>fiktiv_belegsammlung</td><td>manuell</td>
@@ -210,7 +251,7 @@ deaktiviert, bis sie gebraucht werden.</p>
 <footer>
   <div class="wrap">
     Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
-    Statischer Schnappschuss, erzeugt am 07.11.2026 23:03 UTC. Aktualisieren:
+    Statischer Schnappschuss, erzeugt am 15.11.2026 20:51 UTC. Aktualisieren:
     <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.<br>
     Cookielose, zusammengefasste Besuchszählung: <a href="https://jonasbader7.github.io/Portfoliopage/analytics/datenschutz.html">Datenschutz &amp; Analytics</a>
   </div>

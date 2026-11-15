@@ -1,46 +1,772 @@
-# Ausschlusskriterien (Startliste).
-# Schwellenwerte sind bewusst NICHT gesetzt: Sie werden vom Projektteam festgelegt
-# (siehe docs/methodik/ausschlusskriterien.md). Solange ein Schwellenwert fehlt,
-# wird eine gemeldete Kennzahl angezeigt, aber nicht gegen eine Grenze bewertet.
+# Kriterienmodell «Projekt Transparenz»
 #
-# severity: "schwer"  = Verstoss gegen grundlegende Rechte/Verbote
-#           "hoch"    = erhebliche Umwelt-/Klimawirkung
+# Zentrale, versionierte Grundlage für Screening-Engine, Pilot und Website.
+# Geladen und geprüft von transparenz.config.catalog (load_criteria_model).
+#
+# WICHTIG: Die Regeln in dieser Datei sind UNSERE BEWERTUNGSENTSCHEIDUNG (Startprofil),
+# keine Aussage einer Quelle. Belege bleiben quellenbasiert («Laut … vom …»); ob ein Beleg
+# im Profil als Konflikt zählt, entscheidet allein diese Datei.
+#
+# Jede inhaltliche Änderung: profile_version erhöhen und in docs/DECISIONS.md begründen.
 # Es gibt keine Verrechnung zwischen Kriterien und keinen Gesamtscore.
+
+[model]
+schema_version = 2
+profile_key = "streng"
+profile_name = "Strenges Ausschlussprofil (Startprofil)"
+profile_version = "1.1"
+decided_on = 2026-11-13
+statement = "Die Regeln dieses Profils sind unsere Bewertungsentscheidung. Sie legen fest, welche belegten Sachverhalte als Konflikt mit dem Profil gelten. Die Belege selbst stammen aus den genannten Quellen."
+
+# ---------------------------------------------------------------------------------------
+# Belegstufen: gemeinsames Vokabular für alle Kriterien.
+# «statuses» verweist auf den Belegstatus der Engine (entities/enums.py, AssessmentStatus).
+# ---------------------------------------------------------------------------------------
+[[evidence_level]]
+key = "kontext_risiko"
+name = "Länder- oder Branchenrisiko"
+description = "Allgemeines Risiko eines Landes, einer Branche oder eines Rohstoffs. Sagt nichts über ein bestimmtes Unternehmen und ist nie ein Beleg gegen ein Unternehmen."
+statuses = []
+
+[[evidence_level]]
+key = "verdacht"
+name = "Verdacht oder laufende Massnahme"
+description = "Vorwurf, laufendes Verfahren, vorsorgliche Behördenmassnahme, Medienbericht oder Recherche ohne abschliessende Feststellung. Wird gezeigt, zählt nicht als bestätigter Verstoss."
+statuses = ["verfahren_laufend", "medienbericht", "pruefung_ausstehend"]
+
+[[evidence_level]]
+key = "dokumentiert"
+name = "Dokumentierter Sachverhalt"
+description = "Nachprüfbar dokumentierte Tatsache aus einem Register oder einer Recherche mit Belegen, zum Beispiel eine Beteiligung an einer Anlage oder ein Ausschlussentscheid einer Institution."
+statuses = ["dokumentiert"]
+
+[[evidence_level]]
+key = "bestaetigt"
+name = "Bestätigte Feststellung"
+description = "Abschliessende Feststellung eines Gerichts oder einer Behörde, deren Originaldokument wir geprüft haben."
+statuses = ["festgestellt"]
+
+# ---------------------------------------------------------------------------------------
+# Beziehungstypen zwischen Unternehmen und Anlage (seit Profil 1.1, D-045).
+# Eine Besitzkette sagt, wer an wem wie viel hält, aber nicht auf wessen Rechnung. Deshalb
+# hat jeder Beziehungstyp seine eigene, offengelegte Regel. «effect» ist unsere
+# Bewertungsentscheidung. «data_status» sagt, ob die Regel heute mit Daten verbunden ist.
+# ---------------------------------------------------------------------------------------
+[[relationship_type]]
+key = "own_account"
+name = "Eigentum auf eigene Rechnung"
+description = "Das Unternehmen besitzt die Anlage selbst, über Tochtergesellschaften oder über eine eigene Beteiligung an einer Projekt- oder Betriebsgesellschaft."
+effect = "conflict"
+decision = "decided"
+reason = "Wer eine Anlage besitzt, trägt ihren wirtschaftlichen Ertrag und ihr Risiko. Nur dieser Beziehungstyp ist eine «Eigentumsbeteiligung» im Sinn der Regeln zu Kohle und fossiler Expansion."
+data_status = "integrated"
+data_note = "Global Energy Monitor, Energy Ownership Tracker (CC BY 4.0): Besitzketten mit Anteil je Glied."
+
+[[relationship_type]]
+key = "financial_stake_unclear"
+name = "Finanzbeteiligung eines Finanzinstituts, Rechnung ungeklärt"
+description = "Ein Finanzinstitut (Bank, Versicherung, Vermögensverwalter) hält laut Quelle unter 20 % an einer börsenkotierten Gesellschaft. Solche gemeldeten Bestände sind meist Kundenvermögen oder Handelsbestand."
+effect = "separate"
+decision = "proposed"
+reason = "Die Quelle belegt nicht, ob der Bestand eigenes Vermögen ist. Ohne diesen Beleg wäre «Eigentumsbeteiligung» eine Behauptung. Der Bestand wird gesondert gezeigt und löst keinen Konflikt aus, bis eine Quelle die eigene Rechnung belegt."
+data_status = "integrated"
+data_note = "Erkannt aus der GEM-Besitzkette (Anteil, Börsenkotierung laut GEM) und der Branchenangabe des Unternehmens in Wikidata (CC0). Die Einordnung nennt je Kette ihren Grund."
+
+[[relationship_type]]
+key = "asset_management"
+name = "Vermögensverwaltung für Kunden oder Fonds"
+description = "Die Kette läuft über einen Fonds, eine Fonds- oder Vermögensverwaltungsgesellschaft, eine Pensionskasse oder eine Treuhandgesellschaft. Die Anlagen gehören den Anlegern oder Begünstigten."
+effect = "separate"
+decision = "decided"
+reason = "Ein Anteil an einer Vermögensverwaltungsgesellschaft ist kein anteiliges Eigentum an den Kundenanlagen. Eine mögliche Verantwortung des Verwalters (Stimmrechte, Anlagepolitik) wäre eine eigene Regel mit eigener Schwelle; sie ist nicht festgelegt und deshalb nicht aktiv."
+data_status = "integrated"
+data_note = "Erkannt an Begriffen im Namen eines Kettenglieds (z. B. «Asset Management», «Fund», «SGR», «Trust Corporation»). Nur Einordnung, nie Zuordnung."
+
+[[relationship_type]]
+key = "custody"
+name = "Verwahrung von Wertpapieren"
+description = "Die Kette läuft über eine Verwahr-, Nominee- oder Treuhandbank, die Wertpapiere für Dritte hält."
+effect = "separate"
+decision = "decided"
+reason = "Eine Verwahrstelle ist im Aktienregister eingetragen, wirtschaftlich berechtigt sind ihre Kunden. Keine Beteiligung."
+data_status = "integrated"
+data_note = "Erkannt an Begriffen im Namen eines Kettenglieds (z. B. «Nominees», «Custody», «Master Trust Bank»). Nur Einordnung, nie Zuordnung."
+
+[[relationship_type]]
+key = "financing"
+name = "Kreditvergabe und Projektfinanzierung"
+description = "Das Unternehmen finanziert eine Anlage mit einem Kredit, einer Anleihe oder einer Garantie, ohne sie zu besitzen."
+effect = "separate"
+decision = "proposed"
+reason = "Finanzierung ist kein Eigentum. Ob und ab welchem Umfang sie als Konflikt gilt (z. B. Finanzierung neuer Kohlekraftwerke), braucht einen eigenen Entscheid. Bis dahin: gesondert gezeigt, kein Konflikt."
+data_status = "mapping_open"
+data_note = "GEM Global Coal Project Finance Tracker und Gas Finance Tracker (CC BY 4.0) nennen Geldgeber nur mit Namen, ohne Kennung. Nicht ausgewertet, bis die Namen bestätigt zugeordnet sind."
+
+[[relationship_type]]
+key = "operation"
+name = "Betrieb einer Anlage"
+description = "Das Unternehmen betreibt die Anlage im Tagesgeschäft, mit oder ohne Eigentum."
+effect = "separate"
+decision = "proposed"
+reason = "Vorschlag: Der Betrieb einer Kohleanlage ohne Eigentum wäre als Tätigkeit ein Konflikt. Noch nicht entschieden; heute wird der Betreiber nur bei Anlagen gezeigt, die über Eigentum zugeordnet sind."
+data_status = "mapping_open"
+data_note = "GEM nennt Betreiber in den Anlagenlisten nur mit Namen. Der Betreiber wird angezeigt, aber kein Unternehmen wird über den Betreibernamen zugeordnet."
+
+[[relationship_type]]
+key = "supply_contract"
+name = "Stromabnahme und andere Lieferverträge"
+description = "Das Unternehmen bezieht Strom oder Brennstoff aus einer Anlage oder beliefert sie, ohne sie zu besitzen oder zu betreiben."
+effect = "separate"
+decision = "proposed"
+reason = "Ein Liefervertrag ist weder Eigentum noch Betrieb. Eine Regel dazu ist nicht festgelegt."
+data_status = "no_source"
+data_note = "Keine geprüfte Quelle mit Vertragsparteien und Kennung. GEM führt Stromabnehmer nur vereinzelt und nur mit Namen (Gas Finance Tracker)."
+
+# ---------------------------------------------------------------------------------------
+# Sanktionen sind kein eigenes Kriterium, sondern Belege mit Sanktionsgrund.
+# ---------------------------------------------------------------------------------------
+[sanctions]
+role = "evidence"
+rule = "Eine Sanktionslistung wird als Beleg mit dem amtlichen Sanktionsgrund (Programm, Rechtsgrundlage, Datum) gezeigt und dem Kriterium zugeordnet, zu dem der Grund passt. Passt kein Kriterium, bleibt sie eine Information ohne Konfliktwirkung."
+note = "Eine Listung ist eine Behördenmassnahme, kein Gerichtsurteil. Sie wird nie ohne ihren Grund gezeigt."
+
+# ---------------------------------------------------------------------------------------
+# Emissionen: vorerst Kennzahlen, kein Ausschlusskriterium.
+# ---------------------------------------------------------------------------------------
+[[metric]]
+key = "treibhausgas_emissionen"
+name = "Treibhausgasemissionen"
+unit = "t CO2e"
+required_fields = ["Jahr", "Scope oder Abgrenzung", "Einheit", "Erhebungsmethode (gemeldet, amtlich verifiziert oder geschätzt)", "Abdeckung (Anlage, Land oder Konzern)", "Quelle mit Stand"]
+exclusion_threshold_set = false
+rule = "Werte werden mit Jahr, Scope, Einheit, Erhebungsmethode und Abdeckung gezeigt. Werte verschiedener Methoden oder Abdeckungen werden nie addiert."
+note = "Ein Ausschlusswert wird erst festgelegt, wenn Vergleichbarkeit und Bewertungsgrundlage tragfähig sind. Ein fehlender Wert heisst nie «keine Emissionen»."
+
+[[metric]]
+key = "schadstoff_freisetzungen"
+name = "Schadstoff-Freisetzungen und Abfalltransfers"
+unit = "je Schadstoff (z. B. kg/a)"
+required_fields = ["Jahr", "Schadstoff", "Medium (Luft, Wasser, Boden)", "Einheit", "Standort", "Quelle mit Stand"]
+exclusion_threshold_set = false
+rule = "Amtlich gemeldete Jahreswerte je Standort. Kein Nachweis eines Rechtsverstosses."
+note = "Kein Ausschlusswert festgelegt."
+
+# =======================================================================================
+# Aktive Kriterien (zwölf), gruppiert: klima, umwelt, soziales, unternehmensfuehrung
+# =======================================================================================
 
 [[criterion]]
 key = "kohle"
+group = "klima"
 name = "Kohle"
-description = "Abbau von Kraftwerkskohle oder Stromerzeugung aus Kohle, inkl. Ausbau neuer Kohlekapazitäten."
+status = "active"
+basis = "activity"
 severity = "hoch"
+decision = "decided"
+description = "Förderung von Kohle oder Stromerzeugung aus Kohle."
+rule = "Jede bestätigte Eigentumsbeteiligung auf eigene Rechnung an aktiver Kohleförderung oder Kohleverstromung gilt im strengen Ausschlussprofil als Konflikt. Vermögensverwaltung, Verwahrung und Finanzierung sind keine Eigentumsbeteiligung und haben eigene Regeln (Beziehungstypen)."
+min_own_account_share_percent = 0.0
+conflict_statuses = ["festgestellt", "dokumentiert"]
+display = ["Beteiligungsanteil in Prozent", "Kontrolle (ab 50 %) ja/nein", "Betreiberrolle", "Status der Anlage (in Betrieb, im Ausbau, stillgelegt)"]
+separate = ["Stillgelegte Anlagen: gesondert gezeigt, kein Konflikt", "Verwahrung, Vermögensverwaltung für Kunden und Finanzbeteiligungen von Finanzinstituten mit ungeklärter Rechnung: keine belegte Eigentumsbeteiligung, kein Konflikt", "Beteiligungen mit unbekanntem Anteil: gesondert gezeigt, bis der Anteil belegt ist"]
+open_questions = ["Beteiligungsschwelle: heute 0 % (jede bestätigte Beteiligung auf eigene Rechnung). Eine Schwelle wird erst auf der bereinigten Grundlage entschieden; der Pilotbericht zeigt die Wirkung von 5, 10, 20 und 50 %.", "Gelten Kohleprojekte im Ausbau ohne laufenden Betrieb ebenfalls als Konflikt? Heute: ja, als aktive Kohle gezählt.", "Metallurgische Kohle (Stahl) gleich behandeln wie Kraftwerkskohle? Heute: ja."]
+sources = ["Global Energy Monitor, Global Energy Ownership Tracker (CC BY 4.0)"]
+source_gap = "Umsatzanteil Kohle steht in keiner freigegebenen Quelle."
+data_status = "integrated"
 metric = "umsatzanteil_kohle"
 metric_unit = "%"
-# threshold = 5.0   # offen – vom Projektteam festzulegen
-threshold_note = "Schwellenwert für Umsatzanteil offen (Platzhalter in ausschlusskriterien.md)."
+threshold_note = "Kein Umsatz-Schwellenwert: Das Profil stellt auf die Beteiligung ab, nicht auf den Umsatzanteil."
+
+  [[criterion.category]]
+  key = "kohlefoerderung"
+  name = "Kohleförderung (Minen)"
+  effect = "conflict"
+  decision = "decided"
+  reason = "Aktive Förderung, unabhängig von der Höhe der Beteiligung."
+
+  [[criterion.category]]
+  key = "kohleverstromung"
+  name = "Kohleverstromung (Kraftwerke)"
+  effect = "conflict"
+  decision = "decided"
+  reason = "Aktive Stromerzeugung aus Kohle, unabhängig von der Höhe der Beteiligung."
+
+  [[criterion.category]]
+  key = "kohle_stillgelegt"
+  name = "Stillgelegte Kohleanlagen"
+  effect = "separate"
+  decision = "decided"
+  reason = "Keine laufende Tätigkeit mehr; wird gezeigt, löst keinen Konflikt aus."
 
 [[criterion]]
-key = "oel_gas_expansion"
-name = "Öl-/Gas-Expansion"
-description = "Erschliessung neuer Öl- oder Gasfelder bzw. Ausbau fossiler Förderkapazitäten."
+key = "fossile_expansion"
+group = "klima"
+name = "Fossile Expansion"
+status = "active"
+basis = "activity"
 severity = "hoch"
-threshold_note = "Definition «Expansion» und Stichtag offen."
+decision = "decided"
+description = "Neue fossile Förder-, Transport-, LNG- und Kraftwerkskapazitäten (Öl, Gas, Kohle)."
+rule = "Bestätigte neue fossile Förder-, Transport-, LNG- und Kraftwerkskapazitäten werden erfasst. Angekündigte, genehmigte und im Bau befindliche neue Kapazität im Eigentum auf eigene Rechnung gilt im strengen Ausschlussprofil als Konflikt. Vermögensverwaltung, Verwahrung und Finanzierung haben eigene Regeln (Beziehungstypen)."
+min_own_account_share_percent = 0.0
+conflict_statuses = ["festgestellt", "dokumentiert"]
+display = ["Projektphase: Ankündigung, Genehmigung, Bau, Betrieb", "Art der Kapazität: Förderung, Transport (Pipeline), LNG-Terminal, Kraftwerk", "Beteiligungsanteil und Kontrolle"]
+separate = ["Reine Instandhaltung oder Ersatz ohne Kapazitätsausbau: gesondert gezeigt, kein Konflikt", "Bestehende Anlagen in Betrieb ohne Ausbau: gezeigt, kein Konflikt unter diesem Kriterium", "Verwahrung, Vermögensverwaltung für Kunden und Finanzbeteiligungen mit ungeklärter Rechnung: kein Konflikt", "Beteiligungen mit unbekanntem Anteil: gesondert gezeigt, bis der Anteil belegt ist"]
+open_questions = ["Notstromaggregate und Eigenversorgung (z. B. Dieselgeneratoren von Rechenzentren): Zählen sie als neue fossile Kraftwerkskapazität? Heute: ja, mit dem Vermerk «Eigenbedarf» bzw. «Notstrom» gezeigt.", "Beteiligungsschwelle: heute 0 %; Entscheid erst auf der bereinigten Grundlage.", "Ab welchem Datum gilt eine Anlage als «neu» (Stichtag)? Heute: Projektphase laut Quelle zum Datenstand.", "Zählt eine blosse Ankündigung ohne Genehmigung gleich wie ein Bau? Heute: ja, Phase wird getrennt gezeigt."]
+sources = ["Global Energy Monitor, Global Energy Ownership Tracker (CC BY 4.0): Gaskraftwerke, LNG-Terminals, Gas- und Ölpipelines"]
+source_gap = "Neue Öl- und Gasfelder: Eigentümer stehen bei GEM nur mit Namen, ohne Kennung. Zuordnung erst über bestätigte Namensentscheide."
+data_status = "integrated"
+threshold_note = "Kein Schwellenwert: Jede bestätigte neue Kapazität wird erfasst."
+
+  [[criterion.category]]
+  key = "foerderung"
+  name = "Neue Förderkapazität (Öl- und Gasfelder, Kohleminen)"
+  effect = "conflict"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "transport"
+  name = "Neue Transportkapazität (Pipelines)"
+  effect = "conflict"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "lng"
+  name = "Neue LNG-Terminals (Flüssigerdgas)"
+  effect = "conflict"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "kraftwerke"
+  name = "Neue fossile Kraftwerke"
+  effect = "conflict"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "instandhaltung"
+  name = "Instandhaltung ohne Kapazitätsausbau"
+  effect = "separate"
+  decision = "decided"
+  reason = "Kein Ausbau; wird gesondert gezeigt."
 
 [[criterion]]
-key = "geaechtete_waffen"
-name = "Geächtete Waffen"
-description = "Herstellung oder Schlüsselkomponenten von Streumunition, Antipersonenminen, biologischen oder chemischen Waffen."
+key = "waffen"
+group = "soziales"
+name = "Waffen"
+status = "active"
+basis = "activity"
 severity = "schwer"
-threshold_note = "Kein Umsatz-Schwellenwert vorgesehen (Null-Toleranz-Vorschlag, zu bestätigen)."
+decision = "proposed"
+description = "Belegte Produktion von Waffen und von wesentlichen, speziell dafür bestimmten Komponenten."
+rule = "Belegte Waffenproduktion und wesentliche, speziell dafür bestimmte Komponenten werden erfasst und in vier Kategorien getrennt. Welche Kategorie als Konflikt gilt, steht je Kategorie; diese Ausschlüsse sind ein begründeter Vorschlag und noch zu bestätigen."
+conflict_statuses = ["festgestellt", "dokumentiert"]
+display = ["Kategorie der Waffe", "Rolle: Hersteller des Waffensystems oder Zulieferer speziell bestimmter Komponenten", "Quelle und Datum des Belegs"]
+separate = ["Güter mit doppeltem Verwendungszweck (Dual-Use) ohne belegte Waffenbestimmung: kein Konflikt", "Allgemeine Zulieferer (z. B. Stahl, Standard-Elektronik, Bürosoftware): kein Konflikt", "Handel und Detailhandel mit zivilen Schusswaffen: gesondert gezeigt"]
+open_questions = ["Die Ausschlüsse je Kategorie sind ein Vorschlag und brauchen deine Bestätigung.", "Kernwaffen: auch Unternehmen aus Atomwaffenstaaten des Atomwaffensperrvertrags ausschliessen? Vorschlag: ja.", "Konventionelle Waffen: ohne Umsatzdaten keine Schwelle möglich; Vorschlag stellt auf belegte Produktion ab."]
+sources = []
+source_gap = "Keine Quelle mit bestätigter gewerblicher Freigabe gefunden. Kandidaten: SVVK-ASIR (gewerbliche Nutzung nur nach Registrierung), Norges Bank (nur private, nicht gewerbliche Nutzung)."
+data_status = "rights_unclear"
+threshold_note = "Kein Umsatz-Schwellenwert vorgesehen."
+
+  [[criterion.category]]
+  key = "geaechtete_waffen"
+  name = "Geächtete Waffen"
+  description = "Streumunition, Antipersonenminen, biologische und chemische Waffen."
+  effect = "conflict"
+  decision = "proposed"
+  reason = "International geächtet (Übereinkommen über Streumunition, Ottawa-Konvention, Bio- und Chemiewaffenübereinkommen). Das Schweizer Kriegsmaterialgesetz verbietet ihre Finanzierung. Vorschlag: Null-Toleranz, auch für speziell bestimmte Komponenten."
+
+  [[criterion.category]]
+  key = "kernwaffen"
+  name = "Kernwaffen"
+  description = "Entwicklung, Herstellung oder Wartung von Kernwaffen und speziell dafür bestimmten Komponenten."
+  effect = "conflict"
+  decision = "proposed"
+  reason = "Massenvernichtungswaffe; im Schweizer Kriegsmaterialgesetz als verbotenes Kriegsmaterial geführt. Vorschlag: Null-Toleranz. Ob das Sitzland Atomwaffenstaat des Sperrvertrags ist, wird getrennt gezeigt."
+
+  [[criterion.category]]
+  key = "konventionelle_waffen"
+  name = "Konventionelle militärische Waffen"
+  description = "Waffensysteme, Munition und speziell dafür bestimmte wesentliche Komponenten für Streitkräfte."
+  effect = "conflict"
+  decision = "proposed"
+  reason = "Ein strenges Profil soll keine Rüstungsproduktion mitfinanzieren. Weil Umsatzanteile fehlen, stellt der Vorschlag auf belegte Produktion ab, nicht auf eine Schwelle. Wer das zu streng findet, braucht ein zweites, milderes Profil."
+
+  [[criterion.category]]
+  key = "zivile_schusswaffen"
+  name = "Zivile Schusswaffen"
+  description = "Herstellung von Schusswaffen und Munition für den zivilen Markt."
+  effect = "conflict"
+  decision = "proposed"
+  reason = "Vorschlag: Hersteller als Konflikt, Handel nur gesondert zeigen. Der Handel ist oft ein kleiner Nebenumsatz grosser Detailhändler und ohne Umsatzdaten nicht fair bewertbar."
+
+  [[criterion.category]]
+  key = "handel_zivile_schusswaffen"
+  name = "Handel mit zivilen Schusswaffen"
+  description = "Gross- und Detailhandel mit Schusswaffen und Munition für den zivilen Markt, ohne eigene Herstellung."
+  effect = "separate"
+  decision = "proposed"
+  reason = "Gesondert gezeigt; ohne Umsatzdaten nicht fair bewertbar."
+
+  [[criterion.category]]
+  key = "dual_use"
+  name = "Güter mit doppeltem Verwendungszweck ohne belegte Waffenbestimmung"
+  description = "Dual-Use-Güter, allgemeine Zulieferungen (Stahl, Standardelektronik, Software) ohne Beleg, dass sie speziell für Waffen bestimmt sind."
+  effect = "separate"
+  decision = "decided"
+  reason = "Keine belegte Waffenproduktion; wird gezeigt, löst keinen Konflikt aus."
 
 [[criterion]]
 key = "zwangs_kinderarbeit"
+group = "soziales"
 name = "Zwangs- und Kinderarbeit"
-description = "Zwangsarbeit oder ausbeuterische Kinderarbeit im eigenen Betrieb oder in der Lieferkette."
+status = "active"
+basis = "conduct"
 severity = "schwer"
-threshold_note = "Abgrenzung eigene Tätigkeit vs. Lieferkette offen."
+decision = "decided"
+description = "Zwangsarbeit oder ausbeuterische Kinderarbeit im eigenen Betrieb oder in der Lieferkette."
+rule = "Bestätigte Verstösse gelten als Konflikt. Allgemeine Länder- und Branchenrisiken, Verdachtsmassnahmen und bestätigte Feststellungen werden unterschieden."
+conflict_statuses = ["festgestellt"]
+display = ["Belegstufe: Länder-/Branchenrisiko, Verdachtsmassnahme oder bestätigte Feststellung", "Eigene Tätigkeit oder Lieferkette", "Behörde, Datum und Verfahrensstand"]
+separate = ["Länder- und Branchenrisiken: nur Kontext, nie Beleg gegen ein Unternehmen", "Verdachtsmassnahmen (z. B. Einfuhrsperre vor einer Feststellung): gezeigt, kein Konflikt", "Rechtmässige Beschäftigung Jugendlicher nach dem Recht des Landes und den ILO-Übereinkommen 138 und 182: keine Kinderarbeit im Sinn dieses Kriteriums"]
+open_questions = ["Wie tief in der Lieferkette zählt ein bestätigter Verstoss (direkter Zulieferer, weitere Stufen)?", "Wie lange wirkt ein bestätigter Verstoss nach belegter Abhilfe?"]
+sources = []
+source_gap = "US-Behördenlisten (Einfuhrsperren, UFLPA) sind gemeinfrei, nennen Unternehmen aber nur mit Namen und sind Verdachts- bzw. Verwaltungsmassnahmen. Zuordnung erst über bestätigte Namensentscheide."
+data_status = "mapping_open"
+threshold_note = "Kein Schwellenwert: Jeder bestätigte Verstoss zählt."
+
+  [[criterion.category]]
+  key = "zwangsarbeit"
+  name = "Zwangsarbeit"
+  effect = "conflict"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "kinderarbeit"
+  name = "Ausbeuterische Kinderarbeit"
+  effect = "conflict"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "jugendbeschaeftigung"
+  name = "Rechtmässige Beschäftigung Jugendlicher"
+  effect = "separate"
+  decision = "decided"
+  reason = "Erlaubte Arbeit Jugendlicher ist keine Kinderarbeit."
 
 [[criterion]]
 key = "entwaldung"
+group = "umwelt"
 name = "Entwaldung"
-description = "Beteiligung an Entwaldung oder Umwandlung natürlicher Ökosysteme, inkl. Lieferkette (z. B. Soja, Palmöl, Rind, Kakao)."
+status = "active"
+basis = "conduct"
 severity = "hoch"
-threshold_note = "Stichtag (Cut-off-Datum) und Lieferketten-Tiefe offen."
+decision = "decided"
+description = "Umwandlung von Wald oder anderen natürlichen Ökosystemen durch eigene Tätigkeit oder in der Lieferkette (z. B. Soja, Palmöl, Rind, Kakao, Holz)."
+rule = "Nachgewiesene Waldumwandlung mit belegtem Unternehmens- oder Lieferkettenbezug wird erfasst. Satellitensignale allein reichen nicht zur Verantwortungszuweisung. Direkte Tätigkeit und Lieferkettenbezug werden getrennt bewertet."
+conflict_statuses = ["festgestellt"]
+display = ["Direkte Tätigkeit oder Lieferkettenbezug", "Rohstoff und Region", "Art des Nachweises (Behördenentscheid, Gerichtsurteil, dokumentierte Recherche)"]
+separate = ["Satellitensignale ohne belegten Unternehmensbezug: kein Beleg", "Lieferkettenbezug ohne bestätigte Feststellung: gezeigt, kein Konflikt", "Dokumentierte Recherchen ohne Behördenentscheid: gezeigt, kein Konflikt"]
+open_questions = ["Stichtag (z. B. 31.12.2020 wie in der EU-Entwaldungsverordnung)?", "Gilt ein bestätigter Lieferkettenbezug gleich wie eine direkte Tätigkeit? Heute: getrennt gezeigt, nur die direkte Tätigkeit ist Konflikt."]
+sources = []
+source_gap = "Forest 500 nur nicht-kommerziell; Trase nur auf Anfrage; brasilianische Behördendaten (IBAMA) technisch nicht lesbar und Lizenz ungeprüft."
+data_status = "no_source"
+threshold_note = "Kein Schwellenwert."
+
+  [[criterion.category]]
+  key = "direkte_taetigkeit"
+  name = "Direkte Tätigkeit"
+  effect = "conflict"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "lieferkette"
+  name = "Lieferkettenbezug"
+  effect = "separate"
+  decision = "decided"
+  reason = "Getrennt bewertet; ohne eigene bestätigte Feststellung kein Konflikt."
+
+[[criterion]]
+key = "korruption"
+group = "unternehmensfuehrung"
+name = "Korruption"
+status = "active"
+basis = "conduct"
+severity = "schwer"
+decision = "decided"
+description = "Bestechung von Amtsträgern oder Privaten und vergleichbare Korruptionsdelikte."
+rule = "Bestätigte Korruptionsfälle werden mit Tatzeitraum, Verfahrensausgang und Abhilfe erfasst. Verdacht, Vergleich und Verurteilung werden unterschieden. Historische Fälle erhalten keine unbegründete dauerhafte Ausschlusswirkung."
+conflict_statuses = ["festgestellt"]
+display = ["Tatzeitraum", "Verfahrensausgang: Verdacht, Vergleich ohne Schuldeingeständnis, Vergleich mit Schuldeingeständnis, Verurteilung", "Behörde und Datum des Entscheids", "Belegte Abhilfe (z. B. Auflagen erfüllt, Aufsicht beendet)"]
+separate = ["Verdacht und laufende Verfahren: gezeigt, kein Konflikt", "Vergleiche ohne Schuldeingeständnis: gezeigt, eigene Stufe, kein Konflikt", "Historische Fälle nach Ablauf der Wirkungsdauer: gesondert als «historisch» gezeigt"]
+conflict_expiry_years = 5
+conflict_min_years_with_remediation = 3
+expiry_reason = "Die Wirkung beginnt mit dem Abschluss des Verfahrens, weil der Sachverhalt erst dann feststeht; dauerte die Tat darüber hinaus an, beginnt sie mit dem Ende der Tat. Sie dauert fünf Jahre: Das ist die Höchstdauer, für die das EU-Vergaberecht ein rechtskräftig wegen Bestechung verurteiltes Unternehmen von öffentlichen Aufträgen ausschliesst (Richtlinie 2014/24/EU, Art. 57 Abs. 7). Solange Folgen des Entscheids fortbestehen (laufende Auflagen, Aufsicht, Sperre), endet die Wirkung nicht. Hat eine Behörde die Abhilfe bestätigt (Auflagen erfüllt, Aufsicht beendet), endet sie frühestens nach drei Jahren. Ohne Ablauf würde ein alter Fall ein Unternehmen dauerhaft ausschliessen, obwohl Personen, Kontrollen und Eigentümer gewechselt haben können."
+open_questions = ["Wirkungsdauer fünf Jahre und Mindestdauer drei Jahre bei bestätigter Abhilfe sind ein begründeter Vorschlag. Bitte bestätigen.", "Der Wortlaut von Art. 57 der Richtlinie 2014/24/EU war automatisch nicht abrufbar und ist vor einer Veröffentlichung am Original nachzulesen.", "Zählt ein Vergleich mit Schuldeingeständnis wie eine Verurteilung? Vorschlag: ja."]
+sources = []
+source_gap = "US-Börsenaufsicht SEC (FCPA-Fälle, öffentliche Information) und US-Justizministerium (gemeinfrei) nennen Unternehmen nur mit Namen. Zuordnung erst über bestätigte Namensentscheide. Weltbank-Sperrliste nicht gewerblich nutzbar."
+data_status = "mapping_open"
+threshold_note = "Kein Schwellenwert: Jeder bestätigte Fall innerhalb der Wirkungsdauer zählt."
+
+  [[criterion.category]]
+  key = "verurteilung"
+  name = "Verurteilung oder Vergleich mit Schuldeingeständnis"
+  effect = "conflict"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "vergleich_ohne_schuld"
+  name = "Vergleich ohne Schuldeingeständnis"
+  effect = "separate"
+  decision = "decided"
+
+  [[criterion.category]]
+  key = "verdacht"
+  name = "Verdacht oder laufendes Verfahren"
+  effect = "separate"
+  decision = "decided"
+
+[[criterion]]
+key = "biodiversitaet_oekosysteme"
+name = "Biodiversität und Ökosysteme"
+group = "umwelt"
+status = "active"
+basis = "conduct"
+severity = "hoch"
+decision = "proposed"
+description = "Schädigung natürlicher Lebensräume, geschützter Arten und empfindlicher Ökosysteme, auch ausserhalb von Wäldern."
+rule = "Belegte Schädigung natürlicher Lebensräume, geschützter Arten und empfindlicher Ökosysteme wird erfasst, auch ausserhalb von Wäldern (z. B. Feuchtgebiete, Moore, Savannen, Korallenriffe). Vorschlag: Eine bestätigte Schädigung gilt als Konflikt."
+conflict_statuses = ["festgestellt"]
+display = ["Art des Lebensraums oder der Art", "Ort und Schutzstatus des Gebiets", "Art des Nachweises und Datum", "Belegte Wiederherstellung oder Ausgleich"]
+separate = ["Nähe einer Anlage zu einem Schutzgebiet allein: kein Beleg", "Waldumwandlung: wird unter «Entwaldung» geführt, nicht doppelt gezählt", "Tätigkeit in einem Schutzgebiet ohne belegten Schaden: gesondert gezeigt"]
+open_questions = ["Gilt jede belegte Tätigkeit in einem streng geschützten Gebiet (z. B. UNESCO-Welterbe) als Konflikt, auch ohne belegten Schaden?"]
+sources = []
+source_gap = "Keine Quelle geprüft."
+data_status = "no_source"
+threshold_note = "Kein Schwellenwert."
+
+  [[criterion.category]]
+  key = "lebensraeume"
+  name = "Schädigung natürlicher Lebensräume"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "geschuetzte_arten"
+  name = "Schädigung geschützter Arten"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "taetigkeit_schutzgebiet"
+  name = "Tätigkeit in Schutzgebieten ohne belegten Schaden"
+  effect = "separate"
+  decision = "proposed"
+
+[[criterion]]
+key = "wasser_meeresressourcen"
+name = "Wasser und Meeresressourcen"
+group = "umwelt"
+status = "active"
+basis = "conduct"
+severity = "hoch"
+decision = "proposed"
+description = "Wasserentnahme und -verbrauch im örtlichen Kontext sowie Auswirkungen auf Gewässer und Meeresökosysteme."
+rule = "Wasserentnahme und -verbrauch werden im örtlichen Kontext erfasst, insbesondere in Regionen mit Wasserknappheit. Auswirkungen auf Gewässer und Meeresökosysteme werden erfasst. Vorschlag: Eine bestätigte Schädigung von Gewässern oder Meeresökosystemen gilt als Konflikt; Entnahmemengen sind Kennzahlen, kein Konflikt."
+conflict_statuses = ["festgestellt"]
+display = ["Standort und Einzugsgebiet", "Wasserknappheit am Standort (mit Quelle)", "Entnahme und Verbrauch mit Jahr und Einheit", "Betroffenes Gewässer oder Meeresgebiet"]
+separate = ["Entnahmemengen ohne örtlichen Kontext: Kennzahl ohne Bewertung", "Konzernweite Wasserzahlen: nicht auf einzelne Standorte umgerechnet"]
+open_questions = ["Ab wann gilt eine Region als wasserknapp (welcher Index, welche Stufe)?", "Zählt eine hohe Entnahme in einer wasserknappen Region ohne belegten Schaden als Konflikt? Heute: nein, nur Kennzahl."]
+sources = []
+source_gap = "Keine Quelle geprüft."
+data_status = "no_source"
+threshold_note = "Kein Schwellenwert."
+
+  [[criterion.category]]
+  key = "gewaesserschaden"
+  name = "Bestätigte Schädigung von Gewässern"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "meeresoekosysteme"
+  name = "Bestätigte Schädigung von Meeresökosystemen"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "entnahme_wasserknappheit"
+  name = "Wasserentnahme in Regionen mit Wasserknappheit"
+  effect = "separate"
+  decision = "proposed"
+  reason = "Kennzahl im örtlichen Kontext; ohne belegten Schaden kein Konflikt."
+
+[[criterion]]
+key = "umweltverschmutzung_gefahrstoffe"
+name = "Umweltverschmutzung und gefährliche Stoffe"
+group = "umwelt"
+status = "active"
+basis = "conduct"
+severity = "hoch"
+decision = "proposed"
+description = "Schädliche Freisetzungen in Luft, Boden und Wasser sowie entsprechende Behördenentscheide."
+rule = "Belegte schädliche Freisetzungen in Luft, Boden und Wasser sowie entsprechende Behördenentscheide werden erfasst. Stoffgefährlichkeit, tatsächliche Exposition und nachgewiesener Schaden werden unterschieden. Vorschlag: Nachgewiesener Schaden und bestätigte Behördenentscheide gelten als Konflikt."
+conflict_statuses = ["festgestellt"]
+display = ["Stoff und Medium (Luft, Boden, Wasser)", "Stufe: Stoffgefährlichkeit, tatsächliche Exposition oder nachgewiesener Schaden", "Behörde, Entscheid, Datum und Sanktion", "Belegte Sanierung"]
+separate = ["Gemeldete Freisetzungen im Rahmen der Bewilligung: Kennzahl, kein Verstoss", "Herstellung oder Verwendung gefährlicher Stoffe ohne belegte Freisetzung: gesondert gezeigt", "Belegte Exposition ohne nachgewiesenen Schaden: gesondert gezeigt"]
+open_questions = ["Gilt die Herstellung international verbotener Stoffe (z. B. bestimmte Pestizide, langlebige Schadstoffe) schon ohne Schaden als Konflikt?"]
+sources = []
+source_gap = "Amtliche Freisetzungsregister (SwissPRTR, EU, USA) liefern Kennzahlen, keine Verstösse. Vollzugsdaten der US-Umweltbehörde EPA sind gemeinfrei, nennen aber nur Namen."
+data_status = "mapping_open"
+threshold_note = "Kein Schwellenwert."
+
+  [[criterion.category]]
+  key = "nachgewiesener_schaden"
+  name = "Nachgewiesener Schaden"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "behoerdenentscheid"
+  name = "Bestätigter Behördenentscheid zu einer Freisetzung"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "exposition"
+  name = "Tatsächliche Exposition ohne nachgewiesenen Schaden"
+  effect = "separate"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "stoffgefaehrlichkeit"
+  name = "Gefährlicher Stoff ohne belegte Freisetzung"
+  effect = "separate"
+  decision = "proposed"
+
+[[criterion]]
+key = "ressourcen_abfall_kreislauf"
+name = "Ressourcen, Abfall und Kreislaufwirtschaft"
+group = "umwelt"
+status = "active"
+basis = "conduct"
+severity = "hoch"
+decision = "proposed"
+description = "Rohstoffverbrauch, gefährliche Abfälle, Entsorgung und belegte Verstösse."
+rule = "Rohstoffverbrauch, gefährliche Abfälle, Entsorgung und belegte Verstösse werden untersucht. Reparierbarkeit, Wiederverwendung und tatsächliche Recyclinganteile sind zusätzliche Kennzahlen. Vorschlag: Bestätigte Verstösse (z. B. illegale Entsorgung oder illegaler Abfallexport) gelten als Konflikt; Kennzahlen lösen keinen Konflikt aus."
+conflict_statuses = ["festgestellt"]
+display = ["Art des Abfalls und Menge mit Jahr", "Entsorgungsweg", "Behörde, Entscheid und Datum bei Verstössen", "Kennzahlen: Reparierbarkeit, Wiederverwendung, tatsächlicher Recyclinganteil"]
+separate = ["Kennzahlen zu Rohstoffverbrauch, Abfall und Recycling: keine Bewertung", "Angekündigte Recyclingziele: keine Kennzahl, nur tatsächlich erreichte Anteile zählen"]
+open_questions = ["Soll ein sehr tiefer tatsächlicher Recyclinganteil je Branche später eine Schwelle erhalten?"]
+sources = []
+source_gap = "Keine Quelle geprüft."
+data_status = "no_source"
+threshold_note = "Kein Schwellenwert."
+
+  [[criterion.category]]
+  key = "abfallverstoesse"
+  name = "Bestätigte Verstösse bei Abfall und Entsorgung"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "kennzahlen_kreislauf"
+  name = "Kennzahlen zu Verbrauch, Abfall und Kreislauf"
+  effect = "info"
+  decision = "proposed"
+
+[[criterion]]
+key = "arbeitsrechte_arbeitsschutz"
+name = "Arbeitsrechte und Arbeitsschutz"
+group = "soziales"
+status = "active"
+basis = "conduct"
+severity = "schwer"
+decision = "proposed"
+description = "Schwere Verstösse gegen Arbeitssicherheit, Vereinigungsfreiheit, Diskriminierungsschutz und geltende Arbeitsbedingungen."
+rule = "Belegte schwere Verstösse gegen Arbeitssicherheit, Vereinigungsfreiheit, Diskriminierungsschutz und geltende Arbeitsbedingungen werden berücksichtigt. Eigene Beschäftigte und Lieferketten werden unterschieden. Vorschlag: Ein bestätigter schwerer Verstoss bei eigenen Beschäftigten gilt als Konflikt."
+conflict_statuses = ["festgestellt"]
+display = ["Bereich: Arbeitssicherheit, Vereinigungsfreiheit, Diskriminierung, Arbeitsbedingungen", "Eigene Beschäftigte oder Lieferkette", "Behörde oder Gericht, Datum, Sanktion", "Belegte Abhilfe"]
+separate = ["Verstösse in der Lieferkette: getrennt gezeigt, ohne eigene bestätigte Feststellung kein Konflikt", "Einzelne leichte Verstösse: gezeigt, kein Konflikt", "Zwangs- und Kinderarbeit: eigenes Kriterium, nicht doppelt gezählt"]
+open_questions = ["Was gilt als «schwer» (z. B. Todesfall, wiederholter Verstoss, Mindeststrafe)? Bitte festlegen.", "Wirkungsdauer nach belegter Abhilfe?"]
+sources = []
+source_gap = "Vollzugsdaten des US-Arbeitsministeriums sind gemeinfrei, nennen Unternehmen aber nur mit Namen; Felder noch nicht gelesen."
+data_status = "mapping_open"
+threshold_note = "Kein Schwellenwert."
+
+  [[criterion.category]]
+  key = "arbeitssicherheit"
+  name = "Arbeitssicherheit"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "vereinigungsfreiheit"
+  name = "Vereinigungsfreiheit"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "diskriminierung"
+  name = "Diskriminierungsschutz"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "arbeitsbedingungen"
+  name = "Geltende Arbeitsbedingungen (Lohn, Arbeitszeit)"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "lieferkette"
+  name = "Verstösse in der Lieferkette"
+  effect = "separate"
+  decision = "proposed"
+
+[[criterion]]
+key = "menschenrechte_landrechte"
+name = "Menschenrechte und Landrechte"
+group = "soziales"
+status = "active"
+basis = "conduct"
+severity = "schwer"
+decision = "proposed"
+description = "Vertreibungen, Verletzungen indigener Rechte und andere schwere Menschenrechtsverletzungen mit nachvollziehbarem Unternehmensbezug."
+rule = "Belegte Vertreibungen, Verletzungen indigener Rechte und andere schwere Menschenrechtsverletzungen werden erfasst, wenn der Unternehmensbezug nachvollziehbar belegt ist. Vorschlag: Eine bestätigte Feststellung gilt als Konflikt."
+conflict_statuses = ["festgestellt"]
+display = ["Art der Verletzung", "Ort und betroffene Gemeinschaft", "Unternehmensbezug: eigene Tätigkeit, Tochterfirma, Geschäftspartner", "Gericht, Behörde oder Beschwerdestelle, Datum, Ausgang"]
+separate = ["Vorwürfe ohne nachvollziehbaren Unternehmensbezug: kein Beleg", "Dokumentierte Recherchen ohne Feststellung: gezeigt, kein Konflikt", "Zwangs- und Kinderarbeit sowie Arbeitsrechte: eigene Kriterien, nicht doppelt gezählt"]
+open_questions = ["Gelten Schlussberichte aussergerichtlicher Beschwerdestellen (z. B. OECD-Kontaktstellen) als bestätigte Feststellung?"]
+sources = []
+source_gap = "Keine Quelle mit bestätigter gewerblicher Freigabe gefunden."
+data_status = "no_source"
+threshold_note = "Kein Schwellenwert."
+
+  [[criterion.category]]
+  key = "vertreibung"
+  name = "Vertreibung und Landnahme"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "indigene_rechte"
+  name = "Verletzung indigener Rechte"
+  effect = "conflict"
+  decision = "proposed"
+
+  [[criterion.category]]
+  key = "schwere_menschenrechtsverletzungen"
+  name = "Andere schwere Menschenrechtsverletzungen"
+  effect = "conflict"
+  decision = "proposed"
+
+# ---------------------------------------------------------------------------------------
+# Zusätzliche Kennzahlen zu den Umweltkriterien (keine Ausschlusswerte)
+# ---------------------------------------------------------------------------------------
+[[metric]]
+key = "wasserentnahme"
+name = "Wasserentnahme und Wasserverbrauch"
+criterion = "wasser_meeresressourcen"
+unit = "m³"
+required_fields = ["Jahr", "Standort oder Einzugsgebiet", "Entnahme oder Verbrauch", "Wasserknappheit am Standort mit Quelle", "Quelle mit Stand"]
+exclusion_threshold_set = false
+rule = "Nur mit örtlichem Kontext gezeigt."
+note = "Kein Ausschlusswert festgelegt."
+
+[[metric]]
+key = "gefaehrliche_abfaelle"
+name = "Gefährliche Abfälle"
+criterion = "ressourcen_abfall_kreislauf"
+unit = "t"
+required_fields = ["Jahr", "Abfallart", "Entsorgungsweg", "Abdeckung", "Quelle mit Stand"]
+exclusion_threshold_set = false
+rule = "Gemeldete Mengen, kein Nachweis eines Verstosses."
+note = "Kein Ausschlusswert festgelegt."
+
+[[metric]]
+key = "rohstoffverbrauch"
+name = "Rohstoffverbrauch"
+criterion = "ressourcen_abfall_kreislauf"
+unit = "t"
+required_fields = ["Jahr", "Rohstoff", "Abdeckung", "Quelle mit Stand"]
+exclusion_threshold_set = false
+rule = "Gemeldete Mengen."
+note = "Kein Ausschlusswert festgelegt."
+
+[[metric]]
+key = "recyclinganteil"
+name = "Tatsächlicher Recyclinganteil"
+criterion = "ressourcen_abfall_kreislauf"
+unit = "%"
+required_fields = ["Jahr", "Bezugsgrösse (Abfall, Produkt oder Material)", "tatsächlich erreicht, nicht Ziel", "Quelle mit Stand"]
+exclusion_threshold_set = false
+rule = "Nur tatsächlich erreichte Anteile, keine Ziele."
+note = "Kein Ausschlusswert festgelegt."
+
+[[metric]]
+key = "reparierbarkeit_wiederverwendung"
+name = "Reparierbarkeit und Wiederverwendung"
+criterion = "ressourcen_abfall_kreislauf"
+unit = "je Quelle (z. B. Index oder Anteil)"
+required_fields = ["Jahr", "Produktgruppe", "Messmethode", "Quelle mit Stand"]
+exclusion_threshold_set = false
+rule = "Nur mit benannter Messmethode gezeigt."
+note = "Kein Ausschlusswert festgelegt."
+
+# =======================================================================================
+# Vorgeschlagene weitere Kriterien (noch NICHT aktiv; brauchen einen Entscheid)
+# Engine und Parser werten sie nicht aus; die Methodikseite zeigt sie als Vorschlag.
+# =======================================================================================
+
+[[criterion]]
+key = "unkonventionelle_foerderung"
+name = "Ölsand, Arktis und Fracking"
+group = "klima"
+status = "proposed"
+basis = "activity"
+severity = "hoch"
+decision = "proposed"
+description = "Besonders umweltbelastende Förderung: Ölsand, Bohrungen in der Arktis, Schiefergas und Schieferöl."
+rule = "Vorschlag: Bestätigte Eigentumsbeteiligung an aktiver unkonventioneller Förderung als Konflikt, analog zu Kohle."
+conflict_statuses = ["festgestellt", "dokumentiert"]
+source_gap = "Global Energy Monitor führt Förderfelder, Eigentümer aber nur mit Namen."
+
+[[criterion]]
+key = "tabak"
+name = "Tabak"
+group = "soziales"
+status = "proposed"
+basis = "activity"
+severity = "hoch"
+decision = "proposed"
+description = "Herstellung von Tabakprodukten."
+rule = "Vorschlag: Hersteller als Konflikt; Handel gesondert zeigen."
+conflict_statuses = ["festgestellt", "dokumentiert"]
+source_gap = "Keine Quelle geprüft."
+
+[[criterion]]
+key = "irrefuehrende_umweltaussagen"
+name = "Irreführende Umweltaussagen (Greenwashing)"
+group = "unternehmensfuehrung"
+status = "proposed"
+basis = "conduct"
+severity = "hoch"
+decision = "proposed"
+description = "Von einer Behörde oder einem Gericht festgestellte irreführende Nachhaltigkeits- oder Umweltaussagen."
+rule = "Vorschlag: Bestätigte Feststellungen als Konflikt. Passt direkt zur Mission «Transparenz statt Greenwashing»."
+conflict_statuses = ["festgestellt"]
+source_gap = "Keine Quelle geprüft."
+
+[[criterion]]
+key = "tierwohl"
+name = "Tierwohl"
+group = "umwelt"
+status = "proposed"
+basis = "conduct"
+severity = "hoch"
+decision = "proposed"
+description = "Bestätigte schwere Tierschutzverstösse; Pelzproduktion und Tierversuche für Kosmetik als Tätigkeitsfelder."
+rule = "Vorschlag: Bestätigte schwere Tierschutzverstösse als Konflikt; Tätigkeitsfelder gesondert zeigen."
+conflict_statuses = ["festgestellt"]
+source_gap = "Keine Quelle geprüft."

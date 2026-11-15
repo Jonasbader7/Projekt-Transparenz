@@ -28,6 +28,7 @@ import httpx
 from pydantic import ValidationError
 
 from transparenz.config.catalog import Catalog, SourceConfig
+from transparenz.config.settings import local_data_dir
 from transparenz.entities.enums import DatasetKind
 from transparenz.entities.identifiers import is_valid_isin, is_valid_lei
 from transparenz.entities.models import CompanyRecord
@@ -91,7 +92,7 @@ class RawClient:
     def __init__(self, cfg: SourceConfig, root: Path, user_agent: str,
                  client: httpx.Client | None = None, sleep: Callable = time.sleep):
         self.cfg = cfg
-        self.folder = root / "data/raw/external" / cfg.key
+        self.folder = local_data_dir(root) / "raw/external" / cfg.key
         self.client = client or httpx.Client(timeout=90, follow_redirects=False,
                                              headers={"User-Agent": user_agent})
         self.owns_client = client is None
@@ -588,7 +589,7 @@ def _swissprtr_emissions(content: bytes, ds: ExternalDataset) -> None:
 def parse_external(content: bytes, cfg: SourceConfig, root: Path) -> ExternalDataset:
     ds = ExternalDataset(DatasetKind.ENTITIES)
     ds.records = {"companies": [], "securities": [], "relationships": []}
-    folder = (root / "data/raw/external" / cfg.key).resolve()
+    folder = (local_data_dir(root) / "raw/external" / cfg.key).resolve()
     try:
         bundle = json.loads(content)
         if bundle["format"] != FORMAT or bundle["source_key"] != cfg.key:

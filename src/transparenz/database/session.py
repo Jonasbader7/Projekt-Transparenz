@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, event
+from sqlalchemy import Engine, create_engine, event, inspect, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from transparenz.database.models import Base
@@ -31,9 +31,40 @@ def make_engine(database_url: str) -> Engine:
     return engine
 
 
+def add_missing_columns(engine: Engine) -> list[str]:
+    """Trägt neue, leer erlaubte Spalten in bestehenden Tabellen nach (D-047).
+
+    Nur additive Ergänzungen: keine Spalte wird geändert oder gelöscht, bestehende Zeilen
+    erhalten «leer». Alles andere bleibt einer echten Migration vorbehalten.
+    """
+    added: list[str] = []
+    with engine.begin() as conn:
+        # Dieselbe Verbindung prüfen und ändern: SQLite liest den Schemastand je Verbindung.
+        inspector = inspect(conn)
+        existing_tables = set(inspector.get_table_names())
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing_tables:
+                continue
+            present = {c["name"] for c in inspector.get_columns(table.name)}
+            for column in table.columns:
+                if column.name in present:
+                    continue
+                if not column.nullable:
+                    raise RuntimeError(f"Spalte {table.name}.{column.name} ist neu und darf "
+                                       "nicht leer sein: braucht eine Migration.")
+                kind = column.type.compile(dialect=engine.dialect)
+                conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN '
+                                  f'"{column.name}" {kind}'))
+                added.append(f"{table.name}.{column.name}")
+    return added
+
+
 def init_db(engine: Engine) -> None:
-    """Legt fehlende Tabellen an (idempotent). Migrationen folgen später (Alembic)."""
+    """Legt fehlende Tabellen an und ergänzt neue, leer erlaubte Spalten (idempotent)."""
     Base.metadata.create_all(engine)
+    added = add_missing_columns(engine)
+    if added:
+        log.info("Spalten ergänzt: %s", ", ".join(added))
     log.info("Datenbankschema bereit (%s)", engine.url.render_as_string(hide_password=True))
 
 

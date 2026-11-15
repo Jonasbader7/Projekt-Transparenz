@@ -1,5 +1,8 @@
 # Codex → Claude Code: Schweizer Rohdatenfundament
 
+> **Historisch (Stand 08.11.2026).** Nicht mehr massgebend: Wikidata funktioniert seit D-034,
+> Zahlen und nächste Schritte stehen in `STATUS.md`. Bleibt als Nachweis der Übergabe erhalten.
+
 Stand: 08.11.2026. Zuerst diese Datei und STATUS.md lesen. Keine erneute Grundrecherche nötig.
 
 ## Neuer Auftrag und SEC-Katalog (D-033)

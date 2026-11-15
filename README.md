@@ -79,6 +79,22 @@ Exportzeiger und Qualitätszahlen: `data/processed/swiss/current.json`.
 Die Pfade bleiben Git-ignoriert. Übergabe: [CODEX_TO_CLAUDE_HANDOFF.md](docs/CODEX_TO_CLAUDE_HANDOFF.md).
 Kein vollständiger Aktien-/ETF-Katalog; GLEIF-Fondsrechtsträger sind keine ETF-Anteilsklassen.
 
+**Globale Firmen-/Ticker-Kandidaten (Wikidata, weltweit, nur lokal durchsuchbar):**
+
+```powershell
+.venv\Scripts\python scripts\download_global_candidates.py --source wikidata_global
+.venv\Scripts\python -m transparenz global-candidates-build
+.venv\Scripts\python -m transparenz global-candidates-search Roche --country Schweiz
+```
+
+`global-candidates-build` erzeugt eine lokale HTML-Suche (Pfad wird nach dem Build ausgegeben)
+mit Namens-/Ticker-Suche und Land-/Börsen-Filtern, dazu einen Qualitätsbericht (Anzahl Zeilen,
+eindeutige Unternehmen, fehlende Felder, mögliche Namensdubletten). Jede Zeile ist eine
+**unbestätigte Wikidata-Aussage** – kein Wertpapier, keine ISIN, keine Handelbarkeit. Land
+bezeichnet den Sitz der Börse, nicht automatisch den Firmensitz. Keine Fusion über Namen oder
+Ticker. Getrennt vom Schweizer Fundament (`swiss-search`) und dem brasilianischen CVM-Bestand
+(bewusst nicht eingebunden). Details: `docs/AUTONOMOUS_UPDATES.md`.
+
 ```text
 python -m transparenz validate            # Quellen prüfen, nichts schreiben
 python -m transparenz update [--force]    # Aktualisieren (fehlerhafte Daten werden abgelehnt)

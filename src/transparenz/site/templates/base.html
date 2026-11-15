@@ -54,6 +54,11 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--bor
 th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip.conflict { background: transparent; border: 1.5px solid currentColor; color: var(--text); font-weight: 600; }
+tr.group th { background: transparent; color: var(--muted); font-size: .82rem; padding-top: 14px; }
+.finding-line { margin: 2px 0; }
+table.overview td:first-child, table.overview thead th:first-child { position: sticky; left: 0; background: var(--surface); min-width: 11rem; }
+table.overview thead th:first-child { background: var(--surface-2); }
 .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--s-text); }
 {% for s in S %}.s-{{ s.value }} { background: var(--s-{{ s.value }}); }
 {% endfor %}

@@ -10,9 +10,11 @@ import sqlite3
 import zipfile
 from pathlib import Path
 
+from transparenz.config.settings import local_data_dir
+
 
 def audit(root: Path) -> dict:
-    output = root / "data/processed/market"
+    output = local_data_dir(root) / "processed/market"
     pointer = json.loads((output / "current.json").read_bytes())
     generation = (output / pointer["generation"]).resolve()
     if not generation.is_relative_to((output / "generations").resolve()):
@@ -25,7 +27,7 @@ def audit(root: Path) -> dict:
         raise ValueError("Doppelte Katalogschlüssel")
     checked, proofs = 0, set()
     for key in report["sources"]:
-        for path in (root / "data/raw/external" / key / "objects").glob("*"):
+        for path in (local_data_dir(root) / "raw/external" / key / "objects").glob("*"):
             if path.name.endswith(".metadata.json"):
                 continue
             metadata = json.loads(path.with_suffix(path.suffix + ".metadata.json").read_bytes())
@@ -59,7 +61,7 @@ def audit(root: Path) -> dict:
             if not any((e["original_sha256"], e["accession"], item["series_id"],
                         item["class_id"]) in proofs for e in item["evidence"]):
                 raise ValueError(f"ETF ohne passenden Originalnachweis: {item['catalogue_key']}")
-    with sqlite3.connect(root / "data/processed/markets.sqlite") as db:
+    with sqlite3.connect(local_data_dir(root) / "processed/markets.sqlite") as db:
         running = db.execute("select count(*) from update_runs "
                              "where status='laufend'").fetchone()[0]
         if running:

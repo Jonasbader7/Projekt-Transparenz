@@ -160,6 +160,18 @@ ZEITUNG = ("Fiktive Wirtschaftszeitung", "medien")
 PORTAL = ("Fiktives Nachrichtenportal", "medien")
 
 
+# Kategorie je Beleg (Schlüssel aus criteria.toml). BEL-016 bleibt bewusst ohne Kategorie:
+# zeigt, dass ein Beleg ohne Kategorie keine Konfliktwirkung hat, wenn sie entscheidet.
+CATEGORY = {
+    "ETH-001": "kohleverstromung", "ETH-002": "kohlefoerderung", "ETH-003": "geaechtete_waffen",
+    "BEL-001": "kohleverstromung", "BEL-002": "foerderung", "BEL-003": "foerderung",
+    "BEL-005": "zwangsarbeit", "BEL-006": "zwangsarbeit", "BEL-008": "direkte_taetigkeit",
+    "BEL-009": "lieferkette", "BEL-011": "geaechtete_waffen", "BEL-012": "zwangsarbeit",
+    "BEL-013": "kinderarbeit", "BEL-014": "kinderarbeit", "BEL-015": "kohleverstromung",
+    "BEL-017": "geaechtete_waffen", "BEL-018": "direkte_taetigkeit",
+}
+
+
 def ev(eid, company, criterion, desc, etype, status, publisher, published, verification,
        reviewed=None, event=None, lei=True, isin=False, name=None, lei_override=None,
        metric=None):
@@ -184,6 +196,8 @@ def ev(eid, company, criterion, desc, etype, status, publisher, published, verif
     }
     if metric:
         row |= {"metric_name": metric[0], "metric_value": metric[1], "metric_unit": metric[2]}
+    if eid in CATEGORY:
+        row["category"] = CATEGORY[eid]
     return row
 
 
@@ -196,7 +210,7 @@ def exclusion_list() -> list[dict[str, object]]:
         ev("ETH-002", "C02", "kohle", "Ausschluss wegen Abbau von Kraftwerkskohle.",
            "ausschlussentscheid", "abgeschlossen", ETHIKRAT, "2024-11-20", "quelle_gesichtet",
            reviewed="2026-09-01", metric=("umsatzanteil_kohle", 78.0, "%")),
-        ev("ETH-003", "C07", "geaechtete_waffen",
+        ev("ETH-003", "C07", "waffen",
            "Ausschluss wegen Herstellung von Schlüsselkomponenten für Streumunition.",
            "ausschlussentscheid", "abgeschlossen", ETHIKRAT, "2023-03-10", "quelle_gesichtet",
            reviewed="2026-09-01"),
@@ -209,16 +223,16 @@ def evidence_collection() -> list[dict[str, object]]:
            "Recherche dokumentiert den geplanten Ausbau eines Kohlekraftwerks um 400 MW.",
            "vorwurf", "nicht_anwendbar", KLIMA, "2026-02-10", "dokument_geprueft",
            reviewed="2026-10-01"),
-        ev("BEL-002", "C03", "oel_gas_expansion",
+        ev("BEL-002", "C03", "fossile_expansion",
            "Bewilligung zur Erschliessung von zwei neuen Offshore-Gasfeldern erteilt.",
            "behoerdliche_feststellung", "abgeschlossen",
            ("Fiktive Energieaufsicht Nordmeer", "behoerde"), "2025-09-30", "dokument_geprueft",
            reviewed="2026-10-01", event="2025-09-30"),
-        ev("BEL-003", "C03", "oel_gas_expansion",
+        ev("BEL-003", "C03", "fossile_expansion",
            "Bericht über geplante Investitionen von 2 Mrd. in neue Förderprojekte.",
            "vorwurf", "nicht_anwendbar", ZEITUNG, "2026-03-05", "ungeprueft",
            lei=False, isin=True),
-        ev("BEL-004", "C03", "oel_gas_expansion",
+        ev("BEL-004", "C03", "fossile_expansion",
            "Das Unternehmen bezeichnet die Projekte als notwendig für die Versorgungssicherheit.",
            "unternehmensstellungnahme", "nicht_anwendbar",
            (NAME["C03"], "unternehmen"), "2026-03-07", "quelle_gesichtet"),
@@ -249,7 +263,7 @@ def evidence_collection() -> list[dict[str, object]]:
            "Das Unternehmen meldet ein Wiederaufforstungsprogramm und ein Lieferantenaudit.",
            "abhilfe", "nicht_anwendbar", (NAME["C05"], "unternehmen"), "2026-06-15",
            "quelle_gesichtet"),
-        ev("BEL-011", "C07", "geaechtete_waffen",
+        ev("BEL-011", "C07", "waffen",
            "Exportbehörde stellt Lieferung von Streumunitions-Komponenten fest (Verfügung).",
            "behoerdliche_feststellung", "abgeschlossen",
            ("Fiktive Exportkontrollbehörde", "behoerde"), "2024-05-08", "quelle_gesichtet",
@@ -274,7 +288,7 @@ def evidence_collection() -> list[dict[str, object]]:
            "Recherche zu Arbeitsbedingungen bei einem Subunternehmer im Gleisbau.",
            "vorwurf", "nicht_anwendbar", MENSCHENRECHTE, "2026-02-25", "quelle_gesichtet",
            reviewed="2026-10-01"),
-        ev("BEL-017", "Phantom Minen Beispiel GmbH", "geaechtete_waffen",
+        ev("BEL-017", "Phantom Minen Beispiel GmbH", "waffen",
            "Bericht über Produktion von Antipersonenminen.",
            "vorwurf", "nicht_anwendbar", PORTAL, "2026-04-11", "ungeprueft", lei=False),
         ev("BEL-018", "C08", "entwaldung",
@@ -311,12 +325,12 @@ def main() -> None:
     ethikrat_universe = [f"C{i:02d}" for i in range(1, 18) if i != 12]
     write_csv(
         OUT / "fiktiv_ausschlussliste_abdeckung.csv", COVERAGE_COLUMNS,
-        coverage(ethikrat_universe, ["kohle", "geaechtete_waffen"], "2026-09-01"),
+        coverage(ethikrat_universe, ["kohle", "waffen"], "2026-09-01"),
     )
     research = ["C01", "C03", "C04", "C05", "C08", "C09", "C11", "C13", "C14", "C15"]
     write_csv(
         OUT / "fiktiv_belegsammlung_abdeckung.csv", COVERAGE_COLUMNS,
-        coverage(research, ["zwangs_kinderarbeit", "entwaldung", "oel_gas_expansion"],
+        coverage(research, ["zwangs_kinderarbeit", "entwaldung", "fossile_expansion"],
                  "2026-10-01"),
     )
     print(f"Fiktive Beispieldaten geschrieben nach {OUT}")

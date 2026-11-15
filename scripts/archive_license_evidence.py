@@ -10,10 +10,11 @@ from pathlib import Path
 import httpx
 
 from transparenz.config.catalog import load_catalog
-from transparenz.config.settings import CONFIG_DIR
+from transparenz.config.settings import CONFIG_DIR, local_data_dir
 from transparenz.ingestion.external import atomic_json, atomic_write
 
 ROOT = Path(__file__).resolve().parents[1]
+DATA = local_data_dir(ROOT)  # Datenordner (TRANSPARENZ_DATA_DIR, sonst data/)
 
 
 def main():
@@ -43,7 +44,7 @@ def main():
                 content = response.content
                 digest = hashlib.sha256(content).hexdigest()
                 suffix = "json" if "json" in response.headers.get("content-type", "") else "html"
-                folder = ROOT / "data/raw/external/license_evidence" / key
+                folder = DATA / "raw/external/license_evidence" / key
                 path = folder / f"{digest}.{suffix}"
                 item.update(sha256=digest, bytes=len(content), format=suffix, path=str(path))
                 if not path.exists():
@@ -52,7 +53,7 @@ def main():
             # 401/403 are recorded, never bypassed or retried via alternate hosts.
             evidence.append(item)
             print(key, response.status_code, flush=True)
-    atomic_json(ROOT / "data/raw/external/license_evidence/latest_review.json", evidence)
+    atomic_json(DATA / "raw/external/license_evidence/latest_review.json", evidence)
     print(json.dumps({"references_checked": len(evidence)}, ensure_ascii=False))
 
 

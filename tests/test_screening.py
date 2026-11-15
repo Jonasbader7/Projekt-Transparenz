@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import date
 
+import pytest
+
 from transparenz.entities.enums import (
     AssessmentStatus as S,
 )
@@ -242,3 +244,120 @@ class TestFundLevel:
         assert res.summaries["kohle"].weight_by_status[S.KEINE_HINWEISE] == 35
         assert res.summaries["entwaldung"].weight_by_status[S.UNBEKANNT] == 95
         assert res.positions[0].position.name == "A"  # stärkster Befund zuerst
+
+
+# ------------------------------------------------- Kategorien und Wirkungsdauer (D-047, D-048)
+def _real_criteria():  # type: ignore[no-untyped-def]
+    from transparenz.config.catalog import load_criteria_model
+
+    from conftest import CONFIG_DIR
+
+    return load_criteria_model(CONFIG_DIR / "criteria.toml").active
+
+
+def _strong(c, crit, category=None, **kw):  # type: ignore[no-untyped-def]
+    """Stärkster Beleg: rechtskräftiges, von uns geprüftes Urteil (Status «festgestellt»)."""
+    return court(c, crit=crit, category=category, **kw)
+
+
+@pytest.mark.parametrize("crit", _real_criteria(), ids=lambda c: c.key)
+def test_every_active_criterion_applies_statuses_and_categories(crit) -> None:  # type: ignore[no-untyped-def]
+    """Für jedes aktive Kriterium aus criteria.toml: Jede Kategorie wirkt wie festgelegt;
+    ohne Kategorie gibt es nur dann einen Konflikt, wenn die Kategorie nichts entscheidet."""
+    published = date(2026, 10, 1)
+    for category in crit.categories:
+        a = run(lambda c, k=category.key: [_strong(c, crit.key, k, published=published)],
+                criteria=[crit])[crit.key]
+        expected = category.effect == "conflict" and crit.is_conflict(S.FESTGESTELLT)
+        assert a.profile_conflict is expected, (crit.key, category.key)
+        if category.effect != "conflict":
+            assert category.name in a.profile_note
+    missing = run(lambda c: [_strong(c, crit.key, published=published)],
+                  criteria=[crit])[crit.key]
+    assert missing.profile_conflict is (not crit.category_decides
+                                        and crit.is_conflict(S.FESTGESTELLT))
+    if crit.category_decides:
+        assert "keine Kategorie" in missing.profile_note
+    # Ein laufendes Verfahren ist nur bei Tätigkeitskriterien mit «dokumentiert» je Konflikt.
+    first = next(k.key for k in crit.categories if k.effect == "conflict")
+    suspicion = run(lambda c: [_strong(c, crit.key, first, status=ProceedingStatus.LAUFEND)],
+                    criteria=[crit])[crit.key]
+    assert suspicion.status == S.VERFAHREN_LAUFEND
+    assert suspicion.profile_conflict is crit.is_conflict(S.VERFAHREN_LAUFEND)
+
+
+def test_weapons_category_decides_conflict() -> None:
+    weapons = next(c for c in _real_criteria() if c.key == "waffen")
+    cluster = run(lambda c: [_strong(c, "waffen", "geaechtete_waffen")],
+                  criteria=[weapons])["waffen"]
+    assert cluster.profile_conflict
+    for separate in ("dual_use", "handel_zivile_schusswaffen"):
+        a = run(lambda c, k=separate: [_strong(c, "waffen", k)], criteria=[weapons])["waffen"]
+        assert a.status == S.FESTGESTELLT and not a.profile_conflict
+    unknown = run(lambda c: [_strong(c, "waffen", "erfundene_kategorie")],
+                  criteria=[weapons])["waffen"]
+    assert not unknown.profile_conflict
+    assert "keine Kategorie dieses Kriteriums" in unknown.profile_note
+    # Ein Dual-Use-Beleg verdeckt keinen zweiten Beleg mit konfliktauslösender Kategorie.
+    both = run(lambda c: [_strong(c, "waffen", "dual_use", published=date(2026, 6, 1)),
+                          _strong(c, "waffen", "kernwaffen", published=date(2025, 1, 1))],
+               criteria=[weapons])["waffen"]
+    assert both.profile_conflict
+
+
+def _corruption():  # type: ignore[no-untyped-def]
+    return next(c for c in _real_criteria() if c.key == "korruption")
+
+
+def test_corruption_expiry_runs_from_conclusion() -> None:
+    crit = _corruption()
+    assert (crit.conflict_expiry_years, crit.conflict_min_years_with_remediation) == (5, 3)
+    assert "2014/24/EU" in crit.expiry_reason
+    # Abgeschlossen am 2.11.2021: am Stichtag 1.11.2026 noch wirksam, Tat lag weit davor.
+    recent = run(lambda c: [_strong(c, "korruption", "verurteilung",
+                                    published=date(2021, 11, 2), event=date(2015, 3, 1))],
+                 criteria=[crit])["korruption"]
+    assert recent.profile_conflict and "02.11.2021" in recent.profile_note
+    old = run(lambda c: [_strong(c, "korruption", "verurteilung",
+                                 published=date(2021, 10, 1))], criteria=[crit])["korruption"]
+    assert not old.profile_conflict and "Historischer Fall" in old.profile_note
+    # Dauerte die Tat nach dem Entscheid an, beginnt die Wirkung mit ihrem Ende.
+    continued = run(lambda c: [_strong(c, "korruption", "verurteilung",
+                                       published=date(2021, 1, 1), event=date(2022, 6, 30))],
+                    criteria=[crit])["korruption"]
+    assert continued.profile_conflict and "30.06.2022" in continued.profile_note
+    # Vergleich ohne Schuldeingeständnis: gesondert, kein Konflikt.
+    settled = run(lambda c: [_strong(c, "korruption", "vergleich_ohne_schuld")],
+                  criteria=[crit])["korruption"]
+    assert not settled.profile_conflict
+
+
+def test_corruption_expiry_respects_consequences_and_remediation() -> None:
+    crit = _corruption()
+    # Folgen (z. B. Aufsicht) bis 2027 verlängern die Wirkung über fünf Jahre hinaus.
+    monitored = run(lambda c: [_strong(c, "korruption", "verurteilung",
+                                       published=date(2020, 1, 15),
+                                       consequences_until=date(2027, 1, 15))],
+                    criteria=[crit])["korruption"]
+    assert monitored.profile_conflict and "Ende der Folgen" in monitored.profile_note
+
+    def remedy(c, day, ptype=PublisherType.BEHOERDE):  # type: ignore[no-untyped-def]
+        return evidence(c, crit="korruption", etype=EvidenceType.ABHILFE, ptype=ptype,
+                        publisher="Testbehörde", published=day)
+
+    # Behördlich bestätigte Abhilfe 2024: Wirkung endet nach drei Jahren (Januar 2025).
+    remedied = run(lambda c: [_strong(c, "korruption", "verurteilung",
+                                      published=date(2022, 1, 15)),
+                              remedy(c, date(2024, 6, 1))], criteria=[crit])["korruption"]
+    assert not remedied.profile_conflict and "Abhilfe" in remedied.profile_note
+    # Abhilfe nur vom Unternehmen selbst gemeldet: verkürzt nichts.
+    self_reported = run(lambda c: [
+        _strong(c, "korruption", "verurteilung", published=date(2022, 1, 15)),
+        remedy(c, date(2024, 6, 1), PublisherType.UNTERNEHMEN)], criteria=[crit])["korruption"]
+    assert self_reported.profile_conflict
+    # Abhilfe bestätigt, aber Folgen laufen noch: Wirkung bleibt bis zum Ende der Folgen.
+    still_bound = run(lambda c: [
+        _strong(c, "korruption", "verurteilung", published=date(2022, 1, 15),
+                consequences_until=date(2026, 12, 31)), remedy(c, date(2024, 6, 1))],
+        criteria=[crit])["korruption"]
+    assert still_bound.profile_conflict

@@ -29,7 +29,8 @@ transparenz = "transparenz.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-transparenz = ["config/*.toml", "site/templates/*.html", "site/static/*.js"]
+transparenz = ["config/*.toml", "site/templates/*.html", "site/static/*.js",
+               "reports/templates/*.j2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

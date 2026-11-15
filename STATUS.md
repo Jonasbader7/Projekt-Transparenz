@@ -1,142 +1,101 @@
 # STATUS
 
-## Dokumentationsstand 11.11.2026
+Stand: **15.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verlauf steht in
+`docs/LOG.md`, die Begründungen in `docs/DECISIONS.md`, der Plan in `docs/ROADMAP.md`.
 
-Skills und Werkzeuge sind in [docs/AI_USAGE.md](docs/AI_USAGE.md) dokumentiert. Historische Skill-Aufrufe bleiben als
-nicht erfasst gekennzeichnet. Künftige Sessions ergänzen die Übersicht gemäss `CLAUDE.md`.
-Fachlicher Projektstand und offene Entwicklungsschritte stehen unverändert unten.
+## Phase
 
+**Phase 0 (Fundament) abgeschlossen.** Ziel laut Auftrag: alle börsenkotierten Aktien und
+Fonds weltweit, automatisch zugeordnet, firmentauglich (D-049). Nächste Phase: SEC N-PORT.
 
-**Stand: 08.11.2026 · Wikidata-Wertpapierkandidaten reparieren und durchsuchbar machen (D-034).**
-Jonas meldete: Roche und Nestlé fehlen in der lokalen Suche; einige Schweizer Unternehmen
-erscheinen nur über US-Kotierungen. Ursache war **kein** anhaltender HTTP 403, sondern drei
-Bugs in der bislang deaktivierten `wikidata_ch`-Quelle: eine falsche Wikidata-ID für die SIX
-Swiss Exchange (Q12569 ist der Fluss Loire, nicht die Börse; richtig: Q661834), zwei ebenso
-falsche Fondsklassen-IDs (Q927783/Q756898 sind eine historische Person und ein Dorf; richtig:
-Q845477/Q4201895) und eine zu teure SPARQL-Abfrage (Transitivabschluss über ganz Wikidata),
-die den Abfragedienst in Zeitüberschreitungen bzw. Bot-Policy-Sperren (403) laufen liess.
-Reparierte, auf SIX-notierte bzw. CH-ansässige Posten mit ISIN eingegrenzte Abfrage antwortet
-in 1–3 Sekunden. Zusätzlich ein zu generischer HTTP-User-Agent ohne Kontaktangabe behoben
-(Wikimedia-Bot-Policy); betrifft auch GLEIF/Zefix (positiver Nebeneffekt).
-`wikidata_ch` läuft jetzt **standardmässig** (nicht mehr deaktiviert) und lieferte real
-**287 Datensätze** → **293 Wertpapierkandidaten** (Roche, Nestlé, Novartis, UBS, ABB, Swatch,
-Sika, Zurich Insurance u. a. mit echter ISIN/LEI/Ticker), 3 neue LEI-Konfliktgruppen
-(zwei Wikidata-Einträge mit identischer LEI; sauber unter Quarantäne, nicht verworfen).
-Jede Angabe bleibt ein **unverifizierter unternehmensbezogener Quellenhinweis** (`claims`),
-kein bestätigtes Emittentenmapping; Fonds-ETF-Abfrage lieferte im Schweizer/SIX-Zuschnitt 0
-Treffer (weltweit 19, siehe `docs/DATA_SOURCES.md`). Neu durchsuchbar:
-`.venv\Scripts\python -m transparenz swiss-search Roche`; lokale HTML-Ansicht
-`security_candidates.html` in der aktuellen Exportgeneration (Pfad über
-`swiss-update`-Ausgabe oder `data/processed/swiss/current.json`). Kein SIX-Vollständigkeits-
-nachweis; **201 Tests bestanden** (200 + 1 neu für LEI-Konflikt/Ticker-Qualifier), Ruff sauber,
-Offline-Audit bestanden.
-
-Der SEC-Teilbestand aus `market-update`/`market-search` (D-033) bleibt unverändert bestehen:
-44'085 Katalogeinträge (US-Fokus, keine Weltabdeckung); Details weiterhin in
-`docs/GLOBAL_MARKET_CATALOG.md`. Separate DB `markets.sqlite`, Originale mit Hash/Lizenz-
-Sidecars und lokale HTML-/JSON-Exporte. Kontakt-E-Mail nur in Git-ignorierter `.env` für den
-vom Nutzer autorisierten SEC-User-Agent. Visuelle HTML-Prüfung des SEC-Katalogs weiterhin durch
-Browser-Dateiprotokollsperre verhindert. Keine ISINs/Handelbarkeit erfunden.
-
-SwissPRTR-Emissionen 2007–2024 sind weiterhin normalisiert (D-032). Die bestehende
-Website bleibt eine fiktive Demo und ist von dieser Session unberührt. Echte Daten wurden
-ausschliesslich lokal importiert; nichts veröffentlicht oder gepusht.
-Übergabe (historisch, vor D-034): `docs/CODEX_TO_CLAUDE_HANDOFF.md`.
-
-## Tatsächlicher Datenbestand
-
-| Bestand | Anzahl / Aussage |
+| Baustein | Stand |
 |---|---|
-| Zusammengeführte Rechtseinheiten | 801'732, davon 801'719 ohne Kennungskonflikt |
-| GLEIF CH | 28'495 Originaldatensätze = 25'121 Rechtsträger + 3'254 Fondsrechtsträger + 118 Statusausschlüsse + 2 ungültige LEIs |
-| Zefix/LINDAS | 796'690 Originaleinheiten, 796'684 validiert; sechs Einheiten in Quarantäne |
-| Wikidata – Wertpapierkandidaten (D-034) | 287 Datensätze, 293 ISIN-Kandidaten (Roche, Nestlé, Novartis, UBS, ABB u. a.); 3 LEI-Konfliktgruppen unter Quarantäne; unverifizierte unternehmensbezogene Angabe, kein Emittentenmapping |
-| Schweizer Bestand: bestätigte Wertpapiere / ETF-Anteilsklassen mit ISIN / Fondspositionen | 0 / 0 / 0; Wikidata-Kandidaten und SEC-Katalog separat, keine bestätigte Ausprägung |
-| SwissPRTR-Standorte | 247, weiterhin keine sichere Firmenzuordnung (Standortregister ohne UID-Feld) |
-| SwissPRTR-Emissionen 2007–2024 | 22'860 Zeilen aus dem Original-XLSX normalisiert: 16'058 Punktquellen mit validierter Betriebs-UID eindeutig einem Rechtsträger zugeordnet, 5'298 Punktquellen mit validierter UID ohne passenden Rechtsträger, 28 Punktquellen ohne verwertbare UID, 1'476 Nicht-Punktquellen (diffuse Quellen wie Verkehr/Haushalte) ausdrücklich ohne Betrieb/Zuordnung |
-| Prüflisten | 13'228 mögliche Namensdubletten-Gruppen; 13 Kennungskonflikt-Gruppen; 776'599 Einheiten ohne LEI; insgesamt 8 Quarantäneeinträge |
+| Git | `main` auf GitHub (15.11.2026, ein zusammengefasster Commit ohne echte Ergebnisse, D-053) |
+| Datenordner | `C:\TransparenzDaten` ausserhalb OneDrive (`TRANSPARENZ_DATA_DIR`, D-050); 14 alte Schweizer Exportstände gelöscht |
+| Pilot-Code | in Paketmodule zerlegt (D-051); Vergleichslauf sechs Fonds vorher/nachher: 45 Dateien, 0 Abweichungen |
+| Herkunft | jede Eingabedatei wird bei jedem Lauf gegen ihre Begleitdatei geprüft und mit SHA-256 im Bericht geführt (D-052) |
+| Kriterienmodell | Schema 2, Profil «streng» 1.1, 12 aktive Kriterien, 7 Beziehungstypen (D-045–D-048) |
+| Zuordnung | ISIN → Wikidata → LEI und Registernummer wirken; GLEIF-Namenssuche gemessen, **nicht freigegeben** (D-046) |
+| Website (`site/`) | fiktive Demo, neu erzeugt (Methodik mit Kategorien, Beziehungstypen, Wirkungsdauer) und veröffentlicht; Beispielquelle zeigt ehrlich «veraltet» (fester Stichtag der Beispieldaten) |
+| Tests | **345 bestanden**, Ruff sauber |
 
-Emissionen sind amtlich gemeldete Jahreswerte (Schadstoff/Abfall je Standort und Jahr), kein
-automatischer Nachweis eines Rechtsverstosses und keine Feststellung von Fehlverhalten. Die
-Zuordnung zu einem Rechtsträger läuft ausschliesslich über die im XLSX selbst gemeldete,
-prüfzifferngeprüfte Betriebs-UID – nie über Firmennamen und nicht über das (UID-lose)
-Standortregister. Ungeklärte Zeilen bleiben explizit `unresolved` bzw.
-`diffuse_source_no_facility`.
+## Für die nächste Session
 
-Registereinheiten umfassen verschiedene Rechtsformen; die Zahl bezeichnet nicht ausschliesslich
-operative Aktiengesellschaften. GLEIF FUND ist kein Nachweis für einen börsengehandelten ETF.
-Keine vollständige Schweizer Aktien-/ETF-Abdeckung nachgewiesen.
+1. Wie in CLAUDE.md: STATUS, DECISIONS (ab D-049) und die letzten LOG-Einträge lesen.
+2. Echte Ergebnisse: `C:\TransparenzDaten\notizen\PILOT_ERGEBNISSE.md` (lokal). Nie in
+   versionierte Dateien übernehmen (D-053); vor jedem Push prüfen.
+3. Plan: `docs/ROADMAP.md`. Nächster Schritt ist Phase 1 (N-PORT); der Download braucht Jonas'
+   Zustimmung, alles andere läuft ohne Einzelentscheide (D-049).
+4. Jeder Umbau der Fondskette: vorher und nachher `scripts\pilot_regression.py` (D-051).
 
-## Betrieb
+## Pilot (sechs echte schwedische Fonds, je 30.06.2026)
+
+Ergebnisse je Fonds mit Namen stehen nur lokal in
+`C:\TransparenzDaten\notizen\PILOT_ERGEBNISSE.md` (Regel: echte Ergebnisse nie in
+versionierte Dateien). Öffentlich nur die Methode und die Messwerte der Zuordnung:
+
+- Abdeckung (Fondsgewicht mit widerspruchsfreier Zuordnung) je Fonds zwischen 44 und 81 %;
+  ausserhalb globaler Grosswerte kennt Wikidata oft keinen LEI.
+- Präzision der Namenssuche (unabhängig): 196 von 201 richtig, untere 95-%-Grenze 94.8 %
+  (Schwelle 97 %) → nicht freigegeben. Die Wikidata-Referenz ist in mehreren Fällen selbst
+  falsch. Lösung ohne Handarbeit: Referenz aus N-PORT (Phase 2).
+- Registernummer (Wikidata ↔ GLEIF): 102 von 103 richtig, wirkt als Kennung.
+
+## Befehle
 
 ```powershell
 cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
-.venv\Scripts\python -m transparenz swiss-update
+.venv\Scripts\python -m pytest -q
+# Vergleichslauf: sechs Pilotfonds offline rechnen und mit einem früheren Lauf vergleichen
+.venv\Scripts\python scripts\pilot_regression.py run neu
+.venv\Scripts\python scripts\pilot_regression.py compare herkunft neu
+# Ein Fonds einzeln (Pfade relativ zum Projekt mit data\… funktionieren weiter)
+.venv\Scripts\python scripts\pilot_fund_chain.py --zip data\raw\external\fi_se_fondinnehav\2026Q2\Fondinnehav_2026Q2.zip --fund "<exakter Fondsname>" --ets-dir data\raw\external\eu_ets_union_registry\2026-11-11 --gleif-rr data\raw\external\gleif_rr_golden_copy\2026-11-11\gleif-goldencopy-rr.csv.zip --gem-dir data\raw\external\gem\2026-11-11\extracted
 ```
 
-Einzelne Quelle: `--source gleif_ch`, `--source zefix_lindas`, `--source swissprtr`,
-`--source wikidata_ch` (läuft seit D-034 auch im Standardlauf mit).
-`--export-only` baut den Export vollständig ohne Netzwerk neu auf (mehrere Minuten);
-`--force` ignoriert das Importintervall,
-der 24h-HTTP-Cache bleibt wirksam. Nach Cacheablauf bedingte Requests, soweit unterstützt.
-Ein OS-Dateilock verhindert gleichzeitige Schweizer Import-/Exportläufe.
-Durchsuchen: `.venv\Scripts\python -m transparenz swiss-search <Begriff>` (Name, ISIN, Ticker
-oder LEI) oder die lokale `security_candidates.html` in der aktuellen Exportgeneration öffnen;
-beides zeigt nur Wikidata-Kandidaten, keine bestätigten Wertpapiere.
-Unveränderte Daten verwenden die fertige Exportgeneration weiter. Aktuelle Lauf- und
-Lizenzmeldungen: `data/processed/swiss/latest_status.json`. Generation und Daten bleiben dabei
-unverändert; neue Versionen, fehlende Exportdateien oder eine neue Exportschemaversion
-lösen den vollständigen Neuaufbau aus.
+Berichte mit Herkunftsabschnitt: `C:\TransparenzDaten\processed\pilot_regression\herkunft\*.html`
+(Vorschau: Startkonfiguration `pilot-report`, 127.0.0.1:8611). Die Berichte unter
+`processed\pilot_fund_chain\` stammen vom 14.11.2026 und erhalten den Abschnitt beim nächsten Lauf.
 
-- Originaldateien und Lizenz-Sidecars: `data/raw/external/<quelle>/objects/`.
-- Aktivierte Manifeste: `data/raw/external/manifests/<quelle>/`.
-- Separate versionierte DB: `data/processed/swiss.sqlite`.
-- Fertiger Export: `data/processed/swiss/current.json` → `generations/<id>/`.
-- Qualitätsbericht und Prüflisten liegen in derselben Generation. Alle echten Daten Git-ignoriert.
-- Rohdaten, Caches und Exportgenerationen benötigen mehrere GB; Aufbewahrungspolitik noch offen.
+## Nächste drei Schritte
 
-## Quellen und Prüfungen
+1. **SEC N-PORT laden** (`2026q3_nport.zip`, 440.95 MB, sec.gov) – braucht deine Zustimmung.
+   Danach Adapter mit Prüfung, direkt aus dem ZIP gelesen, mit Herkunftsprüfung.
+2. **Wertpapierstamm ISIN → LEI** aus den Fondsmeldungen (Konsens mehrerer Meldender) und
+   Messung der Namenssuche gegen diese Referenz, je Region (Phase 2).
+3. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
+   denselben Prüfweg hat.
 
-Funktionsfähig: GLEIF CC0, Zefix terms_open, SwissPRTR terms_by (Quellenangabe verpflichtend),
-**Wikidata CC0 seit D-034 ebenfalls funktionsfähig** (Query-Bugs behoben, siehe oben).
-SIX selbst, ANNA-ISIN-Mapping, Anbieterpositionen, OpenSanctions sowie nicht konkret
-freigegebene Wirkungsdaten werden weiterhin nicht produktiv geladen. Details:
-`docs/DATA_SOURCES.md`, `src/transparenz/config/source_reviews.json`.
-Die Lizenzsperre prüft jetzt auch Speicherung, Ableitungen und offizielle Lizenz-URL.
+## Offene Fragen (nur Grundsätzliches)
 
-Tests: **201 bestanden** (200 vorher + 1 neu: Wikidata-Ticker-Qualifier und LEI-Konflikt-
-Quarantäne), Ruff sauber. HTTP-User-Agent für alle externen Quellen auf eine Wikimedia-
-Bot-Policy-konforme, projektbezogene Kennung umgestellt (vorher generisch/ohne Kontakt);
-betrifft GLEIF/Zefix/Wikidata gemeinsam, keine quellenspezifische Ausnahme.
-Offline-Bestandsaudit: `scripts/audit_swiss_foundation.py` → `data/processed/swiss/audit_report.json`.
-Keine neuen Frameworks, keine Änderung am Webdesign.
+1. Zustimmung zum N-PORT-Download (oben).
+2. Ordner `analytics-dashboard-update/` (nicht Teil dieses Projekts): verschieben oder löschen?
+3. Später, vor jeder Veröffentlichung: schriftliche Lizenzbestätigungen (SEC, FI,
+   EU-Kommission) und einmalige Rechtsprüfung (Kosten).
 
-## Nächste drei Aufgaben
+Die Bewertungsregeln (Schwellen, Notstrom, Korruptionsdauer usw.) setzen wir mit begründetem
+Standard selbst und kennzeichnen sie als unsere Bewertungsentscheidung (D-049).
 
-1. Wikidata-Abfrage auf weitere Weltmärkte ausweiten (nicht nur SIX/Schweiz); je Börse eine
-   eigene `VALUES`-Erweiterung statt eines erneuten Vollscans, damit die Antwortzeit niedrig
-   bleibt. Ticker-Qualifier-Extraktion (`pq:P249`) bereits vorhanden und wiederverwendbar.
-2. Weltweites Börsen-Referenzuniversum festlegen; konkrete Rechte und passende Instrumentdateien
-   für weitere Märkte prüfen (CVM/FSMA nächste Kandidaten; SIX/FIRDS weiterhin nicht freigegeben).
-3. ISIN/Anteilsklasse und MIC/Ticker/Währung/Gültigkeitszeitraum getrennt modellieren;
-   ISIN-Mappingrechte und Quellen pro Markt verifizieren. Bisher kein globaler Sollbestand.
-   SEC-Ticker-Klassifikation (Gattung, ETF-Mehrklassenserien, N-CEN-Schema-3.1-Lücke) bleibt
-   daneben offen (unverändert aus D-033).
+## Grenzen
 
-## Weiterhin offen
+- Website zeigt nur fiktive Demodaten. Echte Daten bleiben lokal.
+- Pilot ist nicht Teil des Update-Systems; FI, EU-ETS und GEM ohne Lizenzsperre. FI und
+  EU-ETS tragen keine benannte Lizenz (Bericht: «keine benannte Lizenz»).
+- Abfrage-Zwischenspeicher (Wikidata, GLEIF) haben keine Begleitdatei; ihr Stand und ihre
+  Prüfsumme stehen im Bericht, ihre Herkunft ist die jeweilige Abfrage.
+- Beziehungstypen teils an Firmennamen erkannt; GEM nennt Besitzstand zum Ausgabedatum, nicht
+  zum Fondsstichtag. Finanzierung, Betrieb, Lieferverträge: keine Quelle mit Kennung.
+- Lizenzprüfung = Lektüre der Originalseiten, keine Rechtsberatung.
 
-Kein vollständiger weltweiter Aktien-/ETF-Katalog; keine echte Belegquelle im Screening. GLEIF-Mutterlinks
-liegen als ungeklärte Hinweise vor, nicht als verifizierte Beziehungen. Keine DB-Migrationen;
-vor Integration neuer Attribute ins Screening Migrationen planen. Quellenrechte technisch anhand
-offizieller Bedingungen geprüft, keine externe juristische Prüfung. Persönliche Interviews und
-Produkt-/Lizenzentscheidungen aus den bisherigen Strategieunterlagen bleiben offen.
-Die Online-Demoseite wird nur nach ausdrücklicher Zustimmung aktualisiert. Der neue lokale
-Datenbestand wird bewusst nicht in die öffentliche Website eingebaut.
+## Lokaler Datenbestand
 
-Kein nachgewiesenes vollständiges SIX-Universum: Wikidata-Abdeckung ist Community-gepflegt und
-lückenhaft (z. B. keine LEI bei UBS- oder Credit-Suisse-Eintrag, obwohl real vorhanden). Fonds-/
-ETF-Abfrage lieferte für den Schweizer/SIX-Zuschnitt 0 Treffer; keine Aussage, dass es keine
-Schweizer ETFs gibt, nur dass Wikidata sie in diesem engen Zuschnitt nicht so modelliert.
-Mehrfache ISINs je Unternehmen (z. B. Stamm- und ADR-Papier) sind bewusst alle sichtbar, nicht
-auf «die eine richtige» reduziert. `swiss-search`/`security_candidates.html` sind getrennt vom
-SEC-Marktkatalog (`market-search`/`catalogue.html`); noch keine gemeinsame Oberfläche.
+| Bestand | Anzahl |
+|---|---|
+| Schweizer Rechtseinheiten (GLEIF CH, Zefix) | 801'732 |
+| Wikidata weltweit | 15'624 Firmen-/Ticker-Kandidaten |
+| SEC-Marktkatalog | 44'085 Einträge (USA) |
+| SwissPRTR | 247 Standorte; 22'860 Emissionszeilen |
+| Speicher | `C:\TransparenzDaten` rund 3.9 GB; Festplatte 34 GB frei |
+| Tägliches Update | Windows-Task `ProjektTransparenz-DailyDataUpdate` (findet den Datenordner über `.env`) |
+
+Details: `docs/DATA_SOURCES.md`, `docs/GLOBAL_MARKET_CATALOG.md`, `docs/ROADMAP.md`.

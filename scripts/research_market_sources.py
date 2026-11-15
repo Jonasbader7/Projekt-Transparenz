@@ -10,6 +10,8 @@ from pathlib import Path
 
 import httpx
 
+from transparenz.config.settings import local_data_dir
+
 
 class Text(HTMLParser):
     def __init__(self):
@@ -32,7 +34,7 @@ def main():
         "nasdaq_terms": "https://nasdaqtrader.com/Trader.aspx?id=CopyDisclaimMain",
     }
     root = Path(__file__).resolve().parents[1]
-    folder = root / "data/raw/external/market_license_evidence"
+    folder = local_data_dir(root) / "raw/external/market_license_evidence"
     folder.mkdir(parents=True, exist_ok=True)
     headers = {"User-Agent": "ProjektTransparenz/0.1 (source licence research)"}
     with httpx.Client(timeout=60, follow_redirects=True, headers=headers) as c:

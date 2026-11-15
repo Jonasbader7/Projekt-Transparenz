@@ -85,7 +85,11 @@ def test_analytics_is_documented_local_and_free_of_secrets(site) -> None:  # typ
     client = read(out, "analytics-client.js")
     # Lokal (Doppelklick, localhost, Tests) wird nichts gesendet
     assert 'location.hostname !== "jonasbader7.github.io"' in client
-    assert "localStorage" not in client and "sessionStorage" not in client
+    # Speicher im Browser nur für die Opt-out-Markierung (?analytics=off), nie für IDs
+    assert 'OPT_OUT_KEY = "jb-analytics-optout"' in client
+    storage_keys = set(re.findall(r"\.(?:get|set|remove)Item\(\s*([^,)]+)", client))
+    assert storage_keys == {"OPT_OUT_KEY"}
+    assert "sessionStorage" not in client
     assert "document.cookie" not in client
 
 

@@ -26,16 +26,22 @@
   <div class="card"><div class="k">Positionen</div><div class="v">{{ r.positions|length }}</div></div>
   <div class="card"><div class="k">Gewicht mit Belegen</div><div class="v">{{ pct(r.weight_with_finding) }}</div></div>
   <div class="card"><div class="k">davon gerichtlich/behördlich festgestellt</div><div class="v">{{ pct(r.weight_with_status(S.FESTGESTELLT)) }}</div></div>
+  <div class="card"><div class="k">Konflikt mit unserem Profil</div><div class="v">{{ pct(r.weight_with_profile_conflict) }}</div></div>
   <div class="card"><div class="k">Emittent nicht identifiziert</div><div class="v">{{ pct(r.unidentified_weight) }}</div></div>
 </div>
 
 <h2>Überblick pro Kriterium</h2>
-<p class="caption">Anteil am Fondsgewicht je Belegstatus. Jedes Kriterium steht für sich – es gibt keinen Gesamtwert.</p>
-<div class="table-wrap"><table>
-  <thead><tr><th>Belegstatus</th>{% for c in r.criteria %}<th class="num">{{ c.name }}</th>{% endfor %}</tr></thead>
+<p class="caption">Anteil am Fondsgewicht je Belegstatus. Jedes Kriterium steht für sich – es gibt keinen Gesamtwert.
+Die Spalte «Konflikt mit Profil» ist <strong>unsere Bewertungsentscheidung</strong> nach dem
+<a href="methodik.html#profil">{{ profile_label }}</a>; die Belege selbst stammen aus den genannten Quellen.</p>
+<div class="table-wrap"><table class="overview">
+  <thead><tr><th>Kriterium</th><th class="num">Konflikt mit Profil</th>{% for s in statuses %}<th class="num">{{ chip(s) }}</th>{% endfor %}</tr></thead>
   <tbody>
-  {% for s in statuses %}
-  <tr><td>{{ chip(s) }}</td>{% for c in r.criteria %}<td class="num">{{ pct(r.summaries[c.key].weight_by_status[s]) }}</td>{% endfor %}</tr>
+  {% for group, items in criteria_groups %}
+  <tr class="group"><th colspan="{{ statuses|length + 2 }}">{{ group }}</th></tr>
+  {% for c in items %}
+  <tr><td>{{ c.name }}</td><td class="num">{{ pct(r.summaries[c.key].conflict_weight) }}</td>{% for s in statuses %}<td class="num">{{ pct(r.summaries[c.key].weight_by_status[s]) }}</td>{% endfor %}</tr>
+  {% endfor %}
   {% endfor %}
   </tbody>
 </table></div>
@@ -46,14 +52,15 @@
 <label class="filter" hidden id="filter-label"><input type="checkbox" id="only-findings"> Nur Positionen mit Belegen anzeigen</label>
 <div class="table-wrap"><table id="positions">
   <thead><tr><th>Position</th><th class="num">Gewicht</th>
-    {% for c in r.criteria %}<th>{{ c.name }}</th>{% endfor %}
+    <th>Belege nach Kriterium</th><th>Ohne Beleg</th>
     <th>Emittent</th><th>Zuordnung</th><th>ISIN</th></tr></thead>
   <tbody>
   {% for p in r.positions %}
   <tr data-finding="{{ 'ja' if p.has_finding else 'nein' }}">
     <td>{{ p.position.name }}</td>
     <td class="num">{{ pct(p.position.weight_pct, 2) }}</td>
-    {% for c in r.criteria %}<td>{{ chip(p.assessments[c.key].status) }}</td>{% endfor %}
+    <td>{% for c in r.criteria %}{% set a = p.assessments[c.key] %}{% if a.has_finding %}<div class="finding-line">{{ chip(a.status) }} {{ c.name }}{% if a.profile_conflict %} <span class="chip conflict">Konflikt mit Profil</span>{% endif %}</div>{% endif %}{% endfor %}{% if not p.has_finding %}<span class="caption">keine</span>{% endif %}</td>
+    <td class="caption">{% if not p.applicable %}nicht anwendbar{% else %}{{ p.statuses()|select("equalto", S.KEINE_HINWEISE)|list|length }} geprüft ohne Hinweise · {{ p.statuses()|select("equalto", S.UNBEKANNT)|list|length }} unbekannt{% endif %}</td>
     <td>{{ issuer_text(p) }}</td>
     <td class="caption">{% if p.company %}{{ label(p.issuer_resolution.method) }} ({{ label(p.issuer_resolution.confidence) }}){% else %}{{ p.issuer_resolution.note }}{% endif %}</td>
     <td class="caption">{{ p.position.isin or "–" }}</td>
@@ -75,8 +82,10 @@
     {% for c in r.criteria %}
     {% set a = p.assessments[c.key] %}
     {% if a.has_finding %}
-    <h3>{{ c.name }} {{ chip(a.status) }}</h3>
+    <h3>{{ c.name }} {{ chip(a.status) }}{% if a.profile_conflict %} <span class="chip conflict">Konflikt mit Profil</span>{% endif %}</h3>
     <p>{{ status_explanation(a) }}</p>
+    {% if a.profile_conflict %}<p class="caption"><strong>Unsere Bewertung:</strong> {{ c.rule }}</p>{% endif %}
+    {% if a.profile_note %}<p class="caption"><strong>Unsere Bewertung:</strong> {{ a.profile_note }}</p>{% endif %}
     {% for m in a.supporting %}{{ evidence(m, "Massgebend" if m is sameas a.decisive else "Weiterer Beleg") }}{% endfor %}
     {% for m in a.context %}{{ evidence(m, "Kontext") }}{% endfor %}
     {% for m in a.not_counted %}{{ evidence(m, "Nicht gezählt") }}{% endfor %}

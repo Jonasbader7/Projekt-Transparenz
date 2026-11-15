@@ -10,6 +10,10 @@ Befehle:
   mapping --fund ISIN             Zuordnungsquote Wertpapier → Unternehmen messen
   swiss-update                    Schweizer Rohdaten lokal aktualisieren (separate DB)
   swiss-search ABFRAGE            Wertpapierkandidaten (Wikidata) im Schweizer Fundament durchsuchen
+  global-candidates-build [--refresh-labels]
+                                   Suchindex aus dem globalen Wikidata-Rohbestand aufbauen
+  global-candidates-search ABFRAGE [--country X] [--exchange X]
+                                   Globale Firmen-/Ticker-Kandidaten (Wikidata) durchsuchen
 """
 
 from __future__ import annotations
@@ -192,6 +196,20 @@ def build_parser() -> argparse.ArgumentParser:
     swiss_search.add_argument("query")
     swiss_search.add_argument("--limit", type=int, default=20)
     swiss_search.set_defaults(func=_cmd_swiss_search)
+    gc_build = sub.add_parser(
+        "global-candidates-build",
+        help="Suchindex aus dem globalen Wikidata-Rohbestand aufbauen (lokal, kein Update)")
+    gc_build.add_argument("--refresh-labels", action="store_true",
+                          help="Börsennamen/-länder neu von Wikidata auflösen statt Cache")
+    gc_build.set_defaults(func=_cmd_global_candidates_build)
+    gc_search = sub.add_parser(
+        "global-candidates-search",
+        help="Globale Firmen-/Ticker-Kandidaten (Wikidata) durchsuchen")
+    gc_search.add_argument("query")
+    gc_search.add_argument("--country", help="Filter: Börsen-Sitzland (Name oder QID)")
+    gc_search.add_argument("--exchange", help="Filter: Börse (Name oder QID)")
+    gc_search.add_argument("--limit", type=int, default=20)
+    gc_search.set_defaults(func=_cmd_global_candidates_search)
     sub.add_parser("init-db").set_defaults(func=_cmd_init_db)
     up = sub.add_parser("update")
     up.add_argument("--source")
@@ -255,6 +273,43 @@ def _cmd_swiss_update(args: argparse.Namespace) -> int:
         print(f"Schweizer Aktualisierung: {exc}", file=sys.stderr)
         return 1
     return int(failed)
+
+
+def _cmd_global_candidates_build(args: argparse.Namespace) -> int:
+    import json
+
+    from transparenz.config.settings import get_settings
+    from transparenz.services.global_candidates import build, global_candidates_lock
+
+    try:
+        with global_candidates_lock():
+            report = build(refresh_labels=args.refresh_labels)
+    except (RuntimeError, OSError, ValueError, FileNotFoundError) as exc:
+        print(f"Globaler Kandidatenbestand: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(report["counts"], ensure_ascii=False, indent=2))
+    output = get_settings().processed_dir / "global_candidates"
+    pointer = json.loads((output / "current.json").read_bytes())
+    print(f"Suche öffnen: {output / pointer['generation'] / 'global_candidates.html'}")
+    return 0
+
+
+def _cmd_global_candidates_search(args: argparse.Namespace) -> int:
+    import json
+
+    from transparenz.services.global_candidates import search
+
+    if args.limit < 1:
+        print("--limit muss mindestens 1 sein.", file=sys.stderr)
+        return 1
+    try:
+        rows = search(args.query, country=args.country, exchange=args.exchange,
+                      limit=args.limit)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    print(json.dumps(rows, ensure_ascii=False, indent=2))
+    return 0
 
 
 def _cmd_swiss_search(args: argparse.Namespace) -> int:
