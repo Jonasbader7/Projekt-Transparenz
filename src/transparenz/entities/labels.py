@@ -26,6 +26,7 @@ from transparenz.entities.enums import (
 # («unbekannt», «nicht_anwendbar») und würden sich als Dict-Schlüssel überschreiben.
 _LABEL_ITEMS: tuple[tuple[Enum, str], ...] = (
     (DatasetKind.MARKET, "Wertpapierkatalog und Registerbeobachtungen"),
+    (DatasetKind.NPORT, "Fondsmeldungen (SEC N-PORT)"),
     (AssessmentStatus.FESTGESTELLT, "Gerichtlich/behördlich festgestellt"),
     (AssessmentStatus.PRUEFUNG_AUSSTEHEND, "Entscheid gemeldet – unsere Prüfung ausstehend"),
     (AssessmentStatus.VERFAHREN_LAUFEND, "Verfahren laufend (nicht entschieden)"),

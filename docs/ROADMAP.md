@@ -40,7 +40,11 @@ werden die Zahl der abgedeckten ISINs und der Anteil am Fondsgewicht, nie «100 
 | Pilot-Skript in Paketmodule zerlegen | Vergleichslauf der sechs Pilotfonds vorher/nachher ohne Abweichung (`scripts/pilot_regression.py`) |
 | Herkunft je Fakt | jede Position und jeder Beleg nennt Quelle, Datei-Prüfsumme und Abrufdatum |
 
-### Phase 1 – SEC N-PORT importieren
+### Phase 1 – SEC N-PORT importieren (umgesetzt 15.11.2026, D-054)
+
+Stand: 2026q3 geladen und eingelesen, 0 abgelehnte Zeilen; Messwerte in STATUS.md. Offen:
+«LEI aktiv bei GLEIF» (braucht die GLEIF-Liste Level 1, Download nach Zustimmung).
+
 
 - Download `2026q3_nport.zip` (440.95 MB, sec.gov), nur mit Zustimmung.
 - Adapter mit Pydantic-Prüfung, abgelehnte Zeilen gezählt, jeder Lauf in `update_runs`.

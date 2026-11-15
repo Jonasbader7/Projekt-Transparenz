@@ -10,7 +10,7 @@ verwendete Skills. Installierte oder verfügbare Fähigkeiten gelten nicht autom
 |---|---|---|
 | Jonas Bader | Projektziele, Anforderungen und Freigaben | [Projektgedächtnis](../CLAUDE.md), [Entscheidungslog](DECISIONS.md) |
 | Claude / Claude Code | SwissPRTR-Emissionen normalisieren; Wikidata-Abfragen, User-Agent und Wertpapierkandidatensuche reparieren | [Sessionlog vom 08.11.2026](LOG.md), Entscheide D-032 und D-034 in [DECISIONS.md](DECISIONS.md) |
-| Claude Code (Opus 5.5, Fable 5.2) | Pilot echter Fonds, EU-Emissionshandel, GEM-Beteiligungen, Kriterienmodell, Beziehungstypen und automatische Zuordnung (11.–14.11.2026); Phase 0 Fundament: Datenordner, Zerlegung des Pilots in Module mit Vergleichslauf, Herkunftsprüfung (15.11.2026) | [Sessionlog](LOG.md), Entscheide D-036 bis D-052 in [DECISIONS.md](DECISIONS.md) |
+| Claude Code (Opus 5.5, Fable 5.2) | Pilot echter Fonds, EU-Emissionshandel, GEM-Beteiligungen, Kriterienmodell, Beziehungstypen und automatische Zuordnung (11.–14.11.2026); Phase 0 Fundament: Datenordner, Zerlegung des Pilots in Module mit Vergleichslauf, Herkunftsprüfung (15.11.2026); Phase 1 SEC-N-PORT-Import mit Zeilenprüfung und Qualitätsbericht (15.11.2026) | [Sessionlog](LOG.md), Entscheide D-036 bis D-054 in [DECISIONS.md](DECISIONS.md) |
 | OpenAI Codex | Schweizer Rohdatenfundament; lokaler SEC-Aktien-/Fonds-Katalog; diese Transparenzdokumentation | [Sessionlog](LOG.md), Entscheide D-028 bis D-031 und D-033 in [DECISIONS.md](DECISIONS.md), [Codex-Übergabe](CODEX_TO_CLAUDE_HANDOFF.md) |
 
 Die Zuordnung folgt den vorhandenen Projektaufzeichnungen. Sie ist keine vollständige
@@ -28,6 +28,7 @@ ein fachlicher Beleg für eine Fondsbewertung.
 |---|---|---|
 | `cloud-environment:cloud-environment-runtime` | In der Codex-Sitzung vom 11.11.2026 gelesen und für die Cloud-Arbeitsumgebung verwendet; einschliesslich Netzwerk- und Paketinstallationshinweisen | [Skill-Quelle](skill://plugin_connector_1p_c5b7d5df5d7081918f2c4be5a633ed5d/cloud-environment-runtime/SKILL.md); sitzungsgebundene Quelle, ausserhalb von ChatGPT eventuell nicht zugänglich |
 | Claude Code, Session 15.11.2026 | Keine Skills verwendet | Werkzeuge: Shell (Git Bash, PowerShell), Datei lesen/schreiben, Rückfrage an Jonas, Hintergrund-Überwachung von Läufen; keine Unteragenten |
+| Claude Code, Session 15.11.2026 (Phase 1, N-PORT) | Keine Skills verwendet | Werkzeuge: Shell (Git Bash, PowerShell), Datei lesen/schreiben, Hintergrundläufe (Download, Import), curl für die SEC-Übersichtsseite, den Download und die GLEIF-Metadaten; keine Unteragenten |
 | Weitere Skills früherer Claude-/Codex-Sessions | Nicht dokumentiert | Aus dem Repository nicht zuverlässig rekonstruierbar; keine Behauptung, dass keine verwendet wurden |
 
 `CLAUDE.md` ist eine versionierte Projektanweisung, kein Nachweis für einen installierten

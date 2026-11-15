@@ -1,0 +1,29 @@
+# SEC Form N-PORT (D-054): Positionen der in den USA registrierten Fonds, quartalsweise.
+# Eigene Datenbank (processed/nport.sqlite). Kein Netzabruf im Update: Archive werden mit
+# «nport-download <Quartal> --confirm» geladen (Download nur mit Zustimmung von Jonas).
+[defaults]
+max_attempts = 1
+backoff_seconds = 1.0
+http_timeout_seconds = 120.0
+
+[[source]]
+key = "sec_nport"
+name = "SEC – Form N-PORT Fondspositionen"
+publisher = "U.S. Securities and Exchange Commission"
+kind = "nport"
+fetcher = "nport"
+format = "nport_json"
+location = "raw/external/sec_nport"
+interval_hours = 24
+max_age_days = 150
+license = "SEC public-information dissemination permission; as-filed public disclosures"
+license_url = "https://www.sec.gov/about/privacy-information#dissemination"
+terms_url = "https://www.sec.gov/about/privacy-information"
+license_checked_on = 2026-11-08
+commercial_use = "ja"
+storage = "ja"
+derivatives = "ja"
+redistribution = "ja"
+attribution = "Source: U.S. Securities and Exchange Commission, Form N-PORT data sets. Data transformed; as-filed reports, no SEC endorsement. Original data available free at sec.gov."
+is_fictional = false
+description = "Monatliche Positionen der US-registrierten Fonds (ohne Geldmarktfonds), quartalsweise veröffentlicht, «as filed» inklusive Berichtigungen. Je Position gemeldeter Emittent mit LEI und ISIN. Nur US-Fonds; kein Weltbestand."

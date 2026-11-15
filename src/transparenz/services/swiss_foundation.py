@@ -337,7 +337,7 @@ def foundation_lock(folder: Path):
                 fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError as exc:
             raise RuntimeError(
-                "Ein Schweizer Import/Export läuft bereits; später erneut starten."
+                f"Ein Import/Export in {folder} läuft bereits; später erneut starten."
             ) from exc
         try:
             yield

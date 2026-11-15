@@ -283,8 +283,9 @@ class SourceConfig(BaseModel):
     name: str
     kind: DatasetKind
     publisher: str
-    fetcher: Literal["local", "http", "gleif_api", "external", "market"]
-    format: Literal["json", "csv", "gleif_json", "external_json", "market_json"]
+    fetcher: Literal["local", "http", "gleif_api", "external", "market", "nport"]
+    format: Literal["json", "csv", "gleif_json", "external_json", "market_json",
+                    "nport_json"]
     location: str
     interval_hours: float = Field(gt=0)
     max_age_days: int = Field(gt=0)
@@ -330,6 +331,10 @@ class SourceConfig(BaseModel):
             or self.external_mode not in {"sec_exchange", "sec_fund_classes", "sec_ncen"}
         ):
             raise ValueError("market braucht kind market, market_json und unterstützten Modus")
+        if (self.fetcher == "nport") != (self.format == "nport_json") or (
+            self.fetcher == "nport" and self.kind != DatasetKind.NPORT
+        ):
+            raise ValueError(f"Quelle {self.key}: nport braucht kind nport und nport_json.")
         return self
 
 

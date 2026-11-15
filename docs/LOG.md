@@ -2,6 +2,41 @@
 
 Neueste Einträge oben.
 
+## 15.11.2026 – Claude (Opus 5.5): Phase 1 – SEC N-PORT importieren (D-054)
+
+- Auftrag Jonas: «Ich stimme dem N-PORT-Download zu, starte Phase 1.»
+- **Download:** SEC-Übersichtsseite gelesen (2026q3, 440.95 MB bestätigt), dann
+  `2026q3_nport.zip` geladen (462'371'568 Bytes, 54 s, Kontakt nur im User-Agent).
+  Alle 32 Archiveinträge geprüft; Begleitdatei mit SHA-256 geschrieben. Readme und Metadaten
+  liegen im ZIP, kein weiterer Download nötig.
+- **Neu:** `entities/nport.py` (Pydantic je Zeile), `ingestion/sec_nport.py` (direkt aus dem
+  ZIP, Herkunftsprüfung, zwei Durchgänge prüfen/schreiben, Ablehnung je Grund, Auswahl je
+  Fonds und Stichtag, `nport-download` mit `--confirm`), vier Tabellen in `nport.sqlite`,
+  `services/nport_catalog.py` (Qualitätsbericht per SQL), Befehle `nport-download` und
+  `nport-update`, `config/nport_sources.toml`. Lizenzsperre gilt wie bei den SEC-Quellen.
+- **Erster Lauf (Regel «ohne Serie kein Fonds»):** erfolgreich, 0 abgelehnte Zeilen, aber
+  21 % der Positionen (737 Meldungen ohne Serien-ID von 709 Registranten) fielen aus der
+  Auswahl. Geprüft: Keiner dieser Registranten meldet auch mit Serie, alle haben eine CIK.
+  Regel geändert (Registrant = Fonds, wenn er nie mit Serie meldet), Regelversion ins
+  Manifest, neu gerechnet (Datenstand 2). Danach unentschieden: 7 Meldungen von 2
+  Registranten ohne Serie, am selben Tag mit gleichem Nettovermögen (wohl Doppelmeldungen),
+  bleiben bewusst ohne Wahl.
+- **Messwerte (Datenstand 2):** siehe STATUS.md. Kernzahlen: 13'908 Fonds, 4'626'854
+  Positionen im gültigen Stand, ISIN gültig 90.18 %, Emittenten-LEI gültig 72.79 %, beides
+  68.29 %; bei Aktien 80.68 %. 399'511 verschiedene ISIN, 28'586 verschiedene LEI.
+  Öffentlich ist laut Messung nur der dritte Monat je Geschäftsquartal (100 % der Meldungen).
+  `PERCENTAGE` ist in Prozent (Median der Summe je Meldung 100.00 %).
+- **Nebenbefund:** Die gemeinsame Sperre meldete bei N-PORT «Schweizer Import läuft»; Text
+  allgemein formuliert. Ein zweiter Lauf ohne `--force` wurde korrekt als «noch nicht fällig»
+  übersprungen und protokolliert.
+- **Nicht gemessen:** «LEI aktiv bei GLEIF» – braucht die GLEIF-Liste Level 1 (486.08 MB,
+  Zustimmung offen). Pilot-Vergleichslauf nicht ausgeführt, weil die Fondskette nicht
+  verändert wurde. Website nicht neu erzeugt (keine Daten- oder Darstellungsänderung).
+- **Geprüft:** pytest 361 bestanden (16 neu, alle fiktiv: ZZ-ISIN, FIKT00-LEI), Ruff sauber.
+- Skills: keine verwendet. Werkzeuge: Shell (Git Bash, PowerShell), Dateiwerkzeuge,
+  Hintergrundläufe mit Überwachung, curl (SEC-Seite, Download, GLEIF-Metadaten). Keine
+  Unteragenten. Kein Push.
+
 ## 15.11.2026 – Claude (Opus 5.5): Phase 0 – Fundament für den weltweiten Bestand
 
 - Auftrag Jonas: kein Einzelfallentscheiden mehr; «alle Aktien, alle Fonds weltweit» erfassen

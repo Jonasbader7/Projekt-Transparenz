@@ -1,5 +1,46 @@
 # Entscheidungslog
 
+## 15.11.2026 – Phase 1: SEC N-PORT importieren (Claude, Auftrag Jonas)
+
+### D-054 N-PORT als eigener, geprüfter Bestand im Update-System
+- **Entscheid (Jonas: Zustimmung zum Download, «starte Phase 1»):** `2026q3_nport.zip`
+  (462'371'568 Bytes, sec.gov) liegt unverändert in
+  `raw/external/sec_nport/2026q3/` mit Begleitdatei (SHA-256). Das Update-System
+  (`nport-update`, eigene Datenbank `processed/nport.sqlite`) ruft nichts ab, sondern liest
+  die lokal geladenen Quartalsarchive. Neue Quartale lädt nur `nport-download <Quartal>
+  --confirm`; ohne `--confirm` nennt der Befehl Datei, Quelle und Grösse.
+- **Lesen:** direkt aus dem ZIP, nichts entpackt. Jede Zeile wird mit Pydantic geprüft
+  (`entities/nport.py`). Ungültige Zeilen (falsche Spaltenzahl, unlesbare Zahl oder
+  Datumsangabe, ungültige Accession-Nummer, Position zu unbekannter Meldung) werden
+  abgelehnt und je Grund mit Beispielzeilen gezählt (`nport_load_stats`, Warnungen im
+  `update_runs`-Eintrag). Über 1 % abgelehnte Zeilen in einer Tabelle (unsere Setzung) oder
+  ein verletzter Primärschlüssel der SEC-Readme → ganzer Datenstand abgelehnt, alter Stand
+  bleibt aktiv.
+- **Zwei Durchgänge:** Erst prüfen (nichts gespeichert), dann schreiben in der Transaktion der
+  Aktivierung; weichen die Zählungen des zweiten Durchgangs ab, Rollback. Grund: 5.6 Mio.
+  Positionen je Quartal passen nicht als Objekte in den Speicher, und die Prüfung muss vor
+  dem Schreiben feststehen.
+- **Kennungen:** Gemeldeter Wert bleibt unverändert (`*_reported`); die geprüfte Kennung
+  steht nur bei gültiger Prüfziffer daneben, sonst ein Status (`missing`, `not_applicable`,
+  `invalid_format`, `invalid_checksum`). Eine Position erhält eine ISIN nur, wenn ihre
+  Kennungszeilen genau eine gültige ISIN nennen; mehrere verschiedene = `multiple`, offen.
+- **Fondsschlüssel:** Serien-ID; ohne Serie die CIK des Registranten, aber nur wenn derselbe
+  Registrant nirgends mit Serie meldet. Anlass: Im ersten Lauf (Regel «ohne Serie keine
+  Zuordnung») fielen 737 Meldungen von 709 Registranten mit 1.17 Mio. Positionen (21 %)
+  aus der Auswahl; keiner dieser Registranten meldet auch mit Serie. Regelversion
+  `2026-11-15.2` (`RULE_VERSION`, steht im Manifest: Regeländerung = neuer Datenstand).
+- **Auswahl je Fonds (unsere Regel, nicht von der SEC):** Je Fonds und Stichtag gilt
+  die zuletzt eingereichte Meldung (Berichtigungen ersetzen das Original); gleiches
+  spätestes Einreichdatum = unentschieden, keine Wahl nach Nummernfolge. Je Fonds ist der
+  jüngste Stichtag «current». Ob eine Berichtigung immer die ganze Meldung ersetzt, steht
+  nicht in der Readme und ist nicht verifiziert.
+- **Messwerte** im Qualitätsbericht (`processed/nport/quality_report.json`), alle per SQL aus
+  dem aktiven Stand, Zähler und Nenner zusammen. «LEI aktiv bei GLEIF» bleibt «nicht
+  gemessen», bis die vollständige GLEIF-Liste vorliegt.
+- **Lizenz:** wie die übrigen SEC-Quellen (öffentliche Information, Weiterverbreitung ohne
+  Erlaubnis; gewerbliche Nutzung nicht wörtlich genannt). Interne Messung; Veröffentlichung
+  erst nach schriftlicher Bestätigung (Roadmap Phase 5).
+
 ## 15.11.2026 – Phase 0: Fundament für den weltweiten Bestand (Claude, Auftrag Jonas)
 
 ### D-053 Echte Pilotergebnisse nie in versionierte Dateien

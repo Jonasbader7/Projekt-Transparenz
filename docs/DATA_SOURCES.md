@@ -575,7 +575,7 @@ sorgfältige Lektüre der Bedingungen, keine juristische Prüfung (siehe `docs/r
   «provided according to the mapping process established by … ANNA»). **Diese Abfragen nutzt
   der Adapter bewusst nicht.** Wieder aufnehmen erst nach schriftlicher Klärung der Lizenz.
 
-### SEC – Form N-PORT Data Sets · Ergebnis: **geprüft, lizenzrechtlich geeignet; fachlich offen**
+### SEC – Form N-PORT Data Sets · Ergebnis: **integriert (lokal, D-054); Messung Phase 1**
 
 | | |
 |---|---|
@@ -586,9 +586,10 @@ sorgfältige Lektüre der Bedingungen, keine juristische Prüfung (siehe `docs/r
 | Auflagen | SEC-/EDGAR-Marken nicht in Firmen-/Domainnamen; Disclaimer der Datensätze: Daten stammen von den Fonds selbst («we cannot guarantee the accuracy of the data»), «not a substitute for such filings». Die Readme nennt die Daten «as-filed». |
 | Technik | Fair Access: höchstens **10 Anfragen pro Sekunde**; User-Agent mit Firmenname **und E-Mail-Adresse** verlangt (welche Adresse, entscheidet Jonas). Neuester Datensatz: **2026q3_nport.zip, 440.95 MB**; 2026q2: 420.28 MB; 2026q1: 441.62 MB. Quartalsweise veröffentlicht. |
 | Inhalt | nur **in den USA registrierte** Fonds (inkl. ETFs, ohne Geldmarktfonds). Je Position u. a. `ISSUER_NAME`, `ISSUER_LEI` («LEI (if any) of issuer»), `IDENTIFIER_ISIN`. Die Fonds melden die Zuordnung Wertpapier → Emittent damit selbst. |
-| Nicht verifiziert | welche Monatsmeldungen öffentlich sind (Vorwissen: nur der dritte Monat je Quartal, mit Verzögerung); auf den gelesenen Seiten nicht bestätigt. |
+| Öffentliche Monatsmeldungen | Readme (im ZIP, `nport_readme.htm`): «monthly portfolio holdings», «disseminated quarterly»; welche Monate, steht dort nicht. **Gemessen am Archiv 2026q3 (15.11.2026):** Bei allen 14'066 Meldungen liegt der Stichtag in einem Quartalsendmonat des gemeldeten Geschäftsjahrs, also nur der dritte Monat je Geschäftsquartal. Eingereicht Juli–September 2026, Stichtage überwiegend Mai–Juli 2026 (Median 57 Tage zwischen Stichtag und Einreichung). Der Stichtag ist je Fonds verschieden; massgebend ist `REPORT_DATE` der Meldung. |
+| Lokaler Stand | `raw/external/sec_nport/2026q3/2026q3_nport.zip`, 462'371'568 Bytes, SHA-256 `2f5ee059…6c38`, abgerufen 15.11.2026 (Zustimmung Jonas), HTTP Last-Modified 07.10.2026. Archiv enthält Readme und Metadaten (W3C Tabular Data). Eingelesen mit `nport-update` in `processed/nport.sqlite`; Messwerte in `processed/nport/quality_report.json` und STATUS.md. |
 | Prüfdatum | 07.11.2026 |
-| Offen (fachlich) | Ist ein US-Fonds als erster echter Fonds für Schweizer Privatanleger:innen sinnvoll (D-020)? → Jonas: **später entscheiden** (STATUS.md). Kein Download ohne Zustimmung. |
+| Verwendung | Roadmap: Phase 1 Import und Messung, Phase 2 Wertpapierstamm ISIN → LEI aus dem Konsens mehrerer Meldender. Nur US-registrierte Fonds; die Frage nach Fonds für Schweizer Privatanleger:innen (D-020) bleibt davon getrennt. Weitere Quartale nur mit `nport-download <Quartal> --confirm` nach Zustimmung. |
 
 ### OFAC – Specially Designated Nationals (SDN) List · Ergebnis: **geprüft, lizenzrechtlich geeignet; fachlich offen**
 

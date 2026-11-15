@@ -210,6 +210,17 @@ def build_parser() -> argparse.ArgumentParser:
     gc_search.add_argument("--exchange", help="Filter: Börse (Name oder QID)")
     gc_search.add_argument("--limit", type=int, default=20)
     gc_search.set_defaults(func=_cmd_global_candidates_search)
+    nd = sub.add_parser("nport-download",
+                        help="SEC-N-PORT-Quartalsarchiv laden (ohne --confirm nur Name und Grösse)")
+    nd.add_argument("quarter", help="Quartal, z. B. 2026q3")
+    nd.add_argument("--confirm", action="store_true",
+                    help="wirklich herunterladen (nur nach Zustimmung zum Download)")
+    nd.set_defaults(func=_cmd_nport_download)
+    nu = sub.add_parser("nport-update",
+                        help="Lokale N-PORT-Archive prüfen, einlesen, Qualitätsbericht schreiben")
+    nu.add_argument("--force", action="store_true", help="Intervall ignorieren")
+    nu.add_argument("--report-only", action="store_true", help="nur Qualitätsbericht neu")
+    nu.set_defaults(func=_cmd_nport_update)
     sub.add_parser("init-db").set_defaults(func=_cmd_init_db)
     up = sub.add_parser("update")
     up.add_argument("--source")
@@ -243,6 +254,44 @@ def _cmd_market_update(args: argparse.Namespace) -> int:
     except (RuntimeError, ValueError, KeyError, OSError) as exc:
         print(f"Katalog-Aktualisierung: {exc}", file=sys.stderr)
         return 1
+    return int(failed)
+
+
+def _cmd_nport_download(args: argparse.Namespace) -> int:
+    import json
+    import os
+
+    from transparenz.config.settings import get_settings
+    from transparenz.ingestion.fetchers import FetchError
+    from transparenz.ingestion.sec_nport import download_quarter
+
+    settings = get_settings()
+    try:
+        info = download_quarter(args.quarter, settings.data_dir,
+                                os.environ.get("TRANSPARENZ_SEC_CONTACT", "").strip(),
+                                confirm=args.confirm)
+    except (ValueError, FileExistsError, FetchError, OSError) as exc:
+        print(f"N-PORT-Download: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(info, ensure_ascii=False, indent=2))
+    if not info["downloaded"]:
+        print("Nichts heruntergeladen. Mit --confirm laden (nur nach Zustimmung).")
+    return 0
+
+
+def _cmd_nport_update(args: argparse.Namespace) -> int:
+    import json
+
+    from transparenz.services.nport_catalog import update_nport
+
+    try:
+        report, failed = update_nport(args.force, args.report_only)
+    except (RuntimeError, ValueError, OSError) as exc:
+        print(f"N-PORT-Aktualisierung: {exc}", file=sys.stderr)
+        return 1
+    summary = {k: report.get(k) for k in ("active_version", "data_as_of", "last_run")}
+    summary["holdings_current"] = (report.get("holdings") or {}).get("current_filings")
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
     return int(failed)
 
 

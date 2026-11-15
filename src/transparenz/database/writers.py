@@ -57,6 +57,10 @@ def write_dataset(session: Session, version_id: int, parsed: ParsedDataset) -> i
                 for item in records[start:start + 2000]])
         session.flush()
         return len(records)
+    elif parsed.kind == DatasetKind.NPORT:
+        from transparenz.ingestion.sec_nport import write_nport
+
+        return write_nport(session, version_id, parsed)
     elif parsed.kind == DatasetKind.EVIDENCE:
         now = utcnow()
         rows.extend(

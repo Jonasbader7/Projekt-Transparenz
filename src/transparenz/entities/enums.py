@@ -12,6 +12,7 @@ class DatasetKind(StrEnum):
     EVIDENCE = "evidence"
     COVERAGE = "coverage"
     MARKET = "market"
+    NPORT = "nport"
 
 
 class AssetClass(StrEnum):

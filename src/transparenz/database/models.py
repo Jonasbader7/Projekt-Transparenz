@@ -215,3 +215,103 @@ class CoverageRow(_Versioned, Base):
     isin: Mapped[str | None] = mapped_column(String(12), nullable=True)
     criterion: Mapped[str] = mapped_column(String(64))
     reviewed_date: Mapped[date] = mapped_column(Date)
+
+
+# --------------------------------------------------------------------- SEC N-PORT (D-054)
+# Eigene Tabellen statt JSON-Zeilen: rund 5.6 Mio. Positionen je Quartal. Eindeutige
+# Indizes prüfen die Primärschlüssel der SEC-Readme beim Schreiben (Verstoss = Rollback).
+
+
+class NportSubmissionRow(_Versioned, Base):
+    __tablename__ = "nport_submissions"
+    __table_args__ = (Index("ux_nport_submission", "dataset_version_id", "quarter", "accession",
+                            unique=True),
+                      Index("ix_nport_submission_series", "dataset_version_id", "series_id"))
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    quarter: Mapped[str] = mapped_column(String(6))
+    accession: Mapped[str] = mapped_column(String(20))
+    filing_date: Mapped[date] = mapped_column(Date)
+    sub_type: Mapped[str] = mapped_column(String(15))
+    report_date: Mapped[date] = mapped_column(Date)
+    fiscal_year_end: Mapped[date | None] = mapped_column(Date, nullable=True)
+    is_last_filing: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    cik: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    registrant_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    registrant_lei_reported: Mapped[str | None] = mapped_column(Text, nullable=True)
+    registrant_lei: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    series_id: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    series_id_reported: Mapped[str | None] = mapped_column(Text, nullable=True)
+    series_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    series_lei_reported: Mapped[str | None] = mapped_column(Text, nullable=True)
+    series_lei: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    total_assets: Mapped[float | None] = mapped_column(Float, nullable=True)
+    net_assets: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # Serien-ID, sonst «CIK» + CIK des Registranten; leer = nicht bestimmbar (fund_keys)
+    fund_key: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # current | superseded | earlier_period | tie | no_series | notice (sec_nport.py)
+    selection: Mapped[str] = mapped_column(String(16))
+
+
+class NportHoldingRow(_Versioned, Base):
+    __tablename__ = "nport_holdings"
+    __table_args__ = (Index("ux_nport_holding", "dataset_version_id", "quarter", "holding_id",
+                            unique=True),
+                      Index("ix_nport_holding_accession", "dataset_version_id", "accession"))
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    quarter: Mapped[str] = mapped_column(String(6))
+    accession: Mapped[str] = mapped_column(String(20))
+    holding_id: Mapped[int] = mapped_column(Integer)
+    issuer_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    issuer_lei_reported: Mapped[str | None] = mapped_column(Text, nullable=True)
+    issuer_lei: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    issuer_lei_status: Mapped[str] = mapped_column(String(16))
+    title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    cusip: Mapped[str | None] = mapped_column(Text, nullable=True)
+    balance: Mapped[float | None] = mapped_column(Float, nullable=True)
+    unit: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    currency: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    exchange_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
+    percentage: Mapped[float | None] = mapped_column(Float, nullable=True)
+    payoff_profile: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    asset_cat: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    issuer_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    country: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    is_restricted: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    fair_value_level: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    derivative_cat: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # Aus nport_identifiers abgeleitet (eine gültige ISIN je Position oder Status).
+    isin: Mapped[str | None] = mapped_column(String(12), nullable=True)
+    isin_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+
+
+class NportIdentifierRow(_Versioned, Base):
+    __tablename__ = "nport_identifiers"
+    __table_args__ = (Index("ux_nport_identifier", "dataset_version_id", "quarter", "holding_id",
+                            "identifier_id", unique=True),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    quarter: Mapped[str] = mapped_column(String(6))
+    holding_id: Mapped[int] = mapped_column(Integer)
+    identifier_id: Mapped[int] = mapped_column(Integer)
+    isin_reported: Mapped[str | None] = mapped_column(Text, nullable=True)
+    isin: Mapped[str | None] = mapped_column(String(12), nullable=True)
+    isin_status: Mapped[str] = mapped_column(String(16))
+    ticker: Mapped[str | None] = mapped_column(Text, nullable=True)
+    other_identifier: Mapped[str | None] = mapped_column(Text, nullable=True)
+    other_identifier_desc: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class NportLoadStatRow(_Versioned, Base):
+    """Gelesene, übernommene und abgelehnte Zeilen je Tabelle und Quartal."""
+
+    __tablename__ = "nport_load_stats"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    quarter: Mapped[str] = mapped_column(String(6))
+    table_name: Mapped[str] = mapped_column(String(64))
+    rows_read: Mapped[int] = mapped_column(Integer)
+    rows_accepted: Mapped[int] = mapped_column(Integer)
+    rejected_json: Mapped[str] = mapped_column(Text, default="{}")

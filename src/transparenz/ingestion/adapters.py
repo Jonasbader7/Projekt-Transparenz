@@ -41,6 +41,10 @@ def build_adapter(
         from transparenz.ingestion.markets import build_market_adapter
 
         return build_market_adapter(config, catalog, project_root, user_agent)
+    if config.fetcher == "nport":
+        from transparenz.ingestion.sec_nport import build_nport_adapter
+
+        return build_nport_adapter(config, catalog, project_root)
     if config.fetcher == "external":
         from transparenz.ingestion.external import build_external_adapter
 
