@@ -47,17 +47,26 @@ class LeiRecord(BaseModel):
     successor_lei: str | None = None
 
 
-def latest_snapshot(data_dir: Path) -> FileProvenance | None:
-    """Jüngster lokal geladener Stand (Ordner JJJJ-MM-TT), gegen die Begleitdatei geprüft."""
-    folder = data_dir / FOLDER
+RR_SOURCE_KEY = "gleif_rr_golden_copy"
+RR_FOLDER = "raw/external/gleif_rr_golden_copy"
+RR_ARCHIVE_NAME = "gleif-goldencopy-rr.csv.zip"
+
+
+def latest_snapshot(data_dir: Path, folder_name: str = FOLDER, archive_name: str = ARCHIVE_NAME,
+                    source_key: str = SOURCE_KEY) -> FileProvenance | None:
+    """Jüngster lokal geladener Stand (Ordner JJJJ-MM-TT), gegen die Begleitdatei geprüft.
+
+    Standard: Liste Level 1; mit ``RR_FOLDER``/``RR_ARCHIVE_NAME`` die Beziehungsdatei.
+    """
+    folder = data_dir / folder_name
     if not folder.is_dir():
         return None
     dated = sorted((p for p in folder.iterdir()
                     if p.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.name)
-                    and (p / ARCHIVE_NAME).is_file()), reverse=True)
+                    and (p / archive_name).is_file()), reverse=True)
     if not dated:
         return None
-    record = describe_file(dated[0] / ARCHIVE_NAME, data_dir, SOURCE_KEY)
+    record = describe_file(dated[0] / archive_name, data_dir, source_key)
     if record.status != "verified":
         raise ProvenanceError(f"{record.path}: keine Begleitdatei mit Prüfsumme.")
     return record

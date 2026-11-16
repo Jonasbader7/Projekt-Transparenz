@@ -56,6 +56,7 @@ Python-Monolith, Paket `transparenz` (src-Layout):
 | `src/transparenz/services/global_candidates.py` | Lokale Suche über den globalen Wikidata-Firmen-/Ticker-Rohbestand (`global-candidates-build`/`-search`); getrennt von `swiss_foundation.py` und `market_catalog.py` |
 | `scripts/pilot_fund_chain.py` | Befehlszeile des Pilots «Position → Unternehmen → Beleg» an echten Fonds (FI Schweden + Wikidata + GLEIF + SwissPRTR + EU-Emissionshandel + GEM-Besitzketten, D-037–D-040); nicht im Screening, nicht auf der Website. Logik seit 15.11.2026 im Paket: `ingestion/fi_holdings.py`, `wikidata_isin.py`, `gleif_lookup.py`, `eu_ets.py`, `gem.py`; `services/fund_chain.py`, `fund_findings.py`, `mapping_reference.py`, `provenance.py`; `reports/fund_chain_report.py` mit `reports/templates/fund_chain_report.html.j2` |
 | `src/transparenz/ingestion/sec_nport.py`, `services/nport_catalog.py` | SEC N-PORT (D-054): `nport-download <Quartal> [--confirm]`, `nport-update`; liest lokale Quartalsarchive direkt aus dem ZIP in `processed/nport.sqlite`, Qualitätsbericht `processed/nport/quality_report.json`; LEI-Abgleich mit der GLEIF-Liste Level 1 über `ingestion/gleif_level1.py` (D-055) |
+| `src/transparenz/services/security_master.py`, `services/reference_check.py` | Wertpapierstamm ISIN → LEI aus N-PORT (D-056): `security-master-build`/`-lookup`/`-compare`; bestätigt = zwei unabhängige Gesellschaften (CIK und N-CEN-Berater, `ingestion/sec_ncen_advisers.py`), kein Widerspruch, LEI bei GLEIF; Ausgabe `processed/security_master.sqlite`. Gegenprüfung der Pilotverfahren (D-057) |
 | `scripts/pilot_regression.py` | Vergleichslauf: sechs Pilotfonds offline von eingefrorenem Eingang rechnen und zwei Läufe vergleichen; Pflicht vor und nach jedem Umbau der Kette |
 | `TRANSPARENZ_DATA_DIR` (`.env`) | Datenordner ausserhalb OneDrive (lokal `C:\TransparenzDaten`): `raw`, `processed`, `cache`, `review`. Nur über `settings.local_data_dir()`/`resolve_data_path()` ansprechen |
 | `site/` | **statische Website (Hauptoberfläche)**, erzeugt mit `python -m transparenz build-site`; nach jeder Daten- oder Darstellungsänderung neu erzeugen und mitcommitten |
@@ -84,6 +85,8 @@ kein Verlauf). Auftrag: **alle weltweit börsenkotierten Aktien und ETFs**; bish
 - **Wikidata weltweit** (`global-candidates-build`/`-search`, D-036): unbestätigte Hinweise.
 - **SEC N-PORT** (`nport-update`, `config/nport_sources.toml`, `nport.sqlite`, D-054): Positionen
   aller US-registrierten Fonds mit gemeldetem Emittenten-LEI und ISIN; Grundlage für Phase 2.
+- **Wertpapierstamm** (`security-master-build`, `security_master.sqlite`, D-056): ISIN → LEI aus
+  dem Konsens unabhängiger Fondsgesellschaften; Widersprüche bleiben offen, nie per Name.
 - **Pilot echter Fonds** (`scripts/pilot_fund_chain.py`, D-037–D-043): FI Schweden, Wikidata,
   GLEIF, SwissPRTR, EU-Emissionshandel, GEM. Nur lokal, nicht im Update-System.
 - `docs/CODEX_TO_CLAUDE_HANDOFF.md` ist historisch (Stand 08.11.2026), nicht mehr massgebend.

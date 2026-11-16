@@ -54,6 +54,9 @@ GLEIF-Liste Level 1 geprüft (D-055). Messwerte in STATUS.md.
 
 ### Phase 2 – Wertpapierstamm und Messung ohne Handarbeit
 
+Stand 16.11.2026: Wertpapierstamm gebaut (D-056), Pilotverfahren an der Referenz gemessen
+(D-057). Offen: N-PORT-Referenz in die Freigabe der Namenssuche einbauen (mit Vergleichslauf).
+
 - Konsens: ISIN → LEI gilt als «bestätigt durch Fondsmeldungen», wenn mindestens zwei
   unabhängige Fondsgesellschaften denselben LEI melden und keine widerspricht.
 - Gegenprüfungen: GLEIF (existiert, aktiv), Wikidata, Registernummer. Widersprüche separat.

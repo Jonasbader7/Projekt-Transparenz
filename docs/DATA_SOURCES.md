@@ -412,6 +412,8 @@ Der weltweite Aktien-/ETF-Auftrag startet zusätzlich separat mit `market_source
 | `sec_fund_classes` | ja | ja | ja | ja | 28'647 Serien-/Klassen-/Ticker-Zuordnungen, nicht ausschliesslich ETFs |
 | `sec_ncen` | ja | ja | ja | ja | 45'456 Fonds-/Klassenbeobachtungen, Quartale 2025Q4–2026Q3 |
 
+Seit 16.11.2026 liest der Wertpapierstamm (D-056) aus denselben lokalen N-CEN-Archiven die Tabelle `ADVISER.tsv` (Berater je Fonds mit LEI, SEC- und CRD-Nummer), nur um unabhängige Fondsgesellschaften zu erkennen. Kein neuer Download, gleiche Lizenzlage.
+
 Grundlage: [SEC Website Dissemination](https://www.sec.gov/about/privacy-information),
 öffentliche Informationen dürfen kopiert und weiterverteilt werden. Quellenangabe wird
 erbeten und hier mitgeführt; keine Billigung durch die SEC, keine Übernahme ihrer Marken.
@@ -582,7 +584,7 @@ sorgfältige Lektüre der Bedingungen, keine juristische Prüfung (siehe `docs/r
 | Original-URL | https://goldencopy.gleif.org/api/v2/golden-copies/publishes/latest (Metadaten, Datei-Link) ; Bedingungen: https://www.gleif.org/en/meta/lei-data-terms-of-use |
 | Lizenz | **CC0 1.0** (wie die bereits genutzte Level-2-Datei; Bedingungen am 08.11.2026 gelesen) |
 | Lokaler Stand | `raw/external/gleif_lei2_golden_copy/2026-11-15/gleif-goldencopy-lei2.csv.zip`, 509'687'964 Bytes, SHA-256 `7e8158b9…7f03`, Stand 15.11.2026 16:00, Format LEI_3.1, 3'494'789 Datensätze, abgerufen 16.11.2026 (Zustimmung Jonas). Entpackt 5.1 GB, 338 Spalten. |
-| Verwendung | Prüfung gemeldeter LEI (vorhanden, `Entity.EntityStatus`, `Registration.RegistrationStatus`); später Grundlage des Wertpapierstamms. Keine Abfrage der ISIN-Zuordnung von GLEIF/ANNA (Lizenz ungeklärt, siehe oben). |
+| Verwendung | Prüfung gemeldeter LEI (vorhanden, `Entity.EntityStatus`, `Registration.RegistrationStatus`); im Wertpapierstamm (D-056) zusätzlich Nachfolge-LEI von Duplikaten. Die Beziehungsdatei (Level 2, 11.11.2026, CC0) liefert dort die oberste Mutter der Fondsberater. Keine Abfrage der ISIN-Zuordnung von GLEIF/ANNA (Lizenz ungeklärt, siehe oben). |
 
 ### SEC – Form N-PORT Data Sets · Ergebnis: **integriert (lokal, D-054); Messung Phase 1**
 
@@ -598,7 +600,7 @@ sorgfältige Lektüre der Bedingungen, keine juristische Prüfung (siehe `docs/r
 | Öffentliche Monatsmeldungen | Readme (im ZIP, `nport_readme.htm`): «monthly portfolio holdings», «disseminated quarterly»; welche Monate, steht dort nicht. **Gemessen am Archiv 2026q3 (15.11.2026):** Bei allen 14'066 Meldungen liegt der Stichtag in einem Quartalsendmonat des gemeldeten Geschäftsjahrs, also nur der dritte Monat je Geschäftsquartal. Eingereicht Juli–September 2026, Stichtage überwiegend Mai–Juli 2026 (Median 57 Tage zwischen Stichtag und Einreichung). Der Stichtag ist je Fonds verschieden; massgebend ist `REPORT_DATE` der Meldung. |
 | Lokaler Stand | `raw/external/sec_nport/2026q3/2026q3_nport.zip`, 462'371'568 Bytes, SHA-256 `2f5ee059…6c38`, abgerufen 15.11.2026 (Zustimmung Jonas), HTTP Last-Modified 07.10.2026. Archiv enthält Readme und Metadaten (W3C Tabular Data). Eingelesen mit `nport-update` in `processed/nport.sqlite`; Messwerte in `processed/nport/quality_report.json` und STATUS.md. |
 | Prüfdatum | 07.11.2026 |
-| Verwendung | Roadmap: Phase 1 Import und Messung, Phase 2 Wertpapierstamm ISIN → LEI aus dem Konsens mehrerer Meldender. Nur US-registrierte Fonds; die Frage nach Fonds für Schweizer Privatanleger:innen (D-020) bleibt davon getrennt. Weitere Quartale nur mit `nport-download <Quartal> --confirm` nach Zustimmung. |
+| Verwendung | Phase 1 Import und Messung; **Phase 2 Wertpapierstamm** ISIN → LEI aus dem Konsens unabhängiger Meldender (`security-master-build`, D-056), dazu N-CEN-Berater (Unabhängigkeit) und GLEIF Level 1 und 2. Nur US-registrierte Fonds; die Frage nach Fonds für Schweizer Privatanleger:innen (D-020) bleibt davon getrennt. Weitere Quartale nur mit `nport-download <Quartal> --confirm` nach Zustimmung. |
 
 ### OFAC – Specially Designated Nationals (SDN) List · Ergebnis: **geprüft, lizenzrechtlich geeignet; fachlich offen**
 

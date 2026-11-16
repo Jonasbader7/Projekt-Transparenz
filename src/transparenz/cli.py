@@ -221,6 +221,18 @@ def build_parser() -> argparse.ArgumentParser:
     nu.add_argument("--force", action="store_true", help="Intervall ignorieren")
     nu.add_argument("--report-only", action="store_true", help="nur Qualitätsbericht neu")
     nu.set_defaults(func=_cmd_nport_update)
+    sm = sub.add_parser("security-master-build",
+                        help="Wertpapierstamm ISIN → LEI aus N-PORT aufbauen (lokal, D-056)")
+    sm.set_defaults(func=_cmd_security_master_build)
+    sl = sub.add_parser("security-master-lookup", help="Eine ISIN im Wertpapierstamm nachsehen")
+    sl.add_argument("isin")
+    sl.set_defaults(func=_cmd_security_master_lookup)
+    sc2 = sub.add_parser("security-master-compare",
+                         help="Pilot-Zuordnungen an der N-PORT-Referenz messen (lokal)")
+    sc2.add_argument("--pilot-dir", default=None,
+                     help="Ordner mit Pilotberichten (Standard: processed/pilot_regression/"
+                          "herkunft)")
+    sc2.set_defaults(func=_cmd_security_master_compare)
     sub.add_parser("init-db").set_defaults(func=_cmd_init_db)
     up = sub.add_parser("update")
     up.add_argument("--source")
@@ -293,6 +305,78 @@ def _cmd_nport_update(args: argparse.Namespace) -> int:
     summary["holdings_current"] = (report.get("holdings") or {}).get("current_filings")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return int(failed)
+
+
+def _cmd_security_master_build(_: argparse.Namespace) -> int:
+    import json
+
+    from transparenz.config.settings import get_settings
+    from transparenz.services.provenance import ProvenanceError
+    from transparenz.services.security_master import build_security_master
+    from transparenz.services.swiss_foundation import foundation_lock
+
+    settings = get_settings()
+    folder = settings.processed_dir / "security_master"
+    try:
+        with foundation_lock(folder):
+            report = build_security_master(settings.processed_dir / "nport.sqlite",
+                                           settings.data_dir,
+                                           settings.processed_dir / "security_master.sqlite",
+                                           folder / "quality_report.json")
+    except (RuntimeError, ValueError, OSError, ProvenanceError) as exc:
+        print(f"Wertpapierstamm: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps({"isins": report["isins"]["by_status"],
+                      "confirmed_of_with_lei": report["isins"]["confirmed_of_with_lei"]},
+                     ensure_ascii=False, indent=2))
+    print(f"Qualitätsbericht: {folder / 'quality_report.json'}")
+    return 0
+
+
+def _cmd_security_master_lookup(args: argparse.Namespace) -> int:
+    import json
+
+    from transparenz.config.settings import get_settings
+    from transparenz.services.security_master import lookup
+
+    try:
+        entry = lookup(get_settings().processed_dir / "security_master.sqlite", args.isin)
+    except (OSError, ValueError) as exc:
+        print(f"Wertpapierstamm: {exc}", file=sys.stderr)
+        return 1
+    if entry is None:
+        print(f"{args.isin}: nicht im Wertpapierstamm (kein meldender Fonds hält diese ISIN).")
+        return 1
+    print(json.dumps(entry, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_security_master_compare(args: argparse.Namespace) -> int:
+    import json
+    from pathlib import Path
+
+    from transparenz.config.settings import get_settings
+    from transparenz.ingestion.external import atomic_json
+    from transparenz.services.reference_check import compare_with_reference, pilot_proposals
+
+    processed = get_settings().processed_dir
+    pilot = Path(args.pilot_dir) if args.pilot_dir else processed / "pilot_regression/herkunft"
+    try:
+        result = compare_with_reference(processed / "security_master.sqlite",
+                                        pilot_proposals(pilot))
+    except (OSError, ValueError) as exc:
+        print(f"Gegenprüfung: {exc}", file=sys.stderr)
+        return 1
+    out = processed / "security_master" / "pilot_comparison.json"
+    atomic_json(out, result)
+    summary = {m: {scope: {k: r[k] for k in ("reference_cases", "answered", "correct",
+                                             "precision", "precision_lower_bound_95")}
+                   for scope, r in v["cases"].items()}
+               for m, v in result["methods"].items()}
+    print(json.dumps({"reference": result["reference"], "methods": summary},
+                     ensure_ascii=False, indent=2))
+    print(f"Ergebnis: {out}")
+    return 0
 
 
 def _cmd_market_search(args: argparse.Namespace) -> int:

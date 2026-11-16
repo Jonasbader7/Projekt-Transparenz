@@ -1,5 +1,55 @@
 # Entscheidungslog
 
+## 16.11.2026 – Phase 2: Wertpapierstamm ISIN → LEI aus N-PORT (Claude, Auftrag Jonas)
+
+### D-056 Wertpapierstamm aus dem Konsens unabhängiger Fondsgesellschaften
+- **Entscheid (Auftrag Jonas: «Starte Phase 2»):** `security-master-build` erzeugt aus dem
+  aktiven N-PORT-Stand `processed/security_master.sqlite` (je ISIN Status, LEI, Zahl der
+  Meldenden; je gemeldetem LEI eine Zeile `claims`) und einen Qualitätsbericht. Die
+  N-PORT-Datenbank wird nur lesend geöffnet. Regelversion `RULE_VERSION` in
+  `services/security_master.py`; jede Regeländerung = neue Version, neuer Aufbau.
+- **Umfang:** nur Meldungen «current», nur gültige ISIN, ohne Derivate (`DCO`, `DCR`, `DE`,
+  `DFE`, `DIR`, `DO`): Dort nennt der LEI oft Gegenpartei oder Börse.
+- **Bestätigt** = mindestens zwei *unabhängige* Fondsgesellschaften melden denselben LEI,
+  niemand nennt einen anderen, und der LEI steht bei GLEIF, ist nicht annulliert und kein
+  Duplikat ohne Nachfolger. Inaktive Rechtsträger bleiben bestätigt (Emittent zum Stichtag);
+  der GLEIF-Status steht daneben.
+- **Unabhängig (Abweichung vom Plan «verschiedene CIK»):** Grosse Anbieter melden über
+  Dutzende Trusts mit denselben Stammdaten; verschiedene CIK sind deshalb nicht unabhängig.
+  Zwei Fonds gehören zur selben Gruppe, wenn sie dieselbe CIK haben oder einen gemeinsamen
+  Anlageberater laut N-CEN (gleicher LEI, gleiche oberste Mutter laut GLEIF-Beziehungsdatei,
+  gleiche SEC-Nummer «801-…» oder CRD-Nummer). Nur Berater vom Typ «Advisor»; Unterberater
+  würden fremde Familien verbinden. Nur Kennungen, nie Namen. Wirkung im Stand 2026q3:
+  15'045 ISIN wären unter der CIK-Regel bestätigt, unter der Beraterregel nicht.
+- **Normalisierung nur über Kennungen:** GLEIF-Duplikat mit Nachfolger → Nachfolger (505
+  Meldungen); Trust-LEI und Serien-LEI desselben Trusts (laut N-PORT-Meldung des Trusts)
+  zählen für die Serie (474 Meldungen). Jede Ersetzung steht in `claims.normalization`.
+- **Widerspruch** = nach der Normalisierung mehr als ein LEI, auch gegen eine klare Mehrheit.
+  Die Art wird beschrieben (Nachfolger, Mutter/Tochter, gleiche Gruppe, Fondsstruktur,
+  inaktiv, übrige), aber nicht aufgelöst. Stichprobe der «übrigen»: echte Fehlmeldungen
+  einzelner Fonds (z. B. falsche Hypothekenagentur, Schwesterfonds).
+- **Grenze:** Gemeinsame Datenlieferanten der Fondsgesellschaften sind nicht erkennbar; ein
+  Konsens kann deshalb einen übernommenen Fehler bestätigen (ein Fall in der Gegenprüfung).
+  Nur Papiere, die US-registrierte Fonds halten.
+
+### D-057 Gegenprüfung der Pilotverfahren an der N-PORT-Referenz (Messung, keine Freigabe)
+- **Entscheid:** `security-master-compare` misst Wikidata, Registernummer und GLEIF-
+  Namenssuche des Pilots an den bestätigten ISIN, je ISIN einmal, gesamt und je Region
+  (Sitzland des Referenz-Emittenten: Nordamerika, Europa, Asien-Pazifik, übrige). Für
+  Registernummer und Name zählen wie in D-046 nur ISIN aus Testfonds, die in keinem
+  Entwicklungsfonds vorkommen. Ergebnis lokal in `processed/security_master/
+  pilot_comparison.json`.
+- **Ergebnis 16.11.2026:** Namenssuche 675 von 679 richtig, untere 95-%-Grenze 98.66 %
+  (Europa 270/272, 97.70 %; Asien-Pazifik 257/258, 98.17 %; Nordamerika 60/60 und übrige
+  88/89 unter 100 Fällen). Registernummer 115/116 (95.98 %). Wikidata 626/642 (96.24 %).
+  Einzeln geprüft: In 19 von 21 Abweichungen nennt N-PORT die börsenkotierte Gesellschaft und
+  das andere Verfahren eine Tochter, Vorgängerin oder einen fremden Rechtsträger; in einem
+  Fall ist die N-PORT-Referenz selbst fraglich.
+- **Folge:** Die Freigabe in `entity_matching.py` bleibt unverändert, bis die N-PORT-
+  Referenz dort als Referenz eingebaut ist (eigener Schritt mit Vergleichslauf, D-051). Die
+  Referenz ist auf grosse, von US-Fonds gehaltene Titel verzerrt; das wird bei der Freigabe
+  je Region ausgewiesen.
+
 ## 16.11.2026 – Phase 1: gemeldete LEI gegen GLEIF prüfen (Claude, Auftrag Jonas)
 
 ### D-055 GLEIF-Liste Level 1 als lokale Prüfquelle für gemeldete LEI

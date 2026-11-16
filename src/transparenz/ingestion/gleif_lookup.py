@@ -221,3 +221,44 @@ def load_group_links(rr_zip: Path, child_leis: set[str],
                     "registration_last_update": _date(row.get("Registration.LastUpdateDate")),
                 })
     return links
+
+
+def load_parent_map(rr_zip: Path, child_leis: set[str]) -> dict[str, dict[str, str]]:
+    """Direkte und oberste Mutter je gesuchtem LEI (Beziehungsdatei, Level 2).
+
+    Für die Gruppierung von Fondsberatern (Wertpapierstamm): berücksichtigt wird jede Beziehung
+    mit ``RelationshipStatus = ACTIVE``, unabhängig von der Bestätigungsstufe. Das verbindet
+    eher zu viel als zu wenig und ist damit die vorsichtige Wahl für «unabhängig».
+    Ergebnis: ``{kind: parent}`` mit ``kind`` aus ``RR_KINDS`` (``direct-parent``,
+    ``ultimate-parent``).
+    """
+    wanted = {c.upper() for c in child_leis}
+    parents: dict[str, dict[str, str]] = {}
+    with zipfile.ZipFile(rr_zip) as archive:
+        members = [n for n in archive.namelist() if n.lower().endswith(".csv")]
+        if len(members) != 1:
+            raise ValueError(
+                f"{rr_zip.name}: genau eine CSV-Datei erwartet, {len(members)} gefunden.")
+        with archive.open(members[0]) as raw:
+            reader = csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8-sig", newline=""))
+            require_columns(reader, {
+                "Relationship.StartNode.NodeID", "Relationship.StartNode.NodeIDType",
+                "Relationship.EndNode.NodeID", "Relationship.EndNode.NodeIDType",
+                "Relationship.RelationshipType", "Relationship.RelationshipStatus"},
+                rr_zip.name)
+            for row in reader:
+                kind = RR_KINDS.get(row["Relationship.RelationshipType"])
+                if (not kind or row["Relationship.RelationshipStatus"] != "ACTIVE"
+                        or row["Relationship.StartNode.NodeIDType"] != "LEI"
+                        or row["Relationship.EndNode.NodeIDType"] != "LEI"):
+                    continue
+                child = row["Relationship.StartNode.NodeID"].upper()
+                parent = row["Relationship.EndNode.NodeID"].upper()
+                if child not in wanted or child == parent or not is_valid_lei(parent):
+                    continue
+                known = parents.setdefault(child, {})
+                if kind in known and known[kind] != parent:
+                    raise ValueError(f"{rr_zip.name}: {child} hat zwei aktive Beziehungen "
+                                     f"vom Typ {kind}.")
+                known[kind] = parent
+    return parents

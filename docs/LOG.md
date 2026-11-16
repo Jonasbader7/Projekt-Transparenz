@@ -2,6 +2,31 @@
 
 Neueste Einträge oben.
 
+## 16.11.2026 – Claude (Opus 5.5): Phase 2 – Wertpapierstamm ISIN → LEI (D-056, D-057)
+
+- Auftrag Jonas: «Starte Phase 2: Wertpapierstamm ISIN → LEI aus den N-PORT-Meldungen.»
+- **Vorabmessung (nur lesend):** 246'768 ISIN mit gemeldetem LEI, davon 3'508 mit mehreren
+  LEI. Stichproben zeigten zwei strukturelle Ursachen (ETF-Anteile mit Trust- statt
+  Serien-LEI; GLEIF-Duplikate) und echte Fehlmeldungen einzelner Fonds. Ausserdem: Grosse
+  Anbieter melden über viele CIK, «verschiedene CIK» ist kein Mass für Unabhängigkeit.
+- **Neu:** `services/security_master.py` (Regel je ISIN, rein funktional; Aufbau in eigene
+  Datei `processed/security_master.sqlite`, N-PORT nur lesend), `ingestion/
+  sec_ncen_advisers.py` (Berater je Fonds aus den lokalen N-CEN-Archiven, nur Kennungen,
+  Herkunft geprüft), `load_parent_map` in `ingestion/gleif_lookup.py` (oberste Mutter laut
+  Beziehungsdatei), `services/reference_check.py` (Gegenprüfung). Befehle
+  `security-master-build`, `security-master-lookup`, `security-master-compare`.
+- **Ergebnis (Regelversion 2026-11-16.1):** 398'251 ISIN, 116'216 bestätigt (47.17 % der ISIN
+  mit LEI, 73.43 % der Positionen), 2'707 Widersprüche, 127'258 nur eine Gesellschaft.
+  Strengere Unabhängigkeit: 15'045 ISIN weniger als unter der CIK-Regel. Laufzeit 154 s.
+- **Gegenprüfung:** Namenssuche des Pilots 675/679 richtig (untere Grenze 98.66 %), Wikidata
+  626/642. Alle 21 Abweichungen einzeln angesehen (lokal): 19-mal liegt N-PORT richtig, einmal
+  ist die Referenz fraglich. Freigabe in `entity_matching.py` nicht geändert.
+- **Geprüft:** pytest 377 bestanden (13 neu, fiktiv: ZZ-ISIN, FIKT00-LEI), Ruff sauber.
+  Pilot-Vergleichslauf nicht nötig (Fondskette unverändert; `latest_snapshot` nur um
+  Parameter mit gleichem Standard erweitert). Website nicht betroffen.
+- Skills: keine verwendet. Werkzeuge: Shell (Git Bash, PowerShell), Dateiwerkzeuge,
+  Hintergrundlauf mit Benachrichtigung. Keine Downloads, keine Unteragenten, kein Push.
+
 ## 16.11.2026 – Claude (Opus 5.5): gemeldete LEI gegen GLEIF prüfen (D-055)
 
 - Auftrag Jonas: «Ja, GLEIF laden».

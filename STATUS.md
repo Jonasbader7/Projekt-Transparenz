@@ -5,21 +5,41 @@ Stand: **16.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verla
 
 ## Phase
 
-**Phase 1 (SEC N-PORT importieren) umgesetzt.** Phase 0 abgeschlossen. Ziel laut Auftrag: alle
+**Phase 2 (Wertpapierstamm ISIN → LEI) begonnen:** Stamm gebaut und gemessen (D-056), Pilotverfahren
+an der Referenz gemessen (D-057). Phasen 0 und 1 abgeschlossen. Ziel laut Auftrag: alle
 börsenkotierten Aktien und Fonds weltweit, automatisch zugeordnet, firmentauglich (D-049).
-Nächste Phase: 2 (Wertpapierstamm ISIN → LEI aus Fondsmeldungen).
+Offen in Phase 2: N-PORT-Referenz in die Freigabe der Namenssuche einbauen.
 
 | Baustein | Stand |
 |---|---|
-| Git | `main` auf GitHub bis Phase 0; Phase 1 in lokalen Commits (`0584ac7`, `a8ee8e5` und Übergabe), **nicht gepusht** |
+| Git | `main` auf GitHub bis Phase 0; Phase 1 und 2 in lokalen Commits, **nicht gepusht** |
 | Datenordner | `C:\TransparenzDaten` ausserhalb OneDrive (`TRANSPARENZ_DATA_DIR`, D-050) |
-| Pilot-Code | in Paketmodule zerlegt (D-051); Fondskette in Phase 1 nicht verändert |
+| Pilot-Code | in Paketmodule zerlegt (D-051); Fondskette in Phase 1 und 2 nicht verändert |
 | Herkunft | jede Eingabedatei wird bei jedem Lauf gegen ihre Begleitdatei geprüft (D-052); gilt auch für N-PORT |
-| **SEC N-PORT** | `2026q3_nport.zip` geladen und geprüft; `nport-update` liest direkt aus dem ZIP in `processed/nport.sqlite`, jeder Lauf in `update_runs` (D-054) |
+| SEC N-PORT | `2026q3_nport.zip` geladen und geprüft; `nport-update` liest direkt aus dem ZIP in `processed/nport.sqlite`, jeder Lauf in `update_runs` (D-054) |
+| **Wertpapierstamm** | `security-master-build` → `processed/security_master.sqlite` (87 MB, rund 2.5 Minuten), Regelversion 2026-11-16.1 (D-056) |
 | Kriterienmodell | Schema 2, Profil «streng» 1.1, 12 aktive Kriterien, 7 Beziehungstypen (D-045–D-048) |
-| Zuordnung | ISIN → Wikidata → LEI und Registernummer wirken; GLEIF-Namenssuche gemessen, **nicht freigegeben** (D-046) |
+| Zuordnung | im Pilot: ISIN → Wikidata → LEI und Registernummer wirken; GLEIF-Namenssuche **nicht freigegeben** (D-046), an der N-PORT-Referenz gemessen 98.66 % untere Grenze (D-057) |
 | Website (`site/`) | fiktive Demo, unverändert |
-| Tests | **364 bestanden** (19 neu für N-PORT und GLEIF), Ruff sauber |
+| Tests | **377 bestanden** (13 neu für den Wertpapierstamm), Ruff sauber |
+
+## Wertpapierstamm ISIN → LEI (Phase 2, Messwerte ohne Namen)
+
+Quelle: `C:\TransparenzDaten\processed\security_master\quality_report.json` (N-PORT-Stand 2,
+GLEIF Level 1 vom 15.11., Level 2 vom 11.11., N-CEN 2025q4–2026q3). Regeln: D-056.
+
+| Messgrösse | Wert |
+|---|---|
+| Umfang | 398'251 ISIN aus 4'161'239 Positionen (gültige ISIN, «current», ohne 11'455 Derivate) |
+| Bestätigt | **116'216 ISIN** = 47.17 % der 246'398 ISIN mit gemeldetem LEI; **73.43 % der Positionen**; 19'530 verschiedene LEI |
+| Nur eine Gesellschaft | 127'258 ISIN (5.71 % der Positionen) |
+| Widerspruch | 2'707 ISIN (3.49 % der Positionen): übrige 2'059, Mutter/Tochter 210, inaktiv 186, Nachfolger 125, gleiche Gruppe 55, Fondsstruktur 37 |
+| LEI unbrauchbar | nicht bei GLEIF 159, annulliert 58 |
+| Kein LEI gemeldet | 151'853 ISIN (17.31 % der Positionen) |
+| Unabhängigkeit | Median 3 Gruppen je bestätigter ISIN; genau 2: 32.53 %. Unter «jede CIK zählt» wären 15'045 ISIN mehr bestätigt. 89.49 % der Fonds mit Berater laut N-CEN |
+| Normalisiert | 505 Meldungen GLEIF-Duplikat → Nachfolger, 474 Trust → Serie |
+| Bestätigt je Anlageart | Anleihen 61.66 %, Aktien 72.54 %, Hypothekenpapiere 31.99 % (je ISIN mit LEI) |
+| Gegenprüfung Pilot (D-057) | Namenssuche 675/679 richtig (untere Grenze 98.66 %; Europa 97.70 %, Asien-Pazifik 98.17 %, Nordamerika und übrige < 100 Fälle); Registernummer 115/116; Wikidata 626/642 (96.24 %) |
 
 ## SEC N-PORT, Quartal 2026q3 (Messwerte, ohne Namen)
 
@@ -48,8 +68,8 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
 1. Wie in CLAUDE.md: STATUS, DECISIONS (ab D-049) und die letzten LOG-Einträge lesen.
 2. Echte Ergebnisse: `C:\TransparenzDaten\notizen\PILOT_ERGEBNISSE.md` (lokal). Nie in
    versionierte Dateien übernehmen (D-053); vor jedem Push prüfen.
-3. Plan: `docs/ROADMAP.md`. Nächster Schritt ist Phase 2; Downloads brauchen Jonas'
-   Zustimmung, alles andere läuft ohne Einzelentscheide (D-049).
+3. Plan: `docs/ROADMAP.md`. Phase 2 läuft (Stamm steht, Freigabe offen); Downloads brauchen
+   Jonas' Zustimmung, alles andere läuft ohne Einzelentscheide (D-049).
 4. Jeder Umbau der Fondskette: vorher und nachher `scripts\pilot_regression.py` (D-051).
 5. N-PORT-Regeln ändern = `RULE_VERSION` in `ingestion/sec_nport.py` erhöhen, dann
    `nport-update --force` (rund 20 Minuten, im Hintergrund laufen lassen).
@@ -61,6 +81,11 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
    heisst zwei verschiedene CIK. GLEIF-Status je LEI: `ingestion/gleif_level1.py`
    (`load_lei_records`), Liste unter `raw/external/gleif_lei2_golden_copy/2026-11-15/`.
    Abfragen auf die Datenbank nur lesend (`?mode=ro`), sie ist 4.8 GB gross.
+7. Wertpapierstamm: `services/security_master.py` (Regel je ISIN `classify`, rein
+   funktional), `processed/security_master.sqlite` (Tabellen `securities`, `claims`,
+   `build_info`). Regeländerung = `RULE_VERSION` erhöhen, neu bauen. Gegenprüfung:
+   `services/reference_check.py`, Ergebnis `processed/security_master/pilot_comparison.json`
+   (lokal, enthält ISIN und LEI der Abweichungen).
 
 ## Pilot (sechs echte schwedische Fonds, je 30.06.2026)
 
@@ -87,6 +112,10 @@ cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 .venv\Scripts\python -m transparenz nport-update --force
 .venv\Scripts\python -m transparenz nport-download 2026q4            # nennt nur Name und Grösse
 .venv\Scripts\python -m transparenz nport-download 2026q4 --confirm  # lädt wirklich
+# Wertpapierstamm ISIN → LEI (lokal, rund 2.5 Minuten), eine ISIN nachsehen, Pilot gegenprüfen
+.venv\Scripts\python -m transparenz security-master-build
+.venv\Scripts\python -m transparenz security-master-lookup <ISIN>
+.venv\Scripts\python -m transparenz security-master-compare
 # Ein Fonds einzeln (Pfade relativ zum Projekt mit data\… funktionieren weiter)
 .venv\Scripts\python scripts\pilot_fund_chain.py --zip data\raw\external\fi_se_fondinnehav\2026Q2\Fondinnehav_2026Q2.zip --fund "<exakter Fondsname>" --ets-dir data\raw\external\eu_ets_union_registry\2026-11-11 --gleif-rr data\raw\external\gleif_rr_golden_copy\2026-11-11\gleif-goldencopy-rr.csv.zip --gem-dir data\raw\external\gem\2026-11-11\extracted
 ```
@@ -97,10 +126,10 @@ Berichte mit Herkunftsabschnitt: `C:\TransparenzDaten\processed\pilot_regression
 
 ## Nächste drei Schritte
 
-1. **Phase 2: Wertpapierstamm ISIN → LEI** aus N-PORT (bestätigt, wenn mindestens zwei
-   unabhängige Fondsgesellschaften denselben LEI melden und keine widerspricht), geprüft
-   gegen die GLEIF-Liste (vorhanden, aktiv; Duplikate über den Nachfolge-LEI), dann
-   Messung der GLEIF-Namenssuche gegen diese Referenz, je Region (D-046, D-049).
+1. **Freigabe der Namenssuche auf die N-PORT-Referenz umstellen** (`mapping_reference.py`,
+   je Region nach D-046), mit Vergleichslauf der sechs Pilotfonds vorher/nachher (D-051).
+   Erwartung laut Messung: Europa und Asien-Pazifik erreichen die Schwelle, Nordamerika und
+   übrige noch nicht (zu wenige Fälle).
 2. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
    denselben Prüfweg hat wie N-PORT.
 3. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
@@ -118,6 +147,11 @@ Die Bewertungsregeln (Schwellen, Notstrom, Korruptionsdauer usw.) setzen wir mit
 Standard selbst und kennzeichnen sie als unsere Bewertungsentscheidung (D-049).
 
 ## Grenzen
+
+- Wertpapierstamm: Konsens heisst gleiche Meldung mehrerer Gesellschaften, nicht geprüfte
+  Wahrheit; gemeinsame Datenlieferanten sind nicht erkennbar. Widersprüche werden nicht nach
+  Mehrheit aufgelöst (613 ISIN mit mindestens 5 Gruppen gegen 1 bleiben offen; ob eine
+  Mehrheitsregel zulässig ist, erst messen). Nur Papiere, die US-registrierte Fonds halten.
 
 - Website zeigt nur fiktive Demodaten. Echte Daten bleiben lokal.
 - N-PORT: nur US-registrierte Fonds, nur der dritte Monat je Geschäftsquartal. Ob eine
@@ -139,6 +173,7 @@ Standard selbst und kennzeichnen sie als unsere Bewertungsentscheidung (D-049).
 | Wikidata weltweit | 15'624 Firmen-/Ticker-Kandidaten |
 | SEC-Marktkatalog | 44'085 Einträge (USA) |
 | SEC N-PORT 2026q3 | 14'066 Meldungen, 5'627'083 Positionen (Archiv 441 MB, Datenbank 4.8 GB) |
+| Wertpapierstamm | 398'251 ISIN, davon 116'216 bestätigt (Datei 87 MB) |
 | GLEIF-Liste Level 1 | 3'494'789 LEI-Datensätze, Stand 15.11.2026 (Archiv 486 MB, CC0) |
 | SwissPRTR | 247 Standorte; 22'860 Emissionszeilen |
 | Speicher | `C:\TransparenzDaten` rund 3.9 GB; Festplatte 34 GB frei |
