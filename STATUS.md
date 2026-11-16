@@ -11,7 +11,7 @@ Nächste Phase: 2 (Wertpapierstamm ISIN → LEI aus Fondsmeldungen).
 
 | Baustein | Stand |
 |---|---|
-| Git | `main` auf GitHub (Phase 0); Phase 1 lokal committet, nicht gepusht |
+| Git | `main` auf GitHub bis Phase 0; Phase 1 in lokalen Commits (`0584ac7`, `a8ee8e5` und Übergabe), **nicht gepusht** |
 | Datenordner | `C:\TransparenzDaten` ausserhalb OneDrive (`TRANSPARENZ_DATA_DIR`, D-050) |
 | Pilot-Code | in Paketmodule zerlegt (D-051); Fondskette in Phase 1 nicht verändert |
 | Herkunft | jede Eingabedatei wird bei jedem Lauf gegen ihre Begleitdatei geprüft (D-052); gilt auch für N-PORT |
@@ -52,7 +52,15 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
    Zustimmung, alles andere läuft ohne Einzelentscheide (D-049).
 4. Jeder Umbau der Fondskette: vorher und nachher `scripts\pilot_regression.py` (D-051).
 5. N-PORT-Regeln ändern = `RULE_VERSION` in `ingestion/sec_nport.py` erhöhen, dann
-   `nport-update --force` (rund 20 Minuten).
+   `nport-update --force` (rund 20 Minuten, im Hintergrund laufen lassen).
+6. Einstieg Phase 2: Daten in `C:\TransparenzDaten\processed\nport.sqlite`, aktiver
+   Datenstand 2 (`dataset_versions.status = 'active'`). Tabellen `nport_submissions`
+   (`fund_key`, `selection = 'current'`, `registrant_lei`, `cik`), `nport_holdings`
+   (`isin`, `issuer_lei`, `issuer_lei_status`, `asset_cat`), `nport_identifiers`.
+   Meldende Gesellschaft = Registrant (CIK); Konsens «zwei unabhängige Gesellschaften»
+   heisst zwei verschiedene CIK. GLEIF-Status je LEI: `ingestion/gleif_level1.py`
+   (`load_lei_records`), Liste unter `raw/external/gleif_lei2_golden_copy/2026-11-15/`.
+   Abfragen auf die Datenbank nur lesend (`?mode=ro`), sie ist 4.8 GB gross.
 
 ## Pilot (sechs echte schwedische Fonds, je 30.06.2026)
 
