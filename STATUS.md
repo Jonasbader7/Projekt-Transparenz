@@ -70,8 +70,9 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
 1. Wie in CLAUDE.md: STATUS, DECISIONS (ab D-049) und die letzten LOG-Einträge lesen.
 2. Echte Ergebnisse: `C:\TransparenzDaten\notizen\PILOT_ERGEBNISSE.md` (lokal). Nie in
    versionierte Dateien übernehmen (D-053); vor jedem Push prüfen.
-3. Plan: `docs/ROADMAP.md`. Phase 2 läuft (Stamm steht, Freigabe offen); Downloads brauchen
-   Jonas' Zustimmung, alles andere läuft ohne Einzelentscheide (D-049).
+3. Plan: `docs/ROADMAP.md`. Phase 2: Stamm steht, Freigabe der Namenssuche je Region umgesetzt
+   (D-056–D-058); offen ist der N-PORT-Konsens als direkter Kennungsweg im Pilot. Downloads
+   brauchen Jonas' Zustimmung, alles andere läuft ohne Einzelentscheide (D-049).
 4. Jeder Umbau der Fondskette: vorher und nachher `scripts\pilot_regression.py` (D-051).
 5. N-PORT-Regeln ändern = `RULE_VERSION` in `ingestion/sec_nport.py` erhöhen, dann
    `nport-update --force` (rund 20 Minuten, im Hintergrund laufen lassen).
@@ -79,8 +80,9 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
    Datenstand 2 (`dataset_versions.status = 'active'`). Tabellen `nport_submissions`
    (`fund_key`, `selection = 'current'`, `registrant_lei`, `cik`), `nport_holdings`
    (`isin`, `issuer_lei`, `issuer_lei_status`, `asset_cat`), `nport_identifiers`.
-   Meldende Gesellschaft = Registrant (CIK); Konsens «zwei unabhängige Gesellschaften»
-   heisst zwei verschiedene CIK. GLEIF-Status je LEI: `ingestion/gleif_level1.py`
+   Meldende Gesellschaft = Registrant (CIK); «unabhängig» heisst seit D-056 verschiedene
+   Beratergruppen (CIK und N-CEN-Berater mit GLEIF-Konzern), nicht bloss verschiedene CIK.
+   GLEIF-Status je LEI: `ingestion/gleif_level1.py`
    (`load_lei_records`), Liste unter `raw/external/gleif_lei2_golden_copy/2026-11-15/`.
    Abfragen auf die Datenbank nur lesend (`?mode=ro`), sie ist 4.8 GB gross.
 7. Wertpapierstamm: `services/security_master.py` (Regel je ISIN `classify`, rein
@@ -100,12 +102,12 @@ Ergebnisse je Fonds mit Namen stehen nur lokal in
 `C:\TransparenzDaten\notizen\PILOT_ERGEBNISSE.md` (Regel: echte Ergebnisse nie in
 versionierte Dateien). Öffentlich nur die Methode und die Messwerte der Zuordnung:
 
-- Abdeckung (Fondsgewicht mit widerspruchsfreier Zuordnung) je Fonds zwischen 44 und 81 %;
-  ausserhalb globaler Grosswerte kennt Wikidata oft keinen LEI.
-- Präzision der Namenssuche (unabhängig): 196 von 201 richtig, untere 95-%-Grenze 94.8 %
-  (Schwelle 97 %) → nicht freigegeben. Die Wikidata-Referenz ist in mehreren Fällen selbst
-  falsch. Lösung ohne Handarbeit: Referenz aus N-PORT (Phase 2).
-- Registernummer (Wikidata ↔ GLEIF): 102 von 103 richtig, wirkt als Kennung.
+- Abdeckung (Fondsgewicht mit widerspruchsfreier Zuordnung) je Fonds: ohne Wertpapierstamm
+  44–81 %, mit Wertpapierstamm (`--security-master`, D-058) 70–86 %.
+- Namenssuche an der N-PORT-Referenz (unabhängig): 645 von 649 richtig, freigegeben in Europa
+  und Asien-Pazifik; Nordamerika und übrige noch zu wenige Fälle. Ohne Wertpapierstamm (alte
+  Wikidata-Referenz): 196 von 201, nicht freigegeben.
+- Registernummer (Wikidata ↔ GLEIF): 115 von 116 richtig an N-PORT, wirkt als Kennung.
 
 ## Befehle
 
@@ -113,8 +115,9 @@ versionierte Dateien). Öffentlich nur die Methode und die Messwerte der Zuordnu
 cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 .venv\Scripts\python -m pytest -q
 # Vergleichslauf: sechs Pilotfonds offline rechnen und mit einem früheren Lauf vergleichen
-.venv\Scripts\python scripts\pilot_regression.py run neu
-.venv\Scripts\python scripts\pilot_regression.py compare herkunft neu
+# (aktueller Stand: p2_nport; rund 35 Minuten mit zwei Durchgängen, im Hintergrund)
+.venv\Scripts\python scripts\pilot_regression.py run neu --security-master --passes 2
+.venv\Scripts\python scripts\pilot_regression.py compare p2_nport neu --json-only --ignore-key provenance
 # SEC N-PORT: lokale Archive einlesen, Qualitätsbericht; neues Quartal nur nach Zustimmung
 .venv\Scripts\python -m transparenz nport-update --force
 .venv\Scripts\python -m transparenz nport-download 2026q4            # nennt nur Name und Grösse
@@ -127,7 +130,10 @@ cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 .venv\Scripts\python scripts\pilot_fund_chain.py --zip data\raw\external\fi_se_fondinnehav\2026Q2\Fondinnehav_2026Q2.zip --fund "<exakter Fondsname>" --ets-dir data\raw\external\eu_ets_union_registry\2026-11-11 --gleif-rr data\raw\external\gleif_rr_golden_copy\2026-11-11\gleif-goldencopy-rr.csv.zip --gem-dir data\raw\external\gem\2026-11-11\extracted
 ```
 
-Berichte mit Herkunftsabschnitt: `C:\TransparenzDaten\processed\pilot_regression\herkunft\*.html`
+Aktuelle Berichte: `C:\TransparenzDaten\processed\pilot_regression\p2_nport\*.html`
+(mit Wertpapierstamm). Vergleich mit älteren Läufen (`herkunft`) zeigt zusätzlich eine neuere
+Schweizer Exportgeneration (täglicher Task), deshalb Ausgangsstand immer frisch rechnen.
+Ältere Berichte mit Herkunftsabschnitt: `C:\TransparenzDaten\processed\pilot_regression\herkunft\*.html`
 (Vorschau: Startkonfiguration `pilot-report`, 127.0.0.1:8611). Die Berichte unter
 `processed\pilot_fund_chain\` stammen vom 14.11.2026 und erhalten den Abschnitt beim nächsten Lauf.
 
@@ -135,7 +141,10 @@ Berichte mit Herkunftsabschnitt: `C:\TransparenzDaten\processed\pilot_regression
 
 1. **N-PORT-Konsens als Kennungsweg im Pilot:** Bestätigte ISIN → LEI direkt zuordnen (wie
    eine Kennung, vor Wikidata), statt sie nur als Referenz zu nutzen; mit Vergleichslauf.
-   Dann die Messung so trennen, dass die Referenz nicht zugleich Zuordnung ist.
+   Dann die Messung so trennen, dass die Referenz nicht zugleich Zuordnung ist (heute
+   misst `reference_cases` die Namensvorschläge aus `auto_match` jeder Position, unabhängig
+   davon, welcher Weg die Position zuordnet; das muss so bleiben). Neue Zuordnungsart
+   braucht Label in `entities/labels.py` und zählt in `CONFIRMED_MAPPING` (`services/fund_chain.py`).
 2. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
    denselben Prüfweg hat wie N-PORT.
 3. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
