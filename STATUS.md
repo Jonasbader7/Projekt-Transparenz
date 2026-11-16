@@ -1,6 +1,6 @@
 # STATUS
 
-Stand: **15.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verlauf steht in
+Stand: **16.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verlauf steht in
 `docs/LOG.md`, die Begründungen in `docs/DECISIONS.md`, der Plan in `docs/ROADMAP.md`.
 
 ## Phase
@@ -19,7 +19,7 @@ Nächste Phase: 2 (Wertpapierstamm ISIN → LEI aus Fondsmeldungen).
 | Kriterienmodell | Schema 2, Profil «streng» 1.1, 12 aktive Kriterien, 7 Beziehungstypen (D-045–D-048) |
 | Zuordnung | ISIN → Wikidata → LEI und Registernummer wirken; GLEIF-Namenssuche gemessen, **nicht freigegeben** (D-046) |
 | Website (`site/`) | fiktive Demo, unverändert |
-| Tests | **361 bestanden** (16 neu für N-PORT), Ruff sauber |
+| Tests | **364 bestanden** (19 neu für N-PORT und GLEIF), Ruff sauber |
 
 ## SEC N-PORT, Quartal 2026q3 (Messwerte, ohne Namen)
 
@@ -39,8 +39,9 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
 | beides gültig | 68.29 %; 399'511 verschiedene ISIN, 28'586 verschiedene Emittenten-LEI |
 | nur Aktien (`EC`, 1'839'164) | ISIN 98.49 %, LEI 81.41 %, beides 80.68 % |
 | Gewichtssumme je Meldung | Median 100.00 %; 81.64 % der Meldungen zwischen 95 und 105 % (Derivate, Leerverkäufe, Verbindlichkeiten) |
-| LEI aktiv bei GLEIF | **nicht gemessen**: braucht die vollständige GLEIF-Liste (Download offen, unten) |
-| Laufzeit / Speicher | Import rund 19–22 Minuten; Datenbank 4.8 GB (davon rund 2.4 GB ersetzter erster Stand) |
+| LEI bei GLEIF (Liste Level 1 vom 15.11.2026) | von 28'586 Emittenten-LEI: **99.97 % vorhanden** (10 fehlen), Rechtsträger **aktiv 98.66 %** (inaktiv 316, Duplikat/annulliert 57), Datensatz gepflegt (ISSUED) 72.41 %, überfällig (LAPSED) 26.24 %; gewichtet nach Positionen aktiv 99.58 %, aktiv und gepflegt 80.69 % |
+| Serien-LEI der Fonds | 13'821 gemeldet, 100 % bei GLEIF, aktiv 99.35 %, gepflegt 95.43 % |
+| Laufzeit / Speicher | Import rund 19–22 Minuten, GLEIF-Abgleich rund 4 Minuten (danach zwischengespeichert); Datenbank 4.8 GB (davon rund 2.4 GB ersetzter erster Stand) |
 
 ## Für die nächste Session
 
@@ -88,22 +89,21 @@ Berichte mit Herkunftsabschnitt: `C:\TransparenzDaten\processed\pilot_regression
 
 ## Nächste drei Schritte
 
-1. **GLEIF-Liste Level 1 laden** (`…-gleif-goldencopy-lei2-golden-copy.csv.zip`, 486.08 MB,
-   3'494'789 Einträge, goldencopy.gleif.org, CC0) – braucht deine Zustimmung. Damit: «LEI
-   existiert und ist aktiv» für die 28'586 gemeldeten Emittenten-LEI messen.
-2. **Phase 2: Wertpapierstamm ISIN → LEI** aus N-PORT (bestätigt, wenn mindestens zwei
-   unabhängige Fondsgesellschaften denselben LEI melden und keine widerspricht), dann
+1. **Phase 2: Wertpapierstamm ISIN → LEI** aus N-PORT (bestätigt, wenn mindestens zwei
+   unabhängige Fondsgesellschaften denselben LEI melden und keine widerspricht), geprüft
+   gegen die GLEIF-Liste (vorhanden, aktiv; Duplikate über den Nachfolge-LEI), dann
    Messung der GLEIF-Namenssuche gegen diese Referenz, je Region (D-046, D-049).
-3. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
+2. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
    denselben Prüfweg hat wie N-PORT.
+3. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
+   vergleichen: nur bei identischen Positionen eine übernehmen, sonst offen lassen.
 
 ## Offene Fragen (nur Grundsätzliches)
 
-1. Zustimmung zum Download der GLEIF-Liste Level 1 (486.08 MB, oben).
-2. Ersetzten ersten N-PORT-Stand (rund 2.4 GB, falsche Fondsregel, aus dem Archiv
+1. Ersetzten ersten N-PORT-Stand (rund 2.4 GB, falsche Fondsregel, aus dem Archiv
    reproduzierbar) aus `nport.sqlite` löschen?
-3. Ordner `analytics-dashboard-update/` (nicht Teil dieses Projekts): verschieben oder löschen?
-4. Später, vor jeder Veröffentlichung: schriftliche Lizenzbestätigungen (SEC, FI,
+2. Ordner `analytics-dashboard-update/` (nicht Teil dieses Projekts): verschieben oder löschen?
+3. Später, vor jeder Veröffentlichung: schriftliche Lizenzbestätigungen (SEC, FI,
    EU-Kommission) und einmalige Rechtsprüfung (Kosten).
 
 Die Bewertungsregeln (Schwellen, Notstrom, Korruptionsdauer usw.) setzen wir mit begründetem
@@ -131,6 +131,7 @@ Standard selbst und kennzeichnen sie als unsere Bewertungsentscheidung (D-049).
 | Wikidata weltweit | 15'624 Firmen-/Ticker-Kandidaten |
 | SEC-Marktkatalog | 44'085 Einträge (USA) |
 | SEC N-PORT 2026q3 | 14'066 Meldungen, 5'627'083 Positionen (Archiv 441 MB, Datenbank 4.8 GB) |
+| GLEIF-Liste Level 1 | 3'494'789 LEI-Datensätze, Stand 15.11.2026 (Archiv 486 MB, CC0) |
 | SwissPRTR | 247 Standorte; 22'860 Emissionszeilen |
 | Speicher | `C:\TransparenzDaten` rund 3.9 GB; Festplatte 34 GB frei |
 | Tägliches Update | Windows-Task `ProjektTransparenz-DailyDataUpdate` (findet den Datenordner über `.env`) |

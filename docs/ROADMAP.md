@@ -42,8 +42,8 @@ werden die Zahl der abgedeckten ISINs und der Anteil am Fondsgewicht, nie «100 
 
 ### Phase 1 – SEC N-PORT importieren (umgesetzt 15.11.2026, D-054)
 
-Stand: 2026q3 geladen und eingelesen, 0 abgelehnte Zeilen; Messwerte in STATUS.md. Offen:
-«LEI aktiv bei GLEIF» (braucht die GLEIF-Liste Level 1, Download nach Zustimmung).
+Stand: 2026q3 geladen und eingelesen, 0 abgelehnte Zeilen; gemeldete LEI gegen die
+GLEIF-Liste Level 1 geprüft (D-055). Messwerte in STATUS.md.
 
 
 - Download `2026q3_nport.zip` (440.95 MB, sec.gov), nur mit Zustimmung.

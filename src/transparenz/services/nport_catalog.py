@@ -12,6 +12,7 @@ import statistics
 from collections import Counter
 from dataclasses import replace
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy import select, text
@@ -21,11 +22,12 @@ from transparenz.database.models import DatasetVersion, UpdateRun
 from transparenz.database.repository import active_versions
 from transparenz.entities.enums import UpdateStatus
 from transparenz.ingestion.external import atomic_json
+from transparenz.ingestion.gleif_level1 import latest_snapshot, load_lei_records
 from transparenz.ingestion.sec_nport import SOURCE_KEY
 from transparenz.services.context import AppContext, create_context
 from transparenz.services.swiss_foundation import foundation_lock
 
-REPORT_SCHEMA = 1
+REPORT_SCHEMA = 2
 
 
 def create_nport_context() -> AppContext:
@@ -54,7 +56,78 @@ def _month(value: Any) -> str:
     return str(value)[:7]
 
 
-def quality_report(ctx: AppContext) -> dict[str, Any]:
+def _summarize(weights: dict[str, int], records: dict[str, Any]) -> dict[str, Any]:
+    """LEI zählen (je LEI und gewichtet mit der Zahl der Positionen)."""
+    leis = len(weights)
+    holdings = sum(weights.values())
+    entity: Counter = Counter()
+    registration: Counter = Counter()
+    weighted: Counter = Counter()
+    for lei, n in weights.items():
+        rec = records.get(lei)
+        if rec is None:
+            entity["NOT_FOUND"] += 1
+            registration["NOT_FOUND"] += 1
+            weighted["not_found"] += n
+            continue
+        entity[rec.entity_status or "(leer)"] += 1
+        registration[rec.registration_status] += 1
+        weighted["found"] += n
+        if rec.entity_status == "ACTIVE":
+            weighted["active"] += n
+            if rec.registration_status == "ISSUED":
+                weighted["active_and_issued"] += n
+    active_issued = sum(1 for lei in weights if (rec := records.get(lei)) is not None
+                        and rec.entity_status == "ACTIVE" and rec.registration_status == "ISSUED")
+    return {
+        "leis": leis,
+        "found": _share(leis - entity["NOT_FOUND"], leis),
+        "entity_status": {k: _share(v, leis) for k, v in entity.most_common()},
+        "registration_status": {k: _share(v, leis) for k, v in registration.most_common()},
+        "active_and_issued": _share(active_issued, leis),
+        "holdings_weighted": {
+            "holdings": holdings,
+            "found": _share(weighted["found"], holdings),
+            "entity_active": _share(weighted["active"], holdings),
+            "entity_active_and_issued": _share(weighted["active_and_issued"], holdings)},
+    }
+
+
+def gleif_check(issuer_counts: dict[str, int], series_leis: set[str], data_dir: Path | None,
+                cache_dir: Path | None, nport_hash: str) -> dict[str, Any]:
+    """Gemeldete LEI gegen die lokale GLEIF-Liste Level 1 prüfen (Ergebnis zwischengespeichert)."""
+    snapshot = latest_snapshot(data_dir) if data_dir is not None else None
+    if snapshot is None:
+        return {"status": "not_measured", "reason": "Keine lokale GLEIF-Liste Level 1 "
+                "(raw/external/gleif_lei2_golden_copy)."}
+    cache = (cache_dir / f"gleif_check_{snapshot.sha256[:16]}_{nport_hash[:16]}.json"
+             if cache_dir is not None else None)
+    if cache is not None and cache.is_file():
+        return json.loads(cache.read_bytes())
+    assert data_dir is not None
+    records, rows = load_lei_records(data_dir / snapshot.path, set(issuer_counts) | series_leis)
+    result = {
+        "status": "measured",
+        "gleif_file": snapshot.as_dict(),
+        "gleif_rows_read": rows,
+        "issuer_lei": _summarize(issuer_counts, records),
+        "series_lei": _summarize({lei: 1 for lei in series_leis}, records),
+        "definitions": {
+            "found": "LEI steht in der GLEIF-Liste Level 1 (alle je vergebenen LEI).",
+            "entity_active": "Entity.EntityStatus = ACTIVE: Rechtsträger besteht laut GLEIF.",
+            "issued": "Registration.RegistrationStatus = ISSUED: Datensatz gepflegt; LAPSED = "
+                      "Verlängerung überfällig, Angaben evtl. veraltet.",
+            "timing": "GLEIF-Stand vom Stichtag der Datei, N-PORT-Stichtage einige Monate "
+                      "früher: ein seither erloschener Rechtsträger zählt als nicht aktiv.",
+        },
+    }
+    if cache is not None:
+        atomic_json(cache, result)
+    return result
+
+
+def quality_report(ctx: AppContext, data_dir: Path | None = None,
+                   cache_dir: Path | None = None) -> dict[str, Any]:
     """Messwerte des aktiven N-PORT-Datenstands (Phase 1 der Roadmap)."""
     with ctx.session_factory() as session:
         version: DatasetVersion | None = active_versions(session).get(SOURCE_KEY)
@@ -116,10 +189,15 @@ def quality_report(ctx: AppContext) -> dict[str, Any]:
         pct_sums = [r[0] for r in _rows(conn, f"SELECT SUM(h.percentage) {scope} "
                                         "GROUP BY h.quarter, h.accession", v=v)
                     if r[0] is not None]
+        issuer_counts = dict(_rows(conn, f"SELECT h.issuer_lei, COUNT(*) {scope} "
+                                   "AND h.issuer_lei IS NOT NULL GROUP BY 1", v=v))
         orphan_ids = _one(conn, "SELECT COUNT(*) FROM nport_identifiers i WHERE "
                           "i.dataset_version_id = :v AND NOT EXISTS (SELECT 1 FROM "
                           "nport_holdings h WHERE h.dataset_version_id = i.dataset_version_id "
                           "AND h.quarter = i.quarter AND h.holding_id = i.holding_id)", v=v)
+
+    gleif = gleif_check(issuer_counts, {r[7] for r in current if r[7]}, data_dir, cache_dir,
+                        version.content_hash)
 
     def status_shares(counts: dict[str, int]) -> dict[str, Any]:
         return {k: _share(n, total) for k, n in sorted(counts.items(), key=lambda x: -x[1])}
@@ -176,11 +254,7 @@ def quality_report(ctx: AppContext) -> dict[str, Any]:
                                              len(pct_sums))},
             "identifiers_without_holding": orphan_ids,
         },
-        "not_measured": {
-            "issuer_lei_active_at_gleif": "Nicht gemessen: braucht die vollständige "
-            "GLEIF-Liste (Golden Copy Level 1); lokal liegen nur Teilbestände (CH, "
-            "Konzernbeziehungen). Download erst nach Zustimmung.",
-        },
+        "gleif_check": gleif,
         "notes": [
             "Scope der Positionswerte: nur Meldungen mit Auswahl «current» (jüngster Stichtag "
             "je Fonds, letzte Einreichung). Fonds = Serie, ohne Serie der Registrant. "
@@ -205,7 +279,7 @@ def update_nport(force: bool = False, report_only: bool = False) -> tuple[dict, 
                 for line in (outcome.errors + outcome.warnings)[:20]:
                     print(f"  {line}", flush=True)
                 failed = outcome.status in {UpdateStatus.FEHLGESCHLAGEN, UpdateStatus.GESPERRT}
-            report = quality_report(ctx)
+            report = quality_report(ctx, ctx.settings.data_dir, folder)
             atomic_json(folder / "quality_report.json", report)
             print(f"Qualitätsbericht: {folder / 'quality_report.json'}")
             return report, failed

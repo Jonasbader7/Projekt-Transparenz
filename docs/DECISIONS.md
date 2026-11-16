@@ -1,5 +1,25 @@
 # Entscheidungslog
 
+## 16.11.2026 – Phase 1: gemeldete LEI gegen GLEIF prüfen (Claude, Auftrag Jonas)
+
+### D-055 GLEIF-Liste Level 1 als lokale Prüfquelle für gemeldete LEI
+- **Entscheid (Jonas: «Ja, GLEIF laden»):** Golden Copy Level 1 vom 15.11.2026 16:00
+  (509'687'964 Bytes, 3'494'789 Datensätze, CC0) liegt unverändert in
+  `raw/external/gleif_lei2_golden_copy/2026-11-15/` mit Begleitdatei. `ingestion/
+  gleif_level1.py` liest sie direkt aus dem ZIP und behält nur die gesuchten LEI.
+- **Definitionen:** «vorhanden» = LEI steht in der Liste; «aktiv» = `Entity.EntityStatus =
+  ACTIVE` (Rechtsträger besteht); «gepflegt» = `Registration.RegistrationStatus = ISSUED`.
+  `LAPSED` (Verlängerung überfällig) heisst nicht, dass der Rechtsträger erloschen ist, nur
+  dass die Angaben veraltet sein können. Beides wird getrennt ausgewiesen, je LEI und
+  gewichtet mit der Zahl der Positionen.
+- **Zeitpunkt:** GLEIF-Stand 15.11.2026, N-PORT-Stichtage Mai–Juli 2026. Ein seither
+  erloschener Rechtsträger zählt als nicht aktiv; das wird im Bericht genannt, nicht
+  korrigiert.
+- **Zwischenspeicher:** Ergebnis je Paar (GLEIF-Prüfsumme, N-PORT-Datenstand) in
+  `processed/nport/gleif_check_*.json`; neue GLEIF-Datei oder neuer Stand = neue Messung.
+- **Noch keine Bereinigung:** Duplikate (`DUPLICATE`) und Nachfolger werden gezählt, aber
+  nicht ersetzt. Das gehört zum Wertpapierstamm (Phase 2).
+
 ## 15.11.2026 – Phase 1: SEC N-PORT importieren (Claude, Auftrag Jonas)
 
 ### D-054 N-PORT als eigener, geprüfter Bestand im Update-System
@@ -35,8 +55,8 @@
   jüngste Stichtag «current». Ob eine Berichtigung immer die ganze Meldung ersetzt, steht
   nicht in der Readme und ist nicht verifiziert.
 - **Messwerte** im Qualitätsbericht (`processed/nport/quality_report.json`), alle per SQL aus
-  dem aktiven Stand, Zähler und Nenner zusammen. «LEI aktiv bei GLEIF» bleibt «nicht
-  gemessen», bis die vollständige GLEIF-Liste vorliegt.
+  dem aktiven Stand, Zähler und Nenner zusammen. «LEI aktiv bei GLEIF» seit 16.11.2026
+  gemessen (D-055).
 - **Lizenz:** wie die übrigen SEC-Quellen (öffentliche Information, Weiterverbreitung ohne
   Erlaubnis; gewerbliche Nutzung nicht wörtlich genannt). Interne Messung; Veröffentlichung
   erst nach schriftlicher Bestätigung (Roadmap Phase 5).

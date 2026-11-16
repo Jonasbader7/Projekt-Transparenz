@@ -2,6 +2,24 @@
 
 Neueste Einträge oben.
 
+## 16.11.2026 – Claude (Opus 5.5): gemeldete LEI gegen GLEIF prüfen (D-055)
+
+- Auftrag Jonas: «Ja, GLEIF laden».
+- **Download:** GLEIF-Metadaten erneut gelesen (unverändert: Stand 15.11.2026 16:00,
+  486.08 MB), dann `gleif-goldencopy-lei2.csv.zip` geladen (509'687'964 Bytes, 43 s),
+  Archiv geprüft, Begleitdatei mit SHA-256 geschrieben.
+- **Neu:** `ingestion/gleif_level1.py` (Herkunftsprüfung, nur gesuchte LEI, doppelte LEI =
+  Fehler); im N-PORT-Bericht Abschnitt `gleif_check` (je LEI und gewichtet nach Positionen,
+  Zwischenspeicher je Paar aus GLEIF-Datei und N-PORT-Stand). Berichtschema 2.
+- **Ergebnis (28'586 Emittenten-LEI im gültigen Stand):** vorhanden 99.97 % (10 fehlen),
+  aktiv 98.66 %, inaktiv 316, Duplikat/annulliert 57; gepflegt 72.41 %, überfällig 26.24 %.
+  Gewichtet nach Positionen: aktiv 99.58 %, aktiv und gepflegt 80.69 %. Serien-LEI der
+  Fonds: 13'821, alle vorhanden, aktiv 99.35 %. Laufzeit 249 s.
+- **Geprüft:** pytest 364 bestanden (3 neu, fiktiv), Ruff sauber. Pilot und Website nicht
+  betroffen.
+- Skills: keine verwendet. Werkzeuge: Shell (Git Bash, PowerShell), Dateiwerkzeuge,
+  Hintergrundläufe mit Überwachung, curl (GLEIF-Metadaten und Download). Kein Push.
+
 ## 15.11.2026 – Claude (Opus 5.5): Phase 1 – SEC N-PORT importieren (D-054)
 
 - Auftrag Jonas: «Ich stimme dem N-PORT-Download zu, starte Phase 1.»

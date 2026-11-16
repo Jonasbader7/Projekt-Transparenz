@@ -575,6 +575,15 @@ sorgfältige Lektüre der Bedingungen, keine juristische Prüfung (siehe `docs/r
   «provided according to the mapping process established by … ANNA»). **Diese Abfragen nutzt
   der Adapter bewusst nicht.** Wieder aufnehmen erst nach schriftlicher Klärung der Lizenz.
 
+### GLEIF – Golden Copy Level 1 (alle LEI-Datensätze) · Ergebnis: **lokal integriert als Prüfquelle (D-055)**
+
+| | |
+|---|---|
+| Original-URL | https://goldencopy.gleif.org/api/v2/golden-copies/publishes/latest (Metadaten, Datei-Link) ; Bedingungen: https://www.gleif.org/en/meta/lei-data-terms-of-use |
+| Lizenz | **CC0 1.0** (wie die bereits genutzte Level-2-Datei; Bedingungen am 08.11.2026 gelesen) |
+| Lokaler Stand | `raw/external/gleif_lei2_golden_copy/2026-11-15/gleif-goldencopy-lei2.csv.zip`, 509'687'964 Bytes, SHA-256 `7e8158b9…7f03`, Stand 15.11.2026 16:00, Format LEI_3.1, 3'494'789 Datensätze, abgerufen 16.11.2026 (Zustimmung Jonas). Entpackt 5.1 GB, 338 Spalten. |
+| Verwendung | Prüfung gemeldeter LEI (vorhanden, `Entity.EntityStatus`, `Registration.RegistrationStatus`); später Grundlage des Wertpapierstamms. Keine Abfrage der ISIN-Zuordnung von GLEIF/ANNA (Lizenz ungeklärt, siehe oben). |
+
 ### SEC – Form N-PORT Data Sets · Ergebnis: **integriert (lokal, D-054); Messung Phase 1**
 
 | | |

@@ -264,7 +264,7 @@ def test_quality_report_counts_current_filings_only(tmp_path, manager, session_f
     assert f["report_date_in_fiscal_quarter_end_month"]["count"] == 2
     assert report["funds"]["series_distinct"] == 2
     assert report["funds"]["funds_distinct"] == 2
-    assert "issuer_lei_active_at_gleif" in report["not_measured"]
+    assert report["gleif_check"]["status"] == "not_measured"
 
 
 def test_invalid_rows_are_rejected_and_counted(tmp_path, manager, session_factory):
@@ -404,3 +404,85 @@ def test_download_refuses_short_body_bad_quarter_and_missing_contact(tmp_path):
         download_quarter("2026-3", tmp_path, "test@example.org", confirm=False)
     with pytest.raises(ValueError, match="TRANSPARENZ_SEC_CONTACT"):
         download_quarter("2026q3", tmp_path, "", confirm=False)
+
+
+# --------------------------------------------------------------------------- GLEIF Level 1
+
+GLEIF_COLUMNS = ("LEI", "Entity.LegalName", "Entity.LegalAddress.Country", "Entity.EntityStatus",
+                 "Entity.SuccessorEntity.1.SuccessorLEI", "Registration.LastUpdateDate",
+                 "Registration.RegistrationStatus", "Registration.NextRenewalDate")
+
+
+def place_gleif(root: Path, rows: list[dict[str, str]], recorded_sha: str | None = None) -> Path:
+    import csv as _csv
+
+    text_out = io.StringIO()
+    writer = _csv.DictWriter(text_out, fieldnames=list(GLEIF_COLUMNS), quoting=_csv.QUOTE_ALL)
+    writer.writeheader()
+    writer.writerows([{c: r.get(c, "") for c in GLEIF_COLUMNS} for r in rows])
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("fiktiv-lei2.csv", text_out.getvalue())
+    folder = root / "data/raw/external/gleif_lei2_golden_copy/2026-11-15"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / "gleif-goldencopy-lei2.csv.zip"
+    path.write_bytes(out.getvalue())
+    (folder / "source.metadata.json").write_text(json.dumps({
+        "source_key": "gleif_lei2_golden_copy", "license": "fiktiv",
+        "size_bytes": len(out.getvalue()),
+        "sha256": recorded_sha or hashlib.sha256(out.getvalue()).hexdigest()}), encoding="utf-8")
+    return path
+
+
+def test_gleif_check_counts_found_active_and_weighted(tmp_path, manager, session_factory):
+    place(tmp_path, zip_bytes(default_tables()))
+    assert manager.run_source("sec_nport", force=True).status == UpdateStatus.ERFOLGREICH
+    other = make_lei("FIKT00NPORTOTHER01")
+    place_gleif(tmp_path, [
+        {"LEI": LEI_ISSUER, "Entity.EntityStatus": "ACTIVE",
+         "Registration.RegistrationStatus": "LAPSED", "Entity.LegalAddress.Country": "ZZ",
+         "Registration.LastUpdateDate": "2025-01-02T00:00:00Z"},
+        {"LEI": other, "Entity.EntityStatus": "INACTIVE",
+         "Registration.RegistrationStatus": "RETIRED"},
+    ])
+    cache = tmp_path / "cache"
+    report = quality_report(SimpleNamespace(session_factory=session_factory),
+                            tmp_path / "data", cache)
+    g = report["gleif_check"]
+    assert g["status"] == "measured" and g["gleif_rows_read"] == 2
+    assert g["gleif_file"]["status"] == "verified"
+    issuer = g["issuer_lei"]
+    # Im gültigen Stand nennt nur Position 11 einen gültigen LEI (LEI_ISSUER).
+    assert issuer["leis"] == 1 and issuer["found"]["count"] == 1
+    assert issuer["registration_status"] == {"LAPSED": {"count": 1, "of": 1, "percent": 100.0}}
+    assert issuer["active_and_issued"]["count"] == 0
+    assert issuer["holdings_weighted"]["entity_active"]["count"] == 1
+    # Serien-LEI von Fonds Eins fehlt in der fiktiven GLEIF-Liste.
+    assert g["series_lei"]["found"]["count"] == 0
+    assert g["series_lei"]["entity_status"]["NOT_FOUND"]["count"] == 1
+    assert list(cache.glob("gleif_check_*.json"))
+    again = quality_report(SimpleNamespace(session_factory=session_factory),
+                           tmp_path / "data", cache)
+    assert again["gleif_check"] == g
+
+
+def test_gleif_archive_with_changed_content_is_refused(tmp_path, manager, session_factory):
+    from transparenz.services.provenance import ProvenanceError
+
+    place(tmp_path, zip_bytes(default_tables()))
+    assert manager.run_source("sec_nport", force=True).status == UpdateStatus.ERFOLGREICH
+    place_gleif(tmp_path, [{"LEI": LEI_ISSUER, "Entity.EntityStatus": "ACTIVE",
+                            "Registration.RegistrationStatus": "ISSUED"}],
+                recorded_sha="0" * 64)
+    with pytest.raises(ProvenanceError):
+        quality_report(SimpleNamespace(session_factory=session_factory), tmp_path / "data")
+
+
+def test_gleif_duplicate_lei_is_an_error(tmp_path):
+    from transparenz.ingestion.gleif_level1 import load_lei_records
+
+    row = {"LEI": LEI_ISSUER, "Entity.EntityStatus": "ACTIVE",
+           "Registration.RegistrationStatus": "ISSUED"}
+    path = place_gleif(tmp_path, [row, row])
+    with pytest.raises(ValueError, match="doppelt"):
+        load_lei_records(path, {LEI_ISSUER})
