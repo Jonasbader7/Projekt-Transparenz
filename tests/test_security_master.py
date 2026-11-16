@@ -359,14 +359,14 @@ def test_pilot_methods_are_measured_against_confirmed_reference(tmp_path):
     conn.commit()
     conn.close()
 
-    def position(isin: str, name_lei: str | None) -> dict:
-        return {"isin": isin, "isin_valid": True, "auto_match": {
+    def position(isin: str, name_lei: str | None, country: str = "SE") -> dict:
+        return {"isin": isin, "isin_valid": True, "issuer_country": country, "auto_match": {
             "name": {"lei": name_lei, "status": "accepted" if name_lei else "no_match"}}}
 
     pilot = tmp_path / "pilot"
     pilot.mkdir()
     test_fund = {"fund": {"fund_name": "Fiktiv Testfonds"}, "positions": [
-        position(i1, A), position(i2, A), position(i3, B), position(i4, None)]}
+        position(i1, A), position(i2, A, "US"), position(i3, B), position(i4, None)]}
     dev_fund = {"fund": {"fund_name": sorted(DEVELOPMENT_FUNDS)[0]},
                 "positions": [position(i4, A)]}
     (pilot / "test.json").write_text(json.dumps(test_fund), encoding="utf-8")
@@ -386,3 +386,20 @@ def test_pilot_methods_are_measured_against_confirmed_reference(tmp_path):
     assert (wikidata["reference_cases"], wikidata["answered"], wikidata["correct"]) == (3, 1, 1)
     assert result["reference"]["status_of_pilot_isins"] == {"confirmed": 3, "conflict": 1}
     assert "released" not in name["all"] and name["all"]["meets_release_rule"] is False
+
+
+def test_confirmed_reference_returns_only_confirmed_isins(tmp_path):
+    from transparenz.services.security_master import _SCHEMA_SQL, confirmed_reference
+
+    i1, i2 = make_isin("ZZREF000001"), make_isin("ZZREF000002")
+    db = tmp_path / "sm.sqlite"
+    conn = sqlite3.connect(db)
+    conn.executescript(_SCHEMA_SQL)
+    conn.executemany("INSERT INTO securities (isin, lei, status, funds, ciks, independent, "
+                     "funds_without_lei, holdings) VALUES (?, ?, ?, 1, 1, 1, 0, 1)",
+                     [(i1, A, "confirmed"), (i2, B, "single_reporter")])
+    conn.execute("INSERT INTO build_info VALUES ('rule_version', '\"fiktiv\"')")
+    conn.commit()
+    conn.close()
+    found, info = confirmed_reference(db, [i1, i2, make_isin("ZZREF000003")])
+    assert found == {i1: A} and info["rule_version"] == "fiktiv"

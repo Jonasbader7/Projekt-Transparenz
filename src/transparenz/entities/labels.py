@@ -232,3 +232,8 @@ PROVENANCE_STATUS_LABELS = {
     "generated": "von uns erzeugt, Prüfsumme festgehalten",
     "unrecorded": "nicht erfasst",
 }
+
+# Regionen der Freigabe je Region (entity_matching.region_of, D-058)
+REGION_LABELS = {"north_america": "Nordamerika", "europe": "Europa",
+                 "asia_pacific": "Asien-Pazifik", "other": "übrige Länder",
+                 "unknown": "Land unbekannt"}

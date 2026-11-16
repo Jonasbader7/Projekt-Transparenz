@@ -69,6 +69,7 @@ from transparenz.services.fund_chain import (  # noqa: E402
 from transparenz.services.mapping_reference import (  # noqa: E402
     DISPUTES_FILE,
     REFERENCE_FILE,
+    REFERENCE_FILE_NPORT,
     SEARCH_CACHE_FILE,
     dispute_queue,
     evaluate_methods,
@@ -76,6 +77,7 @@ from transparenz.services.mapping_reference import (  # noqa: E402
 )
 from transparenz.services.provenance import describe_file, describe_generated  # noqa: E402
 from transparenz.services.review_decisions import index_decisions, load_decisions  # noqa: E402
+from transparenz.services.security_master import confirmed_reference  # noqa: E402
 
 DATA = local_data_dir(ROOT)  # Datenordner (TRANSPARENZ_DATA_DIR, sonst data/)
 
@@ -114,11 +116,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gleif-rr", type=Path, default=None,
                         help="lokale GLEIF-Beziehungsdatei (…-rr-golden-copy.csv.zip); "
                              "ersetzt die Mutterbeziehungs-Abfragen über die API")
+    parser.add_argument("--security-master", type=Path, default=None,
+                        help="Wertpapierstamm (processed/security_master.sqlite): N-PORT-Konsens "
+                             "als Referenz für die Freigabe der Namenssuche (D-058)")
     parser.add_argument("--case", action="append", default=[],
                         help="ISIN einer Position, deren Belegkette vollständig gezeigt wird "
                              "(mehrfach möglich)")
     args = parser.parse_args(argv)
-    for name in ("zip", "generation", "out", "ets_dir", "gem_dir", "decisions", "gleif_rr"):
+    for name in ("zip", "generation", "out", "ets_dir", "gem_dir", "decisions", "gleif_rr",
+                 "security_master"):
         value = getattr(args, name)
         if value is not None and not value.is_absolute() and value.parts[:1] == ("data",):
             setattr(args, name, resolve_data_path(value, ROOT))  # alte Befehle mit data\…
@@ -257,26 +263,37 @@ def main(argv: list[str] | None = None) -> int:
     model = load_criteria_model(get_settings().criteria_config)
     rules = criteria_rules(model)
 
-    def chain(released: bool) -> dict[str, Any]:
-        return build_chain(fund, candidates, emissions, gleif, ets, group_links, gem, decisions,
-                           auto, released, profiles, rules)
+    nport_reference: dict[str, str] | None = None
+    reference_info: dict[str, Any] | None = None
+    if args.security_master:
+        nport_reference, reference_info = confirmed_reference(
+            args.security_master, [p.isin for p in fund.positions if p.isin])
+        log.info("Wertpapierstamm (Regelversion %s, erstellt %s): %d Positionen mit "
+                 "N-PORT-Referenz.", reference_info["rule_version"], reference_info["built_at"],
+                 len(nport_reference))
 
-    # Erst messen (Namenssuche nicht wirksam), dann entscheiden, ob sie wirken darf.
+    def chain(released: bool | frozenset[str]) -> dict[str, Any]:
+        return build_chain(fund, candidates, emissions, gleif, ets, group_links, gem, decisions,
+                           auto, released, profiles, rules, nport_reference)
+
+    # Erst messen (Namenssuche nicht wirksam), dann entscheiden, wo sie wirken darf.
     report = chain(False)
-    store_path = args.out / REFERENCE_FILE
+    store_path = args.out / (REFERENCE_FILE_NPORT if args.security_master else REFERENCE_FILE)
     store = json.loads(store_path.read_text("utf-8")) if store_path.exists() else {}
     store = {k: v for k, v in store.items() if v.get("fund") != fund.fund_name}
-    store.update(reference_cases(report["positions"], fund.fund_name))
+    store.update(reference_cases(report["positions"], fund.fund_name, nport_reference))
     store_path.write_text(json.dumps(store, ensure_ascii=False, indent=1), "utf-8")
     evaluation = evaluate_methods(store)
-    released = evaluation["name"]["released"]
+    if reference_info is not None:
+        evaluation["reference"] = {"kind": "nport_consensus", **reference_info}
+    released = evaluation["name"]["released_regions"]
     log.info("Namenssuche: %s Referenzfälle, %s mit Ergebnis, %s falsch, Präzision %s, untere "
-             "95-%%-Grenze %s → %s.", evaluation["name"]["reference_cases"],
+             "95-%%-Grenze %s; freigegeben in: %s.", evaluation["name"]["reference_cases"],
              evaluation["name"]["answered"], evaluation["name"]["wrong"],
              evaluation["name"]["precision"], evaluation["name"]["precision_lower_bound_95"],
-             "freigegeben" if released else "nicht freigegeben")
+             ", ".join(released) or "keiner Region")
     if released:
-        report = chain(True)
+        report = chain(frozenset(released))
     report["mapping_evaluation"] = evaluation
     report["rules"] = rules
     report["cases"] = [c.upper() for c in args.case]
@@ -323,6 +340,10 @@ def main(argv: list[str] | None = None) -> int:
            "gespeicherte Abfrage (Branche, Registernummern)")
     record(cache_path, "gleif_api", "Zwischenspeicher der GLEIF-Namens- und Registersuche, "
                                     "fondsübergreifend")
+    if args.security_master and reference_info is not None:
+        record(args.security_master, "security_master",
+               f"Wertpapierstamm aus N-PORT, Regelversion {reference_info['rule_version']}, "
+               f"erstellt {reference_info['built_at']}; Eingaben in build_info")
     report["provenance"] = provenance
     (args.out / f"{stem}.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=1), "utf-8")

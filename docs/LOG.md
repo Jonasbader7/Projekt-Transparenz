@@ -2,6 +2,28 @@
 
 Neueste Einträge oben.
 
+## 16.11.2026 – Claude (Opus 5.5): Freigabe der Namenssuche an der N-PORT-Referenz (D-058)
+
+- Auftrag Jonas: «Ja, umstellen» (Freigabe der Namenssuche auf die N-PORT-Referenz).
+- **Umbau:** Referenz = menschlicher Entscheid, sonst N-PORT-Konsens (Wikidata nicht mehr
+  Referenz); eigener Speicher `mapping_reference_cases_nport.json`. Region je Position
+  (`entity_matching.position_region`), Messung und Freigabe je Region, Wirkung je Position
+  (`fund_chain.name_released_for`). Neue Option `--security-master` im Pilotskript (Herkunft
+  des Stamms im Bericht), Vergleichslauf mit `--security-master --passes 2`. Bericht zeigt
+  die Regionen. `security-master-compare` nutzt dieselbe Regionsregel.
+- **Vorfall:** Der erste Vorher-Lauf brach ab, weil ich den Code während des Laufs änderte
+  (jeder Fonds startet ein neues Python). Neu gerechnet aus einem separaten Arbeitsordner mit
+  dem letzten Commit; Arbeitsordner danach entfernt.
+- **Erster Lauf mit Stamm:** 7 neue Namenszuordnungen widersprachen dem Konsens (Töchter,
+  Schwestergesellschaften). Regel ergänzt: Ein Name wirkt nie gegen eine Kennung. Danach 0.
+- **Vergleich:** ohne Stamm 33/33 JSON gleich (neue Felder und Ordnernamen ausgenommen). Mit
+  Stamm: freigegeben Europa und Asien-Pazifik, 689 neue Namenszuordnungen (645 von N-PORT
+  bestätigt), bestätigte Abdeckung je Fonds 70–86 % statt 44–81 %. Ergebnisse mit Namen nur
+  lokal in `PILOT_ERGEBNISSE.md`.
+- **Geprüft:** pytest 382 bestanden (5 neu), Ruff sauber. Website nicht betroffen.
+- Skills: keine verwendet. Werkzeuge: Shell (Git Bash, PowerShell), Dateiwerkzeuge,
+  Hintergrundläufe mit Überwachung, Git-Arbeitsordner. Keine Downloads, kein Push.
+
 ## 16.11.2026 – Claude (Opus 5.5): Phase 2 – Wertpapierstamm ISIN → LEI (D-056, D-057)
 
 - Auftrag Jonas: «Starte Phase 2: Wertpapierstamm ISIN → LEI aus den N-PORT-Meldungen.»

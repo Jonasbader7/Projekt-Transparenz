@@ -573,3 +573,22 @@ def lookup(db_path: Path, isin: str) -> dict[str, Any] | None:
                 "built_at": info.get("built_at")}
     finally:
         conn.close()
+
+
+def confirmed_reference(db_path: Path, isins: Iterable[str]) -> tuple[dict[str, str],
+                                                                       dict[str, Any]]:
+    """Bestätigte ISIN → LEI für die gegebenen ISIN, dazu Regelversion und Erstellzeit."""
+    wanted = sorted({i.upper() for i in isins if i})
+    conn = open_readonly(db_path)
+    try:
+        found: dict[str, str] = {}
+        for i in range(0, len(wanted), 500):
+            chunk = wanted[i:i + 500]
+            marks = ", ".join("?" * len(chunk))
+            found.update(conn.execute(
+                f"SELECT isin, lei FROM securities WHERE status = 'confirmed' "
+                f"AND isin IN ({marks})", chunk).fetchall())
+        info = {k: json.loads(v) for k, v in conn.execute("SELECT key, value FROM build_info")}
+    finally:
+        conn.close()
+    return found, {"rule_version": info.get("rule_version"), "built_at": info.get("built_at")}

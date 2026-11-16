@@ -9,6 +9,12 @@ Code den Unterschied machen kann. Es wird nichts aus dem Netz geladen.
     python scripts/pilot_regression.py run nachher
     python scripts/pilot_regression.py compare vorher nachher
     python scripts/pilot_regression.py compare vorher neu --ignore-key provenance --json-only
+    python scripts/pilot_regression.py run nport --security-master --passes 2   # D-058
+
+Mit ``--security-master`` dient der Wertpapierstamm (processed/security_master.sqlite) als
+Referenz der Namenssuche. Die Freigabe hängt vom fondsübergreifenden Referenzspeicher ab, der
+im ersten Durchgang erst Fonds für Fonds entsteht; ``--passes 2`` rechnet deshalb alle Fonds
+ein zweites Mal mit vollständigem Speicher.
 """
 
 from __future__ import annotations
@@ -64,21 +70,26 @@ def freeze() -> None:
     print(f"Eingefroren: {len(list(FROZEN.iterdir()))} Dateien nach {FROZEN}")
 
 
-def run(label: str) -> None:
+SECURITY_MASTER = DATA / "processed/security_master.sqlite"
+
+
+def run(label: str, security_master: bool = False, passes: int = 1) -> None:
     if not FROZEN.exists():
         raise SystemExit("Zuerst 'freeze' ausführen.")
     out = BASE / label
     if out.exists():
         shutil.rmtree(out)
     shutil.copytree(FROZEN, out)
-    for fund, cases in FUNDS:
-        argv = [sys.executable, str(ROOT / "scripts/pilot_fund_chain.py"), *inputs(),
-                "--fund", fund, "--out", str(out),
-                "--decisions", str(out / "keine_entscheide.csv")]
-        for case in cases:
-            argv += ["--case", case]
-        print(f"-> {fund}", flush=True)
-        subprocess.run(argv, check=True, cwd=ROOT)
+    extra = ["--security-master", str(SECURITY_MASTER)] if security_master else []
+    for number in range(1, passes + 1):
+        for fund, cases in FUNDS:
+            argv = [sys.executable, str(ROOT / "scripts/pilot_fund_chain.py"), *inputs(),
+                    *extra, "--fund", fund, "--out", str(out),
+                    "--decisions", str(out / "keine_entscheide.csv")]
+            for case in cases:
+                argv += ["--case", case]
+            print(f"-> Durchgang {number}: {fund}", flush=True)
+            subprocess.run(argv, check=True, cwd=ROOT)
 
 
 def _strip(value: Any, ignore: frozenset[str] = frozenset()) -> Any:
@@ -145,7 +156,12 @@ def main(argv: list[str] | None = None) -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("freeze")
-    sub.add_parser("run").add_argument("label")
+    run_parser = sub.add_parser("run")
+    run_parser.add_argument("label")
+    run_parser.add_argument("--security-master", action="store_true",
+                            help="Wertpapierstamm als Referenz der Namenssuche (D-058)")
+    run_parser.add_argument("--passes", type=int, default=1,
+                            help="alle Fonds so oft rechnen (Freigabe mit vollem Speicher)")
     cmp = sub.add_parser("compare")
     cmp.add_argument("left")
     cmp.add_argument("right")
@@ -157,7 +173,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "freeze":
         freeze()
     elif args.command == "run":
-        run(args.label)
+        run(args.label, args.security_master, max(1, args.passes))
     else:
         return compare(args.left, args.right, frozenset(args.ignore_key), args.json_only)
     return 0

@@ -2,6 +2,37 @@
 
 ## 16.11.2026 – Phase 2: Wertpapierstamm ISIN → LEI aus N-PORT (Claude, Auftrag Jonas)
 
+### D-058 Freigabe der Namenssuche an der N-PORT-Referenz, je Region
+- **Entscheid (Jonas: «Ja, umstellen»):** Mit `--security-master` (Pilotskript) gilt als
+  Referenz der Namenssuche: menschlicher Entscheid, sonst der N-PORT-Konsens (D-056). Die
+  Wikidata-Kennung ist dann keine Referenz mehr; an N-PORT gemessen ist sie selbst nur
+  96.24 % (untere Grenze) genau (D-057). Ohne Wertpapierstamm bleibt die frühere Referenz.
+  Eigener Speicher `mapping_reference_cases_nport.json`, damit die zwei Referenzen nie
+  gemischt werden.
+- **Je Region (D-046 umgesetzt):** Region = vom Fonds gemeldetes Emittentenland, sonst
+  ISIN-Land (`entity_matching.position_region`): Nordamerika, Europa, Asien-Pazifik, übrige,
+  unbekannt. Die Namenssuche wirkt nur für Positionen in Regionen, deren unabhängige Fälle
+  die unveränderte Regel erfüllen (≥ 100 Fälle mit Ergebnis, untere 95-%-Grenze ≥ 97 %).
+  Die Unabhängigkeitsregeln (Testfonds, keine ISIN aus Entwicklungsfonds) bleiben.
+- **Grenze:** Die Referenz umfasst nur Titel, die US-Fonds halten (grosse, liquide Titel).
+  Für kleine Titel ohne US-Fondsbesitz ist die Präzision nicht gemessen; die Freigabe wird
+  dort trotzdem angewandt, weil die Region und nicht die Grösse die Freigabeeinheit ist.
+  Das steht im Bericht.
+- **Ein Name wirkt nie gegen eine Kennung:** Nennt die Namenssuche für eine Position einen
+  anderen LEI als den bestätigten N-PORT-Konsens, wirkt sie dort nicht (Status bleibt
+  Vorschlag, `auto_match.name_contradicts_reference`). Anlass: Im ersten Lauf ordnete die
+  Freigabe 6 Papiere (7 Positionen) einer Tochter- oder Schwestergesellschaft zu.
+- **Vergleichslauf (D-051):** Ausgangsstand frisch mit dem letzten Commit gerechnet. Neuer Code
+  ohne Wertpapierstamm: 33 von 33 JSON-Dateien gleich (ohne die neuen Felder und den
+  Ordnernamen in den Herkunftspfaden). Mit Wertpapierstamm, zwei Durchgänge: unabhängig 645 von
+  649 richtig (untere Grenze 98.60 %); freigegeben in Europa (270/272, 97.70 %) und
+  Asien-Pazifik (243/244, 98.07 %); nicht in Nordamerika (60/60, < 100 Fälle) und übrige
+  (72/73). Wirkung über sechs Fonds: 689 Positionen neu über den Namen, 30 neu durch
+  Übereinstimmung zweier Wege, 10 Vorschläge wegen Widerspruch gesperrt, danach 0 Zuordnungen
+  gegen den Konsens. Von den 689 bestätigt N-PORT 645 mit demselben LEI; 44 Positionen
+  (5 % des neu zugeordneten Gewichts) liegen ausserhalb der Referenz. Bestätigte Abdeckung je
+  Fonds vorher 44–81 %, nachher 70–86 % des Fondsgewichts.
+
 ### D-056 Wertpapierstamm aus dem Konsens unabhängiger Fondsgesellschaften
 - **Entscheid (Auftrag Jonas: «Starte Phase 2»):** `security-master-build` erzeugt aus dem
   aktiven N-PORT-Stand `processed/security_master.sqlite` (je ISIN Status, LEI, Zahl der
@@ -35,13 +66,13 @@
 ### D-057 Gegenprüfung der Pilotverfahren an der N-PORT-Referenz (Messung, keine Freigabe)
 - **Entscheid:** `security-master-compare` misst Wikidata, Registernummer und GLEIF-
   Namenssuche des Pilots an den bestätigten ISIN, je ISIN einmal, gesamt und je Region
-  (Sitzland des Referenz-Emittenten: Nordamerika, Europa, Asien-Pazifik, übrige). Für
+  (seit D-058 wie die Freigabe: gemeldetes Emittentenland der Position, sonst ISIN-Land). Für
   Registernummer und Name zählen wie in D-046 nur ISIN aus Testfonds, die in keinem
   Entwicklungsfonds vorkommen. Ergebnis lokal in `processed/security_master/
   pilot_comparison.json`.
 - **Ergebnis 16.11.2026:** Namenssuche 675 von 679 richtig, untere 95-%-Grenze 98.66 %
-  (Europa 270/272, 97.70 %; Asien-Pazifik 257/258, 98.17 %; Nordamerika 60/60 und übrige
-  88/89 unter 100 Fällen). Registernummer 115/116 (95.98 %). Wikidata 626/642 (96.24 %).
+  (Europa 270/272, 97.70 %; Asien-Pazifik 265/266, 98.23 %; Nordamerika 60/60 und übrige
+  80/81 unter 100 Fällen). Registernummer 115/116 (95.98 %). Wikidata 626/642 (96.24 %).
   Einzeln geprüft: In 19 von 21 Abweichungen nennt N-PORT die börsenkotierte Gesellschaft und
   das andere Verfahren eine Tochter, Vorgängerin oder einen fremden Rechtsträger; in einem
   Fall ist die N-PORT-Referenz selbst fraglich.

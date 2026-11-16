@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
+from collections.abc import Collection, Mapping
 from dataclasses import asdict
 from typing import Any
 
@@ -26,6 +27,7 @@ from transparenz.services.entity_matching import (
     match_by_name,
     match_by_register,
     names_agree,
+    position_region,
     register_queries,
     security_query,
 )
@@ -272,6 +274,21 @@ def _finish(item: dict[str, Any], blocks: list[str]) -> dict[str, Any]:
     return item
 
 
+def name_contradicts_reference(auto: Mapping[str, Any] | None, reference_lei: str | None
+                               ) -> bool:
+    """Nennt die Namenssuche einen anderen LEI als der bestätigte N-PORT-Konsens?"""
+    name = (auto or {}).get("name") or {}
+    return bool(reference_lei and name.get("status") == "accepted" and name.get("lei")
+                and name["lei"] != reference_lei)
+
+
+def name_released_for(position: Position, released: bool | Collection[str]) -> bool:
+    """Wirkt die Namenssuche für diese Position? Freigabe gesamt oder je Region (D-058)."""
+    if isinstance(released, bool):
+        return released
+    return position_region(position.issuer_country, position.isin) in set(released)
+
+
 def _assign(row: dict[str, Any], status: str, confidence: str | None = None) -> None:
     row["mapping_status"] = status
     row["mapping_confidence"] = confidence or status
@@ -380,9 +397,11 @@ def build_chain(fund: Fund, candidates: dict[str, list[dict[str, Any]]],
                 group_links: list[dict[str, Any]] | None = None,
                 gem: dict[str, Any] | None = None,
                 decisions: dict[str, dict[str, str]] | None = None,
-                auto: dict[str, dict[str, Any]] | None = None, name_released: bool = False,
+                auto: dict[str, dict[str, Any]] | None = None,
+                name_released: bool | Collection[str] = False,
                 profiles: dict[str, dict[str, Any]] | None = None,
-                rules: dict[str, Any] | None = None) -> dict[str, Any]:
+                rules: dict[str, Any] | None = None,
+                reference: Mapping[str, str] | None = None) -> dict[str, Any]:
     """Reine Funktion: verbindet Positionen, Kandidaten, Belege und GLEIF-Beziehungen.
 
     Jeder Beleg erhält einen Status. «confirmed» nur, wenn die Position widerspruchsfrei
@@ -391,9 +410,13 @@ def build_chain(fund: Fund, candidates: dict[str, list[dict[str, Any]]],
 
     ``decisions`` (ISIN → LEI → «yes»/«no») sind gespeicherte menschliche Entscheide.
     ``auto`` sind die Ergebnisse der automatischen Verfahren (``auto_match``); die Namenssuche
-    wirkt nur mit ``name_released``. ``profiles`` liefert die Branche je Wikidata-Eintrag
-    (Finanzinstitut ja/nein für die Beziehungstypen). ``rules`` enthält je Kriterium die
-    Beteiligungsschwelle und die Wirkung der Kategorien aus criteria.toml.
+    wirkt nur mit ``name_released``: ``True``/``False`` für alle Positionen oder eine Menge
+    freigegebener Regionen (``entity_matching.position_region``, D-058). ``reference``
+    (ISIN → bestätigter LEI aus dem N-PORT-Konsens): Nennt die Namenssuche einen anderen LEI,
+    wirkt sie für diese Position nicht – ein Name wirkt nie gegen eine Kennung. ``profiles``
+    liefert die Branche je Wikidata-Eintrag (Finanzinstitut ja/nein für die
+    Beziehungstypen). ``rules`` enthält je Kriterium die Beteiligungsschwelle und die
+    Wirkung der Kategorien aus criteria.toml.
     """
     names = dict((gleif or {}).get("names", {}))
     for result in (auto or {}).values():
@@ -422,9 +445,15 @@ def build_chain(fund: Fund, candidates: dict[str, list[dict[str, Any]]],
             row["mapping_status"] = row["mapping_confidence"] = "no_valid_isin"
             continue
         hits = candidates.get(position.isin or "", [])
+        position_auto = (auto or {}).get(position.isin or "")
+        released = name_released_for(position, name_released)
+        contradicts = name_contradicts_reference(position_auto, (reference or {}).get(
+            position.isin or ""))
         lei = resolve_position(position, hits, (decisions or {}).get(position.isin or "", {}),
-                               names, names_checked, (auto or {}).get(position.isin or ""),
-                               name_released, row)
+                               names, names_checked, position_auto,
+                               released and not contradicts, row)
+        if contradicts:
+            row["auto_match"]["name_contradicts_reference"] = True
         if lei is None:
             continue
         industries = sorted({label for item in (row.get("company") or {}).get("wikidata_ids", [])

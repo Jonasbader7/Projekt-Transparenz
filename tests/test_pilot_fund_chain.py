@@ -25,7 +25,7 @@ from transparenz.reports.fund_chain_report import (
     render_html,
     render_markdown,
 )
-from transparenz.services.entity_matching import DEVELOPMENT_FUNDS, names_agree
+from transparenz.services.entity_matching import DEVELOPMENT_FUNDS, names_agree, position_region
 from transparenz.services.fund_chain import (
     build_chain,
     index_candidates,
@@ -894,3 +894,81 @@ def test_disagreements_become_questions_with_both_candidates():
     assert [c["lei"] for c in cases[0]["candidates"]] == [LEI_CHILD, LEI_PARENT, LEI_OTHER]
     assert cases[0]["candidates"][0]["other_names"] == ["Alt"]
     assert cases[0]["candidates"][2]["legal_name"] is None  # nicht geladen: ehrlich leer
+
+
+def test_nport_reference_replaces_wikidata_and_decision_goes_first():
+    rows = [{"isin": ISIN_A, "name": "A", "issuer_country": "SE",
+             "mapping_confidence": "consistent", "company": {"lei": LEI_OTHER},
+             "auto_match": {"name": {"status": "accepted", "lei": LEI_PARENT}}},
+            {"isin": ISIN_B, "name": "B", "issuer_country": "US",
+             "mapping_confidence": "confirmed_by_decision", "company": {"lei": LEI_CHILD},
+             "auto_match": {}},
+            {"isin": ISIN_C, "name": "C", "issuer_country": None,
+             "mapping_confidence": "consistent", "company": {"lei": LEI_PARENT},
+             "auto_match": {}}]
+    store = reference_cases(rows, "Fiktivfonds", {ISIN_A: LEI_PARENT, ISIN_B: LEI_OTHER})
+    by_isin = {c["isin"]: c for c in store.values()}
+    # Wikidata nennt LEI_OTHER, N-PORT LEI_PARENT: Referenz ist N-PORT.
+    assert by_isin[ISIN_A]["reference_source"] == "nport_consensus"
+    assert by_isin[ISIN_A]["reference_lei"] == LEI_PARENT
+    assert by_isin[ISIN_A]["region"] == "europe"
+    # Ein menschlicher Entscheid geht dem N-PORT-Konsens vor.
+    assert by_isin[ISIN_B]["reference_source"] == "decision"
+    assert by_isin[ISIN_B]["reference_lei"] == LEI_CHILD
+    # Ohne N-PORT-Eintrag keine Referenz, auch wenn Wikidata widerspruchsfrei ist.
+    assert ISIN_C not in by_isin
+    # Ohne Wertpapierstamm: frühere Referenz (Wikidata-Kennung).
+    assert reference_cases(rows, "Fiktivfonds")[f"Fiktivfonds|{ISIN_C}"][
+        "reference_source"] == "isin_wikidata"
+
+
+def test_name_search_is_released_per_region():
+    def case(i, region, correct=True):
+        isin = make_isin(f"ZZREG{i:06d}")
+        return isin, {"isin": isin, "position_name": "x", "fund": "Testfonds",
+                      "reference_lei": LEI_PARENT, "reference_source": "nport_consensus",
+                      "region": region, "register": None,
+                      "name": {"status": "accepted",
+                               "lei": LEI_PARENT if correct else LEI_OTHER}}
+
+    store = dict(case(i, "europe") for i in range(120))
+    store.update(case(i, "north_america") for i in range(200, 250))
+    store.update(case(i, "asia_pacific", correct=i % 20 != 0) for i in range(300, 420))
+    name = evaluate_methods(store)["name"]
+    # Europa: 120/120 → frei. Nordamerika: zu wenige Fälle. Asien-Pazifik: 5 % falsch.
+    assert name["released_regions"] == ["europe"]
+    assert name["regions"]["north_america"]["released"] is False
+    assert name["regions"]["asia_pacific"]["wrong"] == 6
+    assert "wrong_cases" not in name["regions"]["europe"]
+
+
+def test_released_region_decides_per_position():
+    fund = parse_fund(fund_xml(positions=(("Fiktiv Name AG", ISIN_B, "60"),
+                                          ("Fiktiv Anders AG", ISIN_C, "40"))))
+    accepted = {"method": "gleif_name_country", "lei": LEI_CHILD, "status": "accepted",
+                "reason": "fiktiv", "candidates": [LEI_CHILD]}
+    auto = {isin: {"name": accepted, "register": None, "entities": {}}
+            for isin in (ISIN_B, ISIN_C)}
+    region = position_region(fund.positions[0].issuer_country, ISIN_B)
+    report = build_chain(fund, {}, {}, None, auto=auto, name_released=frozenset({region}))
+    assert {r["mapping_confidence"] for r in report["positions"]} == {"auto_by_name"}
+    none = build_chain(fund, {}, {}, None, auto=auto, name_released=frozenset({"nirgends"}))
+    assert {r["mapping_confidence"] for r in none["positions"]} == {"name_proposal"}
+    assert none["positions"][0]["auto_match"]["name_released"] is False
+
+
+def test_name_never_acts_against_confirmed_reference():
+    fund = parse_fund(fund_xml(positions=(("Fiktiv Name AG", ISIN_B, "60"),
+                                          ("Fiktiv Anders AG", ISIN_C, "40"))))
+    accepted = {"method": "gleif_name_country", "lei": LEI_CHILD, "status": "accepted",
+                "reason": "fiktiv", "candidates": [LEI_CHILD]}
+    auto = {isin: {"name": accepted, "register": None, "entities": {}}
+            for isin in (ISIN_B, ISIN_C)}
+    # N-PORT bestätigt für ISIN_B einen anderen LEI, für ISIN_C denselben.
+    report = build_chain(fund, {}, {}, None, auto=auto, name_released=True,
+                         reference={ISIN_B: LEI_OTHER, ISIN_C: LEI_CHILD})
+    by_isin = {r["isin"]: r for r in report["positions"]}
+    assert by_isin[ISIN_B]["mapping_confidence"] == "name_proposal"
+    assert by_isin[ISIN_B]["auto_match"]["name_contradicts_reference"] is True
+    assert by_isin[ISIN_C]["mapping_confidence"] == "auto_by_name"
+    assert "name_contradicts_reference" not in by_isin[ISIN_C]["auto_match"]

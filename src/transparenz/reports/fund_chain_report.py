@@ -19,6 +19,7 @@ from transparenz.entities.labels import (
     KIND_LABELS,
     OPEN_REASONS,
     PROVENANCE_STATUS_LABELS,
+    REGION_LABELS,
     RELATIONSHIP_LABELS,
     SOURCE_LABELS,
     STATUS_LABELS,
@@ -705,6 +706,7 @@ def render_html(report: dict[str, Any], criteria: list[dict[str, Any]]) -> str:
         loader=jinja2.FileSystemLoader(str(Path(__file__).resolve().parent / "templates")),
         autoescape=True, trim_blocks=True, lstrip_blocks=True,
         undefined=jinja2.StrictUndefined)
+    env.filters["region_label"] = lambda key: REGION_LABELS.get(key, key)
     return env.get_template("fund_chain_report.html.j2").render(**html_context(report, criteria))
 
 
@@ -771,6 +773,13 @@ def render_markdown(report: dict[str, Any]) -> str:
             lines.append(f"| {key} | {e['reference_cases']} | {e['answered']} | {e['correct']} "
                          f"| {e['wrong']} | {e['precision']} | {e['precision_lower_bound_95']} "
                          f"| {e['released']} |")
+        regions = evaluation["name"].get("regions") or {}
+        if regions:
+            lines += ["", "Namenssuche je Region (Freigabe wirkt nur dort, D-058): "
+                      + "; ".join(f"{REGION_LABELS.get(k, k)} {r['correct']}/{r['answered']}, "
+                                  f"untere Grenze {r['precision_lower_bound_95']}, "
+                                  f"{'freigegeben' if r['released'] else 'nicht freigegeben'}"
+                                  for k, r in regions.items()) + "."]
         for case in evaluation["name"].get("wrong_cases", []):
             lines.append(f"- Abweichung: {case['position_name']} ({case['isin']}, {case['fund']}):"
                          f" Referenz {case['reference_lei']}, Namenssuche {case['predicted_lei']}")

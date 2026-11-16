@@ -6,14 +6,16 @@ Gemessen werden die Verfahren des Pilots, je ISIN einmal (über alle Pilotfonds)
 
 - ``wikidata``: ISIN → Wikidata → LEI (nur wenn Wikidata genau einen LEI nennt),
 - ``register``: Registernummer Wikidata ↔ GLEIF (D-046),
-- ``name``: GLEIF-Namenssuche mit Sitzland (D-046, bisher nicht freigegeben).
+- ``name``: GLEIF-Namenssuche mit Sitzland (D-046).
+
+Region wie bei der Freigabe (D-058): gemeldetes Emittentenland der Position, sonst ISIN-Land.
 
 Unabhängig im Sinne von D-046 sind für ``register`` und ``name`` nur ISIN aus Testfonds, die
 in keinem Entwicklungsfonds vorkommen (an deren Fehlern wurden die Regeln angepasst).
 Wikidata wurde nie angepasst; dort zählen alle ISIN.
 
-Diese Messung ändert nichts an der Freigabe in ``entity_matching.py``. Ob die N-PORT-Referenz
-die Wikidata-Referenz für die Freigabe ersetzt, ist ein eigener Schritt.
+Diese Messung entscheidet keine Freigabe; die Freigabe rechnet der Pilot selbst
+(``mapping_reference.evaluate_methods`` mit der N-PORT-Referenz, D-058).
 """
 
 from __future__ import annotations
@@ -24,28 +26,15 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from transparenz.services.entity_matching import DEVELOPMENT_FUNDS, RULE_VERSION, evaluate
+from transparenz.services.entity_matching import (
+    DEVELOPMENT_FUNDS,
+    RULE_VERSION,
+    evaluate,
+    position_region,
+)
 from transparenz.services.security_master import open_readonly
 
 METHODS = ("wikidata", "register", "name")
-# Region nach Sitzland des Referenz-Emittenten laut GLEIF (für die Freigabe je Region, D-046).
-_EUROPE = frozenset({
-    "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GG", "GI",
-    "GR", "HR", "HU", "IE", "IM", "IS", "IT", "JE", "LI", "LT", "LU", "LV", "MC", "MT", "NL",
-    "NO", "PL", "PT", "RO", "SE", "SI", "SK"})
-_ASIA_PACIFIC = frozenset({"AU", "CN", "HK", "ID", "IN", "JP", "KR", "MO", "MY", "NZ", "PH",
-                           "SG", "TH", "TW", "VN"})
-_NORTH_AMERICA = {"US", "CA"}
-
-
-def region_of(country: str | None) -> str:
-    if country in _NORTH_AMERICA:
-        return "north_america"
-    if country in _EUROPE:
-        return "europe"
-    if country in _ASIA_PACIFIC:
-        return "asia_pacific"
-    return "other" if country else "unknown"
 
 
 def pilot_proposals(pilot_dir: Path) -> list[dict[str, Any]]:
@@ -72,11 +61,12 @@ def pilot_proposals(pilot_dir: Path) -> list[dict[str, Any]]:
                 continue
             match = position.get("auto_match") or {}
             leis = wikidata.get(isin, set())
-            found.append({"fund": fund, "isin": isin, "method": "wikidata",
+            region = position_region(position.get("issuer_country"), isin)
+            found.append({"fund": fund, "isin": isin, "method": "wikidata", "region": region,
                           "lei": next(iter(leis)) if len(leis) == 1 else None})
             for method in ("register", "name"):
                 result = match.get(method) or {}
-                found.append({"fund": fund, "isin": isin, "method": method,
+                found.append({"fund": fund, "isin": isin, "method": method, "region": region,
                               "lei": result.get("lei") if result.get("status") == "accepted"
                               else None})
     return found
@@ -111,8 +101,10 @@ def compare_with_reference(db_path: Path, proposals: Iterable[dict[str, Any]]) -
         # als unbeantwortet (kommt praktisch nicht vor, wird aber gezählt).
         by_isin: dict[str, set[str | None]] = defaultdict(set)
         independent: dict[str, bool] = {}
+        region: dict[str, str] = {}
         for p in (p for p in proposals if p["method"] == method):
             by_isin[p["isin"]].add(p["lei"])
+            region.setdefault(p["isin"], p.get("region") or "unknown")
             ok = method == "wikidata" or (p["fund"] not in DEVELOPMENT_FUNDS
                                           and p["isin"] not in dev_isins)
             independent[p["isin"]] = independent.get(p["isin"], False) or ok
@@ -127,7 +119,7 @@ def compare_with_reference(db_path: Path, proposals: Iterable[dict[str, Any]]) -
             case = {"isin": isin, "reference_lei": ref[0],
                     "predicted_lei": next(iter(given)) if len(given) == 1 else None}
             cases["all"].append(case)
-            cases[region_of(ref[2])].append(case)
+            cases[region[isin]].append(case)
         measured = {}
         for scope, rows in sorted(cases.items()):
             result = evaluate(rows)
@@ -145,7 +137,7 @@ def compare_with_reference(db_path: Path, proposals: Iterable[dict[str, Any]]) -
             "Referenz: N-PORT-Konsens (D-056). Für «register» und «name» nur ISIN aus "
             "Testfonds, die in keinem Entwicklungsfonds vorkommen (D-046).",
             "«meets_release_rule» zeigt nur, ob die Messung die Schwelle erreicht; die Freigabe "
-            "in entity_matching.py wird dadurch nicht geändert.",
+            "rechnet der Pilot selbst (D-058).",
             "Die Referenz enthält nur Papiere, die US-registrierte Fonds halten.",
         ],
     }

@@ -37,6 +37,33 @@ DEVELOPMENT_FUNDS = frozenset({"SEB Global Sustainable Companies Fund",
 RELEASE_MIN_CASES = 100
 RELEASE_MIN_PRECISION_LOWER_BOUND = 0.97
 CONFIDENCE = 0.95
+# Freigabe je Region (D-046, D-058). Massgebend ist das Sitzland, mit dem die Namenssuche
+# arbeitet: das vom Fonds gemeldete Emittentenland, sonst das Länderkürzel der ISIN.
+_REGION_EUROPE = frozenset({
+    "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FO", "FR", "GB", "GG",
+    "GI", "GR", "HR", "HU", "IE", "IM", "IS", "IT", "JE", "LI", "LT", "LU", "LV", "MC", "MT",
+    "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK"})
+_REGION_ASIA_PACIFIC = frozenset({"AU", "CN", "HK", "ID", "IN", "JP", "KR", "MO", "MY", "NZ",
+                                  "PH", "SG", "TH", "TW", "VN"})
+_REGION_NORTH_AMERICA = frozenset({"US", "CA"})
+REGIONS = ("north_america", "europe", "asia_pacific", "other", "unknown")
+
+
+def region_of(country: str | None) -> str:
+    """Region eines Landes (ISO 3166 Alpha-2); unbekannt, wenn kein Land vorliegt."""
+    country = (country or "").upper()
+    if country in _REGION_NORTH_AMERICA:
+        return "north_america"
+    if country in _REGION_EUROPE:
+        return "europe"
+    if country in _REGION_ASIA_PACIFIC:
+        return "asia_pacific"
+    return "other" if len(country) == 2 and country.isalpha() else "unknown"
+
+
+def position_region(issuer_country: str | None, isin: str | None) -> str:
+    """Region einer Position: gemeldetes Emittentenland, sonst Länderkürzel der ISIN."""
+    return region_of(issuer_country or (isin or "")[:2] or None)
 
 _LEGAL_FORM_WORDS = {"ag", "sa", "nv", "bv", "ab", "as", "asa", "oyj", "oy", "plc", "inc", "ltd",
                      "limited", "llc", "gmbh", "spa", "sl", "srl", "corp", "corporation",
