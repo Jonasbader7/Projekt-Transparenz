@@ -5,11 +5,12 @@ Stand: **16.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verla
 
 ## Phase
 
-**Phase 2 (Wertpapierstamm ISIN → LEI) weitgehend umgesetzt:** Stamm gebaut (D-056),
-Pilotverfahren gemessen (D-057), Freigabe der Namenssuche je Region auf die N-PORT-Referenz
-umgestellt (D-058). Phasen 0 und 1 abgeschlossen. Ziel laut Auftrag: alle börsenkotierten
-Aktien und Fonds weltweit, automatisch zugeordnet, firmentauglich (D-049).
-Offen in Phase 2: N-PORT-Konsens direkt als Kennungsweg ISIN → LEI im Pilot.
+**Phase 2 (Wertpapierstamm ISIN → LEI) im Pilot umgesetzt:** Stamm gebaut (D-056),
+Pilotverfahren gemessen (D-057), Freigabe der Namenssuche je Region an der N-PORT-Referenz
+(D-058), N-PORT-Konsens als Kennungsweg vor Wikidata (D-059). Phasen 0 und 1 abgeschlossen.
+Ziel laut Auftrag: alle börsenkotierten Aktien und Fonds weltweit, automatisch zugeordnet,
+firmentauglich (D-049). Offen in Phase 2: GLEIF-Namen der N-PORT-LEI offline aus der lokalen
+Liste Level 1.
 
 | Baustein | Stand |
 |---|---|
@@ -20,9 +21,9 @@ Offen in Phase 2: N-PORT-Konsens direkt als Kennungsweg ISIN → LEI im Pilot.
 | SEC N-PORT | `2026q3_nport.zip` geladen und geprüft; `nport-update` liest direkt aus dem ZIP in `processed/nport.sqlite`, jeder Lauf in `update_runs` (D-054) |
 | **Wertpapierstamm** | `security-master-build` → `processed/security_master.sqlite` (87 MB, rund 2.5 Minuten), Regelversion 2026-11-16.1 (D-056) |
 | Kriterienmodell | Schema 2, Profil «streng» 1.1, 12 aktive Kriterien, 7 Beziehungstypen (D-045–D-048) |
-| Zuordnung | im Pilot: ISIN → Wikidata → LEI und Registernummer wirken; GLEIF-Namenssuche mit `--security-master` **freigegeben in Europa und Asien-Pazifik** (D-058), nie gegen den N-PORT-Konsens; ohne Stamm wie bisher nicht freigegeben |
+| Zuordnung | im Pilot mit `--security-master`: menschlicher Entscheid → **N-PORT-Konsens (D-059)** → Wikidata → Registernummer → GLEIF-Namenssuche (freigegeben in Europa und Asien-Pazifik, D-058, nie gegen den Konsens); ohne Stamm wie bisher |
 | Website (`site/`) | fiktive Demo, unverändert |
-| Tests | **382 bestanden** (18 neu für Wertpapierstamm und Freigabe), Ruff sauber |
+| Tests | **386 bestanden** (4 neu für den Kennungsweg N-PORT), Ruff sauber |
 
 ## Wertpapierstamm ISIN → LEI (Phase 2, Messwerte ohne Namen)
 
@@ -41,6 +42,7 @@ GLEIF Level 1 vom 15.11., Level 2 vom 11.11., N-CEN 2025q4–2026q3). Regeln: D-
 | Normalisiert | 505 Meldungen GLEIF-Duplikat → Nachfolger, 474 Trust → Serie |
 | Bestätigt je Anlageart | Anleihen 61.66 %, Aktien 72.54 %, Hypothekenpapiere 31.99 % (je ISIN mit LEI) |
 | Gegenprüfung Pilot (D-057) | Namenssuche 675/679 richtig (untere Grenze 98.66 %; Europa 97.70 %, Asien-Pazifik 98.23 %, Nordamerika und übrige < 100 Fälle); Registernummer 115/116; Wikidata 626/642 (96.24 %) |
+| Kennungsweg im Pilot (D-059) | 2'151 Positionen über den Konsens (546 vorher nicht bestätigt, 23 mit anderem LEI: 16 Papiere, jedes Mal N-PORT = börsenkotierte Gesellschaft); Wikidata gleich 901, anders 21, ohne LEI 348, kein Eintrag 847; bestätigte Abdeckung je Fonds **90–98 %**; Messung unverändert; offene Ja/Nein-Fragen 217 → 14 |
 | Freigabe im Pilot (D-058) | Vergleichslauf: unabhängig 645/649, freigegeben Europa (270/272) und Asien-Pazifik (243/244). Sechs Fonds: 689 Positionen neu über den Namen (645 davon von N-PORT bestätigt), 10 gesperrt wegen Widerspruch; bestätigte Abdeckung je Fonds vorher 44–81 %, nachher 70–86 % des Gewichts |
 
 ## SEC N-PORT, Quartal 2026q3 (Messwerte, ohne Namen)
@@ -70,9 +72,9 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
 1. Wie in CLAUDE.md: STATUS, DECISIONS (ab D-049) und die letzten LOG-Einträge lesen.
 2. Echte Ergebnisse: `C:\TransparenzDaten\notizen\PILOT_ERGEBNISSE.md` (lokal). Nie in
    versionierte Dateien übernehmen (D-053); vor jedem Push prüfen.
-3. Plan: `docs/ROADMAP.md`. Phase 2: Stamm steht, Freigabe der Namenssuche je Region umgesetzt
-   (D-056–D-058); offen ist der N-PORT-Konsens als direkter Kennungsweg im Pilot. Downloads
-   brauchen Jonas' Zustimmung, alles andere läuft ohne Einzelentscheide (D-049).
+3. Plan: `docs/ROADMAP.md`. Phase 2: Stamm steht, Freigabe je Region und Kennungsweg
+   N-PORT umgesetzt (D-056–D-059). Downloads brauchen Jonas' Zustimmung, alles andere läuft
+   ohne Einzelentscheide (D-049).
 4. Jeder Umbau der Fondskette: vorher und nachher `scripts\pilot_regression.py` (D-051).
 5. N-PORT-Regeln ändern = `RULE_VERSION` in `ingestion/sec_nport.py` erhöhen, dann
    `nport-update --force` (rund 20 Minuten, im Hintergrund laufen lassen).
@@ -93,7 +95,9 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
 8. Pilot mit N-PORT-Referenz: `pilot_fund_chain.py … --security-master
    C:\TransparenzDaten\processed\security_master.sqlite`; Vergleichslauf
    `pilot_regression.py run <name> --security-master --passes 2`. Letzte Läufe:
-   `p2_vorher` (Commit 6afa36f), `p2_ohne` (neuer Code ohne Stamm), `p2_nport`.
+   `p3_vorher` (Commit 2d7deea, gleich `p2_nport`) und `p3_nachher` (Kennungsweg N-PORT,
+   aktueller Stand). Auswertung der Einzelfälle:
+   `C:\TransparenzDaten\notizen\d059_vergleich_einzelfaelle.md` (lokal, mit Namen).
    Code nie ändern, während ein Vergleichslauf läuft (jeder Fonds lädt den Code neu).
 
 ## Pilot (sechs echte schwedische Fonds, je 30.06.2026)
@@ -103,7 +107,8 @@ Ergebnisse je Fonds mit Namen stehen nur lokal in
 versionierte Dateien). Öffentlich nur die Methode und die Messwerte der Zuordnung:
 
 - Abdeckung (Fondsgewicht mit widerspruchsfreier Zuordnung) je Fonds: ohne Wertpapierstamm
-  44–81 %, mit Wertpapierstamm (`--security-master`, D-058) 70–86 %.
+  44–81 %, mit Wertpapierstamm 90–98 % (Kennungsweg N-PORT, D-059; vorher nur Referenz der
+  Namenssuche, D-058: 70–86 %).
 - Namenssuche an der N-PORT-Referenz (unabhängig): 645 von 649 richtig, freigegeben in Europa
   und Asien-Pazifik; Nordamerika und übrige noch zu wenige Fälle. Ohne Wertpapierstamm (alte
   Wikidata-Referenz): 196 von 201, nicht freigegeben.
@@ -115,9 +120,9 @@ versionierte Dateien). Öffentlich nur die Methode und die Messwerte der Zuordnu
 cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 .venv\Scripts\python -m pytest -q
 # Vergleichslauf: sechs Pilotfonds offline rechnen und mit einem früheren Lauf vergleichen
-# (aktueller Stand: p2_nport; rund 35 Minuten mit zwei Durchgängen, im Hintergrund)
+# (aktueller Stand: p3_nachher; rund 35 Minuten mit zwei Durchgängen, im Hintergrund)
 .venv\Scripts\python scripts\pilot_regression.py run neu --security-master --passes 2
-.venv\Scripts\python scripts\pilot_regression.py compare p2_nport neu --json-only --ignore-key provenance
+.venv\Scripts\python scripts\pilot_regression.py compare p3_nachher neu --json-only --ignore-key provenance
 # SEC N-PORT: lokale Archive einlesen, Qualitätsbericht; neues Quartal nur nach Zustimmung
 .venv\Scripts\python -m transparenz nport-update --force
 .venv\Scripts\python -m transparenz nport-download 2026q4            # nennt nur Name und Grösse
@@ -130,8 +135,8 @@ cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 .venv\Scripts\python scripts\pilot_fund_chain.py --zip data\raw\external\fi_se_fondinnehav\2026Q2\Fondinnehav_2026Q2.zip --fund "<exakter Fondsname>" --ets-dir data\raw\external\eu_ets_union_registry\2026-11-11 --gleif-rr data\raw\external\gleif_rr_golden_copy\2026-11-11\gleif-goldencopy-rr.csv.zip --gem-dir data\raw\external\gem\2026-11-11\extracted
 ```
 
-Aktuelle Berichte: `C:\TransparenzDaten\processed\pilot_regression\p2_nport\*.html`
-(mit Wertpapierstamm). Vergleich mit älteren Läufen (`herkunft`) zeigt zusätzlich eine neuere
+Aktuelle Berichte: `C:\TransparenzDaten\processed\pilot_regression\p3_nachher\*.html`
+(mit Wertpapierstamm als Kennungsweg). Vergleich mit älteren Läufen (`herkunft`) zeigt zusätzlich eine neuere
 Schweizer Exportgeneration (täglicher Task), deshalb Ausgangsstand immer frisch rechnen.
 Ältere Berichte mit Herkunftsabschnitt: `C:\TransparenzDaten\processed\pilot_regression\herkunft\*.html`
 (Vorschau: Startkonfiguration `pilot-report`, 127.0.0.1:8611). Die Berichte unter
@@ -139,12 +144,11 @@ Schweizer Exportgeneration (täglicher Task), deshalb Ausgangsstand immer frisch
 
 ## Nächste drei Schritte
 
-1. **N-PORT-Konsens als Kennungsweg im Pilot:** Bestätigte ISIN → LEI direkt zuordnen (wie
-   eine Kennung, vor Wikidata), statt sie nur als Referenz zu nutzen; mit Vergleichslauf.
-   Dann die Messung so trennen, dass die Referenz nicht zugleich Zuordnung ist (heute
-   misst `reference_cases` die Namensvorschläge aus `auto_match` jeder Position, unabhängig
-   davon, welcher Weg die Position zuordnet; das muss so bleiben). Neue Zuordnungsart
-   braucht Label in `entities/labels.py` und zählt in `CONFIRMED_MAPPING` (`services/fund_chain.py`).
+1. **GLEIF-Namen offline aus der Liste Level 1:** Für 285 von 2'151 N-PORT-Positionen fehlt im
+   gespeicherten Abruf der GLEIF-Name; dort prüft der Pilot die Kontoinhaber im
+   EU-Emissionshandel nicht (4 Positionen mit Beleg). Namen aus der lokalen, geprüften Liste
+   (`ingestion/gleif_level1.py`, Spalten `Entity.LegalName`, frühere Namen) einmal für alle
+   bestätigten LEI des Stamms zwischenspeichern; mit Vergleichslauf.
 2. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
    denselben Prüfweg hat wie N-PORT.
 3. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
@@ -164,8 +168,10 @@ Standard selbst und kennzeichnen sie als unsere Bewertungsentscheidung (D-049).
 ## Grenzen
 
 - Freigabe der Namenssuche gilt je Region, gemessen an grossen, von US-Fonds gehaltenen
-  Titeln; für kleine Titel ohne US-Fondsbesitz ist die Präzision nicht gemessen (44 der 689
-  neuen Zuordnungen). Nordamerika und übrige: zu wenige Fälle, nicht freigegeben.
+  Titeln. Seit D-059 wirkt sie nur noch dort, wo kein N-PORT-Konsens besteht (44 Positionen),
+  also gerade ausserhalb der Referenz. Nordamerika und übrige: zu wenige Fälle.
+- N-PORT-Konsens geht Wikidata vor (21 abweichende Positionen, im Bericht gelistet). Ein
+  Konsens kann einen gemeinsam übernommenen Fehler bestätigen (D-056).
 - Wertpapierstamm: Konsens heisst gleiche Meldung mehrerer Gesellschaften, nicht geprüfte
   Wahrheit; gemeinsame Datenlieferanten sind nicht erkennbar. Widersprüche werden nicht nach
   Mehrheit aufgelöst (613 ISIN mit mindestens 5 Gruppen gegen 1 bleiben offen; ob eine

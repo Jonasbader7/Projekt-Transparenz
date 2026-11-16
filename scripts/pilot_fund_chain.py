@@ -77,7 +77,7 @@ from transparenz.services.mapping_reference import (  # noqa: E402
 )
 from transparenz.services.provenance import describe_file, describe_generated  # noqa: E402
 from transparenz.services.review_decisions import index_decisions, load_decisions  # noqa: E402
-from transparenz.services.security_master import confirmed_reference  # noqa: E402
+from transparenz.services.security_master import confirmed_details  # noqa: E402
 
 DATA = local_data_dir(ROOT)  # Datenordner (TRANSPARENZ_DATA_DIR, sonst data/)
 
@@ -118,7 +118,8 @@ def main(argv: list[str] | None = None) -> int:
                              "ersetzt die Mutterbeziehungs-Abfragen über die API")
     parser.add_argument("--security-master", type=Path, default=None,
                         help="Wertpapierstamm (processed/security_master.sqlite): N-PORT-Konsens "
-                             "als Referenz für die Freigabe der Namenssuche (D-058)")
+                             "als Kennungsweg ISIN → LEI (D-059) und Referenz der "
+                             "Namenssuche (D-058)")
     parser.add_argument("--case", action="append", default=[],
                         help="ISIN einer Position, deren Belegkette vollständig gezeigt wird "
                              "(mehrfach möglich)")
@@ -224,6 +225,18 @@ def main(argv: list[str] | None = None) -> int:
     position_leis |= {m["lei"] for result in auto.values()
                       for m in (result["name"], result["register"])
                       if m["status"] == "accepted" and m["lei"]}
+
+    # N-PORT-Konsens (D-059): Kennungsweg ISIN → LEI und Referenz der Namenssuche (D-058).
+    nport_reference: dict[str, str] | None = None
+    nport_details: dict[str, dict[str, Any]] | None = None
+    reference_info: dict[str, Any] | None = None
+    if args.security_master:
+        nport_reference, reference_info, nport_details = confirmed_details(
+            args.security_master, [p.isin for p in fund.positions if p.isin])
+        log.info("Wertpapierstamm (Regelversion %s, erstellt %s): %d Positionen mit "
+                 "N-PORT-Konsens.", reference_info["rule_version"], reference_info["built_at"],
+                 len(nport_reference))
+        position_leis |= set(nport_reference.values())
     reporters = sorted(k[4:] for k in emissions if k.startswith("lei:"))
 
     ets: dict[str, Any] | None = None
@@ -263,18 +276,9 @@ def main(argv: list[str] | None = None) -> int:
     model = load_criteria_model(get_settings().criteria_config)
     rules = criteria_rules(model)
 
-    nport_reference: dict[str, str] | None = None
-    reference_info: dict[str, Any] | None = None
-    if args.security_master:
-        nport_reference, reference_info = confirmed_reference(
-            args.security_master, [p.isin for p in fund.positions if p.isin])
-        log.info("Wertpapierstamm (Regelversion %s, erstellt %s): %d Positionen mit "
-                 "N-PORT-Referenz.", reference_info["rule_version"], reference_info["built_at"],
-                 len(nport_reference))
-
     def chain(released: bool | frozenset[str]) -> dict[str, Any]:
         return build_chain(fund, candidates, emissions, gleif, ets, group_links, gem, decisions,
-                           auto, released, profiles, rules, nport_reference)
+                           auto, released, profiles, rules, nport_reference, nport_details)
 
     # Erst messen (Namenssuche nicht wirksam), dann entscheiden, wo sie wirken darf.
     report = chain(False)

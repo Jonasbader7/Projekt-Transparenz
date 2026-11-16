@@ -23,6 +23,7 @@ from transparenz.entities.labels import (
     RELATIONSHIP_LABELS,
     SOURCE_LABELS,
     STATUS_LABELS,
+    WIKIDATA_CHECK_LABELS,
 )
 from transparenz.ingestion.gem import GEM_STAKES, GEM_STATUSES
 from transparenz.services.fund_chain import (
@@ -49,7 +50,8 @@ def _fmt_date(value: str | None) -> str:
 
 
 CONFIDENCE_CHIPS = {"consistent": "c-ok", "consistent_lapsed": "c-ok",
-                    "confirmed_by_decision": "c-ok", "confirmed_by_register": "c-ok",
+                    "confirmed_by_decision": "c-ok", "confirmed_by_nport": "c-ok",
+                    "confirmed_by_register": "c-ok",
                     "confirmed_by_agreement": "c-ok", "auto_by_name": "c-ok",
                     "name_proposal": "s-zuordnung_unsicher",
                     "name_mismatch": "s-zuordnung_unsicher", "lei_not_in_gleif":
@@ -661,7 +663,34 @@ def html_context(report: dict[str, Any], criteria: list[dict[str, Any]]) -> dict
         "cases": [case_view(r, report) for isin in report.get("cases") or []
                   for r in positions if r["isin"] == isin],
         "mapping": mapping_view(report, positions),
+        "nport": nport_view(report, positions),
     }
+
+
+def nport_view(report: dict[str, Any], positions: list[dict[str, Any]]) -> dict[str, Any]:
+    """Kennungsweg N-PORT: ob er verwendet wurde, Vergleich mit Wikidata, Abweichungen."""
+    reference = (report.get("mapping_evaluation") or {}).get("reference") or {}
+    used = reference.get("kind") == "nport_consensus"
+    checks = (report.get("summary") or {}).get("nport_by_wikidata_check") or {}
+    differs = []
+    for r in positions:
+        company = r.get("company") or {}
+        if r["mapping_confidence"] != "confirmed_by_nport" or company.get(
+                "wikidata_check") != "different":
+            continue
+        lei = company.get("lei")
+        differs.append({
+            "name": r["name"], "isin": r["isin"], "weight": _fmt(r["weight_percent"]),
+            "lei": lei, "legal_name": ((company.get("gleif") or {}).get(lei) or {}).get(
+                "legal_name") or "nicht geladen",
+            "wikidata_leis": company.get("wikidata_leis") or [],
+            "wikidata_names": " / ".join(company.get("wikidata_names") or []) or "–",
+            "independent": (company.get("nport") or {}).get("independent")})
+    return {"used": used, "rule_version": reference.get("rule_version"),
+            "built_at": reference.get("built_at"),
+            "checks": [{"key": k, "label": label, **checks[k]}
+                       for k, label in WIKIDATA_CHECK_LABELS.items() if k in checks],
+            "differs": differs}
 
 
 def mapping_view(report: dict[str, Any], positions: list[dict[str, Any]]) -> dict[str, Any]:
@@ -743,6 +772,20 @@ def render_markdown(report: dict[str, Any]) -> str:
         item = summary["by_mapping_confidence"].get(key)
         if item:
             lines.append(f"| {label} | {item['positions']} | {_fmt(item['weight_percent'])} |")
+    nport = nport_view(report, report["positions"])
+    if nport["used"] and nport["checks"]:
+        lines += ["", "## N-PORT-Konsens und Wikidata-Kennung", "",
+                  f"Wertpapierstamm Regelversion {nport['rule_version']}, erstellt "
+                  f"{nport['built_at']}. Bei Abweichung gilt der N-PORT-Konsens.", "",
+                  "| Wikidata zur selben ISIN | Positionen | Gewicht in % |", "|---|---:|---:|"]
+        lines += [f"| {c['label']} | {c['positions']} | {_fmt(c['weight_percent'])} |"
+                  for c in nport["checks"]]
+        if nport["differs"]:
+            lines += ["", "Abweichungen (LEI laut N-PORT ← LEI laut Wikidata):", ""]
+            lines += [f"- {r['name']} ({r['isin']}, {r['weight']} %): {r['lei']} "
+                      f"({r['legal_name']}) ← {', '.join(r['wikidata_leis'])} "
+                      f"({r['wikidata_names']}); unabhängige Gruppen: {r['independent']}"
+                      for r in nport["differs"]]
     for title, wanted in (("Zugeordnete Emissionsbelege", ("confirmed",)),
                           ("Separat: nicht mitgezählte Belege", (*BLOCK_PRIORITY,))):
         lines += ["", f"## {title}", ""]

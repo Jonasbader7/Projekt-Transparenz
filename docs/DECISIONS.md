@@ -2,6 +2,47 @@
 
 ## 16.11.2026 – Phase 2: Wertpapierstamm ISIN → LEI aus N-PORT (Claude, Auftrag Jonas)
 
+### D-059 N-PORT-Konsens als Kennungsweg ISIN → LEI im Pilot
+- **Entscheid (Auftrag Jonas: nächster Schritt laut STATUS):** Mit `--security-master` ordnet
+  der bestätigte N-PORT-Konsens (D-056) eine Position direkt ihrem Emittenten-LEI zu
+  (`confirmed_by_nport`, zählt zur bestätigten Abdeckung). Reihenfolge: menschlicher
+  Entscheid → N-PORT-Konsens → Wikidata-Kennung → Registernummer → Namenssuche (nur mit
+  Freigabe). Ein «Nein» zu genau diesem LEI geht vor; dann gelten die übrigen Wege, und die
+  Namenssuche bleibt gegen den Konsens gesperrt (D-058). Ohne Wertpapierstamm ändert sich nichts.
+- **Wikidata nennt einen anderen LEI:** Der Konsens gilt. Begründung: Er beruht auf
+  mindestens zwei unabhängigen Fondsgesellschaften ohne Gegenmeldung, Wikidata auf einem
+  Gemeinschaftseintrag; an N-PORT gemessen liegt Wikidata bei 96.24 % (untere Grenze, D-057),
+  und in 19 von 21 geprüften Abweichungen nannte N-PORT die börsenkotierte Gesellschaft, das
+  andere Verfahren eine Tochter, Vorgängerin oder einen fremden Rechtsträger. Die Abweichung
+  wird nicht versteckt: je Position `company.wikidata_check` (gleich, enthält, anders, ohne
+  LEI, kein Eintrag), Zählung `nport_by_wikidata_check`, Liste im Bericht.
+- **Nur Anzeige:** Belegstärke (Zahl unabhängiger Gruppen und Fonds) und GLEIF-Status aus
+  dem Wertpapierstamm (`security_master.confirmed_details`), Namensvergleich Position ↔ GLEIF
+  (`company.name_check`). Sie entscheiden nichts; der Konsens ist eine Kennung.
+- **Messung bleibt getrennt:** `reference_cases` liest den Konsens direkt aus dem
+  Wertpapierstamm und misst die Namensvorschläge (`auto_match`) jeder Position, unabhängig
+  davon, welcher Weg sie zuordnet (Test `test_measurement_does_not_depend_on_the_nport_
+  assignment`). Folge: Die Namenssuche wirkt jetzt nur noch dort, wo kein Konsens besteht,
+  also gerade ausserhalb der Referenz. Diese Grenze aus D-058 wird damit zur Hauptgrenze
+  der Namenssuche und steht im Bericht.
+- **Vergleichslauf (D-051):** Ausgangsstand frisch mit dem letzten Commit gerechnet (separater
+  Arbeitsordner), gleich wie `p2_nport` (34/34 JSON). Danach, sechs Fonds, zwei Durchgänge:
+  Messung der Namenssuche und alle Referenzspeicher unverändert. 2'151 Positionen über den
+  Konsens, davon 546 vorher nicht bestätigt zugeordnet (Summe 96.9 Gewichtsprozent über sechs
+  Fonds) und 23 Positionen (16 Papiere) mit anderem LEI als vorher. Diese 16 einzeln geprüft
+  (lokal): jedes Mal nennt N-PORT die börsenkotierte Gesellschaft, der frühere Weg (14-mal
+  Wikidata, 2-mal Registernummer) eine Tochter, Vorgängerin oder andere Gruppengesellschaft;
+  kein Beleg und kein Befund ändert sich dadurch. Wikidata zur selben ISIN: gleich 901,
+  enthält 34, anders 21, ohne LEI 348, kein Eintrag 847. Bestätigte Abdeckung je Fonds
+  vorher 70–86 %, nachher 90–98 % des Gewichts. Offene Ja/Nein-Fragen 217 → 14. Namenssuche
+  wirkt noch für 44 Positionen (ausserhalb der Referenz).
+- **Grenze GLEIF-Namen:** Der Vergleichslauf ist offline; für 285 der 2'151 Positionen liegt
+  der GLEIF-Name des N-PORT-LEI nicht im gespeicherten Abruf. Dort ist die Namensprüfung
+  gegen die Kontoinhaber im EU-Emissionshandel nicht möglich («nicht geprüft», blockiert
+  nicht): 4 Positionen mit Beleg. Ein Lauf mit `--fetch-gleif` lädt die Namen (das Skript
+  fragt die N-PORT-LEI jetzt mit ab); offline schliesst die lokale GLEIF-Liste Level 1 die
+  Lücke (eigener Schritt).
+
 ### D-058 Freigabe der Namenssuche an der N-PORT-Referenz, je Region
 - **Entscheid (Jonas: «Ja, umstellen»):** Mit `--security-master` (Pilotskript) gilt als
   Referenz der Namenssuche: menschlicher Entscheid, sonst der N-PORT-Konsens (D-056). Die

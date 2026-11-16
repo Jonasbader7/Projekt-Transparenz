@@ -964,11 +964,104 @@ def test_name_never_acts_against_confirmed_reference():
                 "reason": "fiktiv", "candidates": [LEI_CHILD]}
     auto = {isin: {"name": accepted, "register": None, "entities": {}}
             for isin in (ISIN_B, ISIN_C)}
-    # N-PORT bestätigt für ISIN_B einen anderen LEI, für ISIN_C denselben.
+    # N-PORT bestätigt für ISIN_B einen anderen LEI, für ISIN_C denselben. Ein Mensch hat den
+    # N-PORT-LEI von ISIN_B verworfen: Der Kennungsweg fällt weg, der Name wirkt trotzdem nicht.
     report = build_chain(fund, {}, {}, None, auto=auto, name_released=True,
+                         decisions={ISIN_B: {LEI_OTHER: "no"}},
                          reference={ISIN_B: LEI_OTHER, ISIN_C: LEI_CHILD})
     by_isin = {r["isin"]: r for r in report["positions"]}
     assert by_isin[ISIN_B]["mapping_confidence"] == "name_proposal"
     assert by_isin[ISIN_B]["auto_match"]["name_contradicts_reference"] is True
-    assert by_isin[ISIN_C]["mapping_confidence"] == "auto_by_name"
+    # Kennungsweg geht der Namenssuche vor, auch wenn beide denselben LEI nennen.
+    assert by_isin[ISIN_C]["mapping_confidence"] == "confirmed_by_nport"
     assert "name_contradicts_reference" not in by_isin[ISIN_C]["auto_match"]
+
+
+def nport_fund():
+    return parse_fund(fund_xml(positions=(
+        ("Fiktiv Gleich AG", ISIN_A, "40"), ("Fiktiv Tochter AG", ISIN_B, "30"),
+        ("Fiktiv Ohne AG", ISIN_C, "20"), ("Fiktiv Entscheid AG", ISIN_D, "10"))))
+
+
+def test_nport_consensus_maps_before_wikidata_and_shows_disagreement():
+    fund = nport_fund()
+    candidates = index_candidates([candidate(ISIN_A, "Q1", LEI_PARENT),
+                                   candidate(ISIN_B, "Q2", LEI_CHILD),
+                                   candidate(ISIN_D, "Q4", LEI_OTHER)])
+    gleif = {"names": {LEI_PARENT: gleif_entry("Fiktiv Gleich AG"),
+                       LEI_CHILD: gleif_entry("Fiktiv Tochter AG"),
+                       LEI_OTHER: gleif_entry("Fiktiv Entscheid AG")},
+             "names_checked": [LEI_PARENT, LEI_CHILD, LEI_OTHER], "parents": []}
+    reference = {ISIN_A: LEI_PARENT, ISIN_B: LEI_PARENT, ISIN_C: LEI_HINT_CHILD,
+                 ISIN_D: LEI_PARENT}
+    details = {ISIN_B: {"independent": 4, "funds": 9, "gleif_entity_status": "ACTIVE"}}
+    emissions = index_emissions([emission(LEI_PARENT)])
+    report = build_chain(fund, candidates, emissions, gleif, decisions={
+        ISIN_D: {LEI_OTHER: "yes"}}, reference=reference, reference_details=details)
+    by_isin = {r["isin"]: r for r in report["positions"]}
+    a, b, c, d = (by_isin[i] for i in (ISIN_A, ISIN_B, ISIN_C, ISIN_D))
+    assert a["mapping_confidence"] == "confirmed_by_nport"
+    assert a["company"]["wikidata_check"] == "same"
+    assert a["company"]["name_check"] == "shared_word"
+    # Wikidata nennt die Tochter: Der Konsens gilt, die Abweichung bleibt sichtbar.
+    assert b["mapping_confidence"] == "confirmed_by_nport"
+    assert b["company"]["lei"] == LEI_PARENT and b["company"]["leis"] == [LEI_PARENT]
+    assert b["company"]["wikidata_leis"] == [LEI_CHILD]
+    assert b["company"]["wikidata_check"] == "different"
+    assert b["mapping_signal"] == "wikidata_differs"
+    assert b["company"]["nport"] == details[ISIN_B]
+    assert [e["status"] for e in b["evidence"]] == ["confirmed"]
+    # Ohne Wikidata-Eintrag: Kennungsweg trotzdem; GLEIF-Name nicht geladen = ehrlich leer.
+    assert c["mapping_confidence"] == "confirmed_by_nport"
+    assert c["company"]["wikidata_check"] == "no_entry"
+    assert c["company"]["gleif"] == {} and c["company"]["name_check"] == "not_checked"
+    # Ein menschlicher Entscheid geht dem Konsens vor.
+    assert d["mapping_confidence"] == "confirmed_by_decision"
+    assert d["company"]["lei"] == LEI_OTHER
+    s = report["summary"]
+    assert s["confirmed_coverage"]["positions"] == 4
+    assert {k: v["positions"] for k, v in s["nport_by_wikidata_check"].items()} == {
+        "different": 1, "no_entry": 1, "same": 1}
+    # Ohne Wertpapierstamm unverändert über Wikidata.
+    plain = {r["isin"]: r for r in build_chain(fund, candidates, emissions, gleif)["positions"]}
+    assert plain[ISIN_B]["mapping_confidence"] == "consistent"
+    assert plain[ISIN_B]["company"]["lei"] == LEI_CHILD
+
+
+def test_measurement_does_not_depend_on_the_nport_assignment():
+    """Die Referenz misst die Namensvorschläge jeder Position, egal welcher Weg zuordnet."""
+    fund = nport_fund()
+    candidates = index_candidates([candidate(ISIN_A, "Q1", LEI_PARENT),
+                                   candidate(ISIN_B, "Q2", LEI_CHILD)])
+    accepted = {"method": "gleif_name_country", "lei": LEI_PARENT, "status": "accepted",
+                "reason": "fiktiv", "candidates": [LEI_PARENT]}
+    auto = {isin: {"name": accepted, "register": None, "entities": {}}
+            for isin in (ISIN_A, ISIN_B, ISIN_C, ISIN_D)}
+    reference = {ISIN_A: LEI_PARENT, ISIN_B: LEI_PARENT, ISIN_C: LEI_OTHER}
+    mapped = build_chain(fund, candidates, {}, None, auto=auto, reference=reference)
+    unmapped = build_chain(fund, candidates, {}, None, auto=auto)
+    assert {r["mapping_confidence"] for r in mapped["positions"][:3]} == {"confirmed_by_nport"}
+    store = reference_cases(mapped["positions"], "Testfonds", reference)
+    assert store == reference_cases(unmapped["positions"], "Testfonds", reference)
+    name = evaluate_methods(store)["name"]
+    assert (name["answered"], name["correct"], name["wrong"]) == (3, 2, 1)
+
+
+def test_report_shows_nport_path_and_wikidata_disagreement():
+    fund = nport_fund()
+    candidates = index_candidates([candidate(ISIN_B, "Q2", LEI_CHILD)])
+    reference = {ISIN_B: LEI_PARENT}
+    report = build_chain(fund, candidates, {}, None, reference=reference,
+                         reference_details={ISIN_B: {"independent": 3}})
+    report["mapping_evaluation"] = {
+        **evaluate_methods(reference_cases(report["positions"], "Testfonds", reference)),
+        "reference": {"kind": "nport_consensus", "rule_version": "fiktiv",
+                      "built_at": "2099-01-01"}}
+    html = render_html(report, [])
+    for text in ("Fondsmeldungen an die SEC und Wikidata im Vergleich",
+                 "Wikidata nennt einen anderen LEI", "N-PORT-Konsens, Wertpapierstamm "
+                 "Regelversion fiktiv", "Kennung: Fondsmeldungen an die SEC", LEI_CHILD):
+        assert text in html, text
+    markdown = render_markdown(report)
+    assert "## N-PORT-Konsens und Wikidata-Kennung" in markdown
+    assert f"{LEI_PARENT} (nicht geladen) ← {LEI_CHILD}" in markdown

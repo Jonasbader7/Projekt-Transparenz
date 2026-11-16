@@ -2,6 +2,31 @@
 
 Neueste Einträge oben.
 
+## 16.11.2026 – Claude (Opus 5.5): N-PORT-Konsens als Kennungsweg im Pilot (D-059)
+
+- Auftrag Jonas: STATUS, ROADMAP, DECISIONS (ab D-054), LOG lesen; nächster Schritt laut
+  STATUS: bestätigten N-PORT-Konsens im Pilot direkt als Kennungsweg ISIN → LEI einbauen, mit
+  Vergleichslauf vorher/nachher.
+- **Umbau:** neue Zuordnungsart `confirmed_by_nport` (`services/fund_chain.py`, Label in
+  `entities/labels.py`, zählt in `CONFIRMED_MAPPING`), Reihenfolge Entscheid → N-PORT →
+  Wikidata → Registernummer → Namenssuche. Abgleich mit Wikidata je Position
+  (`company.wikidata_check`, Zählung `nport_by_wikidata_check`), Belegstärke und GLEIF-Status
+  aus `security_master.confirmed_details` (nur Anzeige). Pilotskript lädt den Stamm vor GEM
+  und Konzernbeziehungen, damit diese auch die N-PORT-LEI abdecken. Bericht: Reihenfolge,
+  neuer Abschnitt «Fondsmeldungen an die SEC und Wikidata im Vergleich» (HTML und Markdown).
+- **Vergleichslauf:** `p3_vorher` aus separatem Git-Arbeitsordner mit Commit 2d7deea (gleich
+  wie `p2_nport`, 34/34), dann `p3_nachher` nacheinander (Speicher). Messung unverändert;
+  Abdeckung je Fonds 70–86 % → 90–98 %; 546 Positionen neu, 23 mit anderem LEI (16 Papiere,
+  einzeln geprüft, N-PORT nennt jeweils die börsenkotierte Gesellschaft). Namen und Befunde
+  je Fonds nur lokal in `PILOT_ERGEBNISSE.md`.
+- **Offen gefunden:** 285 N-PORT-Positionen ohne GLEIF-Namen im Offline-Lauf, 4 davon mit
+  Beleg ohne Namensprüfung. In D-059 und STATUS als Grenze vermerkt.
+- **Geprüft:** pytest 386 bestanden (4 neu, fiktiv: ZZ-ISIN, FIKT00-LEI), Ruff sauber.
+  Website nicht betroffen.
+- Skills: keine verwendet. Werkzeuge: Shell (Git Bash, PowerShell), Dateiwerkzeuge,
+  Hintergrundläufe mit Benachrichtigung, Git-Arbeitsordner. Keine Downloads, kein Netz, kein
+  Push.
+
 ## 16.11.2026 – Claude (Opus 5.5): Freigabe der Namenssuche an der N-PORT-Referenz (D-058)
 
 - Auftrag Jonas: «Ja, umstellen» (Freigabe der Namenssuche auf die N-PORT-Referenz).

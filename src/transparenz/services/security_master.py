@@ -575,20 +575,40 @@ def lookup(db_path: Path, isin: str) -> dict[str, Any] | None:
         conn.close()
 
 
+CONFIRMED_DETAIL_COLUMNS = ("independent", "funds", "gleif_entity_status",
+                            "gleif_registration_status", "gleif_country")
+
+
 def confirmed_reference(db_path: Path, isins: Iterable[str]) -> tuple[dict[str, str],
                                                                        dict[str, Any]]:
     """Bestätigte ISIN → LEI für die gegebenen ISIN, dazu Regelversion und Erstellzeit."""
+    found, info, _ = confirmed_details(db_path, isins)
+    return found, info
+
+
+def confirmed_details(db_path: Path, isins: Iterable[str]
+                      ) -> tuple[dict[str, str], dict[str, Any], dict[str, dict[str, Any]]]:
+    """Wie ``confirmed_reference``, dazu je ISIN die Belegstärke und den GLEIF-Status.
+
+    Belegstärke: Zahl der unabhängigen Gruppen und der Fonds, die den LEI melden. GLEIF-Status
+    laut Liste Level 1 zum Zeitpunkt des Aufbaus (inaktive Rechtsträger bleiben bestätigt).
+    """
     wanted = sorted({i.upper() for i in isins if i})
     conn = open_readonly(db_path)
     try:
         found: dict[str, str] = {}
+        details: dict[str, dict[str, Any]] = {}
+        columns = ", ".join(CONFIRMED_DETAIL_COLUMNS)
         for i in range(0, len(wanted), 500):
             chunk = wanted[i:i + 500]
             marks = ", ".join("?" * len(chunk))
-            found.update(conn.execute(
-                f"SELECT isin, lei FROM securities WHERE status = 'confirmed' "
-                f"AND isin IN ({marks})", chunk).fetchall())
+            for isin, lei, *values in conn.execute(
+                    f"SELECT isin, lei, {columns} FROM securities WHERE status = 'confirmed' "
+                    f"AND isin IN ({marks})", chunk):
+                found[isin] = lei
+                details[isin] = dict(zip(CONFIRMED_DETAIL_COLUMNS, values, strict=True))
         info = {k: json.loads(v) for k, v in conn.execute("SELECT key, value FROM build_info")}
     finally:
         conn.close()
-    return found, {"rule_version": info.get("rule_version"), "built_at": info.get("built_at")}
+    return found, {"rule_version": info.get("rule_version"),
+                   "built_at": info.get("built_at")}, details

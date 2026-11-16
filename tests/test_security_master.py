@@ -403,3 +403,24 @@ def test_confirmed_reference_returns_only_confirmed_isins(tmp_path):
     conn.close()
     found, info = confirmed_reference(db, [i1, i2, make_isin("ZZREF000003")])
     assert found == {i1: A} and info["rule_version"] == "fiktiv"
+
+
+def test_confirmed_details_add_support_and_gleif_status(tmp_path):
+    from transparenz.services.security_master import _SCHEMA_SQL, confirmed_details
+
+    i1, i2 = make_isin("ZZREF000001"), make_isin("ZZREF000002")
+    db = tmp_path / "sm.sqlite"
+    conn = sqlite3.connect(db)
+    conn.executescript(_SCHEMA_SQL)
+    conn.executemany("INSERT INTO securities (isin, lei, status, funds, ciks, independent, "
+                     "funds_without_lei, holdings, gleif_entity_status) "
+                     "VALUES (?, ?, ?, 7, 4, 3, 0, 9, ?)",
+                     [(i1, A, "confirmed", "INACTIVE"), (i2, B, "conflict", "ACTIVE")])
+    conn.execute("INSERT INTO build_info VALUES ('rule_version', '\"fiktiv\"')")
+    conn.commit()
+    conn.close()
+    found, info, details = confirmed_details(db, [i1.lower(), i2])
+    assert found == {i1: A} and info["rule_version"] == "fiktiv"
+    # Inaktiver Rechtsträger bleibt bestätigt; der Status steht daneben.
+    assert details == {i1: {"independent": 3, "funds": 7, "gleif_entity_status": "INACTIVE",
+                            "gleif_registration_status": None, "gleif_country": None}}

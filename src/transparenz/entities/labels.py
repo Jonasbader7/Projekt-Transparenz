@@ -143,7 +143,12 @@ CONFIDENCE_LABELS: dict[str, tuple[str, str]] = {
                               "Ein Mensch hat diese Zuordnung geprüft und bestätigt. Der "
                               "Entscheid ist gespeichert und gilt für jeden Fonds mit "
                               "dieser ISIN."),
-    "confirmed_by_register": ("Automatisch über Registernummer",
+    "confirmed_by_nport": ("Kennung: Fondsmeldungen an die SEC",
+                           "Mindestens zwei unabhängige US-Fondsgesellschaften melden der SEC "
+                           "(N-PORT) zu dieser ISIN denselben Emittenten-LEI, keine meldet einen "
+                           "anderen, und GLEIF führt den LEI. Dieser Weg geht Wikidata vor; "
+                           "nennt Wikidata einen anderen LEI, steht das separat."),
+    "confirmed_by_register":("Automatisch über Registernummer",
                               "Wikidata nennt die Registernummer des Unternehmens, und GLEIF "
                               "führt genau einen aktiven Rechtsträger mit dieser Nummer in "
                               "derselben Rechtsordnung."),
@@ -220,6 +225,14 @@ GEM_KIND_LABELS = {"coal_plant": "Kohlekraftwerk", "coal_mine": "Kohlemine",
                    "gas_pipeline": "Gaspipeline", "oil_pipeline": "Öl-/NGL-Pipeline"}
 
 GEM_CATEGORY_LABELS = {"coal": "Kohle", "oil_gas": "Gas-/Öl-Kraftwerke und -Infrastruktur"}
+
+WIKIDATA_CHECK_LABELS = {
+    "same": "Wikidata nennt denselben LEI",
+    "includes": "Wikidata nennt diesen und weitere LEI",
+    "different": "Wikidata nennt einen anderen LEI",
+    "no_lei": "Wikidata-Eintrag ohne LEI",
+    "no_entry": "kein Wikidata-Eintrag zur ISIN",
+}
 
 OPEN_REASONS = {
     "unknown": "kein Wikidata-Eintrag zur ISIN",

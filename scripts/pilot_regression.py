@@ -12,8 +12,9 @@ Code den Unterschied machen kann. Es wird nichts aus dem Netz geladen.
     python scripts/pilot_regression.py run nport --security-master --passes 2   # D-058
 
 Mit ``--security-master`` dient der Wertpapierstamm (processed/security_master.sqlite) als
-Referenz der Namenssuche. Die Freigabe hängt vom fondsübergreifenden Referenzspeicher ab, der
-im ersten Durchgang erst Fonds für Fonds entsteht; ``--passes 2`` rechnet deshalb alle Fonds
+Kennungsweg ISIN → LEI (D-059) und als Referenz der Namenssuche (D-058). Die Freigabe hängt
+vom fondsübergreifenden Referenzspeicher ab, der im ersten Durchgang erst Fonds für Fonds
+entsteht; ``--passes 2`` rechnet deshalb alle Fonds
 ein zweites Mal mit vollständigem Speicher.
 """
 
@@ -159,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
     run_parser = sub.add_parser("run")
     run_parser.add_argument("label")
     run_parser.add_argument("--security-master", action="store_true",
-                            help="Wertpapierstamm als Referenz der Namenssuche (D-058)")
+                            help="Wertpapierstamm als Kennungsweg und Referenz (D-058, D-059)")
     run_parser.add_argument("--passes", type=int, default=1,
                             help="alle Fonds so oft rechnen (Freigabe mit vollem Speicher)")
     cmp = sub.add_parser("compare")

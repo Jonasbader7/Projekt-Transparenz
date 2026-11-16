@@ -98,8 +98,8 @@ schriftlich nachfragen oder weglassen. Keine kostenpflichtigen APIs, kein Push, 
 öffentliche Datenfreigabe ohne Zustimmung. Der Auftrag vom 08.11.2026 erlaubt kostenlose
 lokale Downloads freigegebener Quellen; Dateiname, Quelle und Grösse trotzdem vorher nennen.
 
-**Zuordnung (D-042, D-046, D-058):** Automatisch, ohne Einzelfallfreigabe. Kennungen (ISIN → LEI,
-Registernummer) wirken immer. Ein Name ist nie ein Schlüssel: Die GLEIF-Namenssuche (gleicher
+**Zuordnung (D-042, D-046, D-058, D-059):** Automatisch, ohne Einzelfallfreigabe. Kennungen
+(N-PORT-Konsens ISIN → LEI vor Wikidata ISIN → LEI, Registernummer) wirken immer. Ein Name ist nie ein Schlüssel: Die GLEIF-Namenssuche (gleicher
 Name, Sitzland, aktiv, eindeutig) wirkt nur, solange ihre an Referenzfällen gemessene
 Präzision die Freigabe erreicht (≥ 100 Fälle, untere 95-%-Grenze ≥ 97 %), **je Region** und an
 der N-PORT-Referenz gemessen; nie gegen einen bestätigten N-PORT-LEI; sonst bleibt der

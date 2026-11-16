@@ -115,7 +115,7 @@ footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .8
 </table></div>
 
 <h2 id="zuordnung">2. Zuordnungssicherheit: Welches Unternehmen steckt hinter einer Position?</h2>
-<p class="caption">Die Fondsmeldung nennt je Position eine ISIN (Kennung des Wertpapiers), aber nicht das Unternehmen. Zugeordnet wird automatisch, ohne Einzelfallfreigabe, in dieser Reihenfolge: gespeicherter menschlicher Entscheid (nur Korrekturen) → ISIN → Wikidata-Eintrag → LEI (Kennung des Rechtsträgers) → GLEIF → Registernummer → GLEIF-Namenssuche mit Sitzland. Die Namenssuche wirkt nur, wenn ihre gemessene Präzision die Freigabeschwelle erreicht. Was keine dieser Regeln sicher löst, bleibt offen.</p>
+<p class="caption">Die Fondsmeldung nennt je Position eine ISIN (Kennung des Wertpapiers), aber nicht das Unternehmen. Zugeordnet wird automatisch, ohne Einzelfallfreigabe, in dieser Reihenfolge: gespeicherter menschlicher Entscheid (nur Korrekturen) → {% if nport.used %}ISIN → Emittenten-LEI laut Fondsmeldungen an die SEC (N-PORT-Konsens, Wertpapierstamm Regelversion {{ nport.rule_version }}) → {% endif %}ISIN → Wikidata-Eintrag → LEI (Kennung des Rechtsträgers) → GLEIF → Registernummer → GLEIF-Namenssuche mit Sitzland. Die Namenssuche wirkt nur, wenn ihre gemessene Präzision die Freigabeschwelle erreicht. Was keine dieser Regeln sicher löst, bleibt offen.</p>
 <div class="table-wrap"><table>
   <thead><tr><th>Stufe</th><th>Bedeutung</th><th class="num">Positionen</th><th class="num">Gewicht</th><th>Bestätigte Abdeckung</th></tr></thead>
   <tbody>
@@ -124,6 +124,17 @@ footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .8
   {% endfor %}
   </tbody>
 </table></div>
+{% if nport.used and nport.checks %}
+<h3>Fondsmeldungen an die SEC und Wikidata im Vergleich</h3>
+<p class="caption">Für die über N-PORT zugeordneten Positionen: Was sagt die Wikidata-Kennung zur selben ISIN? Bei Abweichung gilt der N-PORT-Konsens, weil mehrere unabhängige Fondsgesellschaften denselben LEI melden; gemessen an diesem Konsens ist Wikidata weniger genau (D-057). Die Abweichungen stehen hier offen, damit sie nachprüfbar bleiben.</p>
+<table class="mini">{% for c in nport.checks %}<tr><td>{{ c.label }}</td><td class="num">{{ c.positions }}</td><td class="num">{{ fmt(c.weight_percent) }} %</td></tr>{% endfor %}</table>
+{% if nport.differs %}
+<details><summary><strong>Wikidata nennt einen anderen LEI</strong> · {{ nport.differs | length }} Positionen</summary><div class="body"><div class="table-wrap"><table>
+  <thead><tr><th>Position</th><th class="num">Gewicht</th><th>LEI laut N-PORT</th><th>LEI laut Wikidata</th><th class="num">unabhängige Gruppen</th></tr></thead>
+  <tbody>{% for r in nport.differs %}<tr><td>{{ r.name }}<span class="sub">{{ r.isin }}</span></td><td class="num">{{ r.weight }} %</td><td class="ids">{{ r.lei }}<span class="sub">{{ r.legal_name }}</span></td><td class="ids">{{ r.wikidata_leis | join(", ") }}<span class="sub">{{ r.wikidata_names }}</span></td><td class="num">{{ r.independent if r.independent is not none else "–" }}</td></tr>{% endfor %}</tbody>
+</table></div></div></details>
+{% endif %}
+{% endif %}
 
 {% set ev = mapping.evaluation %}
 {% if ev %}
@@ -157,7 +168,7 @@ footer { border-top: 1px solid var(--border); color: var(--muted); font-size: .8
 {% endif %}
 
 <h3>Positionen ohne Kennungsweg: was die zusätzlichen Verfahren lösen</h3>
-<p class="caption">{{ mapping.start_count }} Positionen ({{ mapping.start_weight }} %) haben keinen Wikidata-Eintrag oder einen Eintrag ohne LEI. Ergebnis je Position:</p>
+<p class="caption">{{ mapping.start_count }} Positionen ({{ mapping.start_weight }} %) haben {% if nport.used %}keinen N-PORT-Konsens und {% endif %}keinen Wikidata-Eintrag oder einen Eintrag ohne LEI. Ergebnis je Position:</p>
 <table class="mini">{% for label, n in mapping.outcome %}<tr><td>{{ label }}</td><td class="num">{{ n }}</td></tr>{% endfor %}</table>
 <details><summary><strong>Alle {{ mapping.start_count }} Positionen mit Begründung</strong></summary><div class="body"><div class="table-wrap"><table>
   <thead><tr><th>Position</th><th>Land</th><th class="num">Gewicht</th><th>Ausgangslage</th><th>Ergebnis</th><th>Registernummer</th><th>Namenssuche</th></tr></thead>

@@ -170,7 +170,22 @@ def name_check(holder_names: list[str], legal_names: list[str | None] | str | No
 
 
 CONFIRMED_MAPPING = ("consistent", "consistent_lapsed", "confirmed_by_decision",
-                     "confirmed_by_register", "confirmed_by_agreement", "auto_by_name")
+                     "confirmed_by_nport", "confirmed_by_register", "confirmed_by_agreement",
+                     "auto_by_name")
+
+NPORT_SOURCE = ("SEC N-PORT (Wertpapierstamm): mindestens zwei unabhängige Fondsgesellschaften "
+                "melden denselben Emittenten-LEI, keine einen anderen; LEI bei GLEIF (CC0)")
+
+
+def wikidata_check(hits: list[dict[str, Any]], candidate_leis: list[str], lei: str) -> str:
+    """Was die Wikidata-Kennung zu einem anders bestimmten LEI sagt (nur Anzeige)."""
+    if not hits:
+        return "no_entry"
+    if not candidate_leis:
+        return "no_lei"
+    if candidate_leis == [lei]:
+        return "same"
+    return "includes" if lei in candidate_leis else "different"
 
 REVIEW_SIGNALS = ("name_mismatch", "ambiguous", "name_proposal")
 
@@ -297,13 +312,16 @@ def _assign(row: dict[str, Any], status: str, confidence: str | None = None) -> 
 def resolve_position(position: Position, hits: list[dict[str, Any]],
                      decided: dict[str, str], names: dict[str, Any], names_checked: set[str],
                      auto: dict[str, Any] | None, name_released: bool,
-                     row: dict[str, Any]) -> str | None:
+                     row: dict[str, Any], nport: Mapping[str, Any] | None = None
+                     ) -> str | None:
     """Ordnet eine Position einem LEI zu und setzt Status und Sicherheitsstufe in ``row``.
 
-    Reihenfolge: menschlicher Entscheid (Korrektur) → Wikidata-Kennung (ISIN → LEI) →
-    Registernummer → GLEIF-Namenssuche mit Land (nur wenn das Verfahren freigegeben ist).
-    Zwei unabhängige Wege, die auf denselben LEI zeigen, lösen Mehrdeutigkeit und
-    Namensabweichung auf («confirmed_by_agreement»). Gibt den LEI oder ``None`` zurück.
+    Reihenfolge: menschlicher Entscheid (Korrektur) → N-PORT-Konsens (ISIN → LEI, D-059) →
+    Wikidata-Kennung (ISIN → LEI) → Registernummer → GLEIF-Namenssuche mit Land (nur wenn
+    das Verfahren freigegeben ist). Zwei unabhängige Wege, die auf denselben LEI zeigen,
+    lösen Mehrdeutigkeit und Namensabweichung auf («confirmed_by_agreement»). Nennt Wikidata
+    einen anderen LEI als der N-PORT-Konsens, gilt der Konsens; die Abweichung steht in
+    ``company.wikidata_check`` und ``mapping_signal``. Gibt den LEI oder ``None`` zurück.
     """
     approved = sorted(lei for lei, answer in decided.items() if answer == "yes")
     rejected = {lei for lei, answer in decided.items() if answer == "no"}
@@ -340,6 +358,20 @@ def resolve_position(position: Position, hits: list[dict[str, Any]],
                                                          names_checked))
         _assign(row, "confirmed_by_decision")
         return lei
+    nport_lei = (nport or {}).get("lei")
+    if nport_lei and nport_lei not in rejected:
+        # Kennungsweg: Fondsmeldungen nennen den Emittenten-LEI zur ISIN. Ein «Nein» zu
+        # genau diesem LEI geht vor; dann gelten die übrigen Wege.
+        check = wikidata_check(hits, candidate_leis, nport_lei)
+        row["company"] = {
+            **company([nport_lei], NPORT_SOURCE), "method": "nport",
+            "wikidata_leis": candidate_leis, "wikidata_check": check,
+            "name_check": name_check([position.name], gleif_names(names.get(nport_lei))),
+            "nport": {k: v for k, v in (nport or {}).items() if k != "lei"}}
+        if check == "different":
+            row["mapping_signal"] = "wikidata_differs"
+        _assign(row, "confirmed_by_nport")
+        return nport_lei
     if hits:
         row["company"] = company(candidate_leis, "Wikidata (CC0), exakter ISIN-Abgleich")
     if candidate_leis and not leis:
@@ -401,7 +433,9 @@ def build_chain(fund: Fund, candidates: dict[str, list[dict[str, Any]]],
                 name_released: bool | Collection[str] = False,
                 profiles: dict[str, dict[str, Any]] | None = None,
                 rules: dict[str, Any] | None = None,
-                reference: Mapping[str, str] | None = None) -> dict[str, Any]:
+                reference: Mapping[str, str] | None = None,
+                reference_details: Mapping[str, Mapping[str, Any]] | None = None
+                ) -> dict[str, Any]:
     """Reine Funktion: verbindet Positionen, Kandidaten, Belege und GLEIF-Beziehungen.
 
     Jeder Beleg erhält einen Status. «confirmed» nur, wenn die Position widerspruchsfrei
@@ -412,8 +446,10 @@ def build_chain(fund: Fund, candidates: dict[str, list[dict[str, Any]]],
     ``auto`` sind die Ergebnisse der automatischen Verfahren (``auto_match``); die Namenssuche
     wirkt nur mit ``name_released``: ``True``/``False`` für alle Positionen oder eine Menge
     freigegebener Regionen (``entity_matching.position_region``, D-058). ``reference``
-    (ISIN → bestätigter LEI aus dem N-PORT-Konsens): Nennt die Namenssuche einen anderen LEI,
-    wirkt sie für diese Position nicht – ein Name wirkt nie gegen eine Kennung. ``profiles``
+    (ISIN → bestätigter LEI aus dem N-PORT-Konsens) ist ein Kennungsweg: Er ordnet zu, nach
+    einem menschlichen Entscheid und vor Wikidata (D-059). Nennt die Namenssuche einen
+    anderen LEI, wirkt sie für diese Position nicht – ein Name wirkt nie gegen eine Kennung.
+    ``reference_details`` (ISIN → Belegstärke, GLEIF-Status) wird nur angezeigt. ``profiles``
     liefert die Branche je Wikidata-Eintrag (Finanzinstitut ja/nein für die
     Beziehungstypen). ``rules`` enthält je Kriterium die Beteiligungsschwelle und die
     Wirkung der Kategorien aus criteria.toml.
@@ -447,11 +483,13 @@ def build_chain(fund: Fund, candidates: dict[str, list[dict[str, Any]]],
         hits = candidates.get(position.isin or "", [])
         position_auto = (auto or {}).get(position.isin or "")
         released = name_released_for(position, name_released)
-        contradicts = name_contradicts_reference(position_auto, (reference or {}).get(
-            position.isin or ""))
+        reference_lei = (reference or {}).get(position.isin or "")
+        contradicts = name_contradicts_reference(position_auto, reference_lei)
+        nport = ({**(reference_details or {}).get(position.isin or "", {}),
+                  "lei": reference_lei} if reference_lei else None)
         lei = resolve_position(position, hits, (decisions or {}).get(position.isin or "", {}),
                                names, names_checked, position_auto,
-                               released and not contradicts, row)
+                               released and not contradicts, row, nport)
         if contradicts:
             row["auto_match"]["name_contradicts_reference"] = True
         if lei is None:
@@ -560,10 +598,13 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
     by_country: dict[str, list[dict[str, Any]]] = defaultdict(list)
     by_status: dict[str, list[dict[str, Any]]] = defaultdict(list)
     by_confidence: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    nport_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
         by_country[row["issuer_country"] or "??"].append(row)
         by_status[row["mapping_status"]].append(row)
         by_confidence[row["mapping_confidence"]].append(row)
+        if row["mapping_confidence"] == "confirmed_by_nport":
+            nport_checks[row["company"]["wikidata_check"]].append(row)
     confirmed = having(lambda e: e["status"] == "confirmed")
     return {
         "all": bucket(rows),
@@ -574,6 +615,7 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "confirmed_by_decision": bucket(by_status.get("confirmed_by_decision", [])),
         "confirmed_coverage": bucket([r for r in rows
                                       if r["mapping_confidence"] in CONFIRMED_MAPPING]),
+        "nport_by_wikidata_check": {k: bucket(v) for k, v in sorted(nport_checks.items())},
         "with_evidence": bucket([r for r in rows if r["evidence"]]),
         "with_evidence_swissprtr": bucket(having(lambda e: e["source"] == "swissprtr")),
         "with_evidence_eu_ets": bucket(having(lambda e: e["source"] == "eu_ets")),
