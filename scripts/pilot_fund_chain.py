@@ -45,6 +45,7 @@ from transparenz.entities.identifiers import is_valid_lei  # noqa: E402
 from transparenz.ingestion.eu_ets import ETS_ACTIVITY_FILE, ETS_OPERATORS_FILE, load_ets  # noqa: E402
 from transparenz.ingestion.fi_holdings import find_fund  # noqa: E402
 from transparenz.ingestion.gem import GEM_OWNERSHIP_GLOB, load_gem  # noqa: E402
+from transparenz.ingestion.gleif_level1 import cached_lei_names, latest_snapshot  # noqa: E402
 from transparenz.ingestion.gleif_lookup import (  # noqa: E402
     GLEIF_MIN_INTERVAL,
     fetch_gleif,
@@ -61,6 +62,7 @@ from transparenz.reports.fund_chain_report import render_html, render_markdown  
 from transparenz.services.fund_chain import (  # noqa: E402
     auto_match,
     build_chain,
+    fill_missing_names,
     index_candidates,
     index_emissions,
     review_queue,
@@ -77,11 +79,15 @@ from transparenz.services.mapping_reference import (  # noqa: E402
 )
 from transparenz.services.provenance import describe_file, describe_generated  # noqa: E402
 from transparenz.services.review_decisions import index_decisions, load_decisions  # noqa: E402
-from transparenz.services.security_master import confirmed_details  # noqa: E402
+from transparenz.services.security_master import (  # noqa: E402
+    confirmed_details,
+    confirmed_leis,
+)
 
 DATA = local_data_dir(ROOT)  # Datenordner (TRANSPARENZ_DATA_DIR, sonst data/)
 
 DEFAULT_DECISIONS = DATA / "review/mapping_decisions.csv"
+NAMES_CACHE = "processed/security_master/gleif_level1_names.json"
 
 log = logging.getLogger("pilot_fund_chain")
 
@@ -258,6 +264,33 @@ def main(argv: list[str] | None = None) -> int:
         sorted(set(reporters) | position_leis | linked_children),
         [] if group_links is not None else reporters, user_agent), "GLEIF (Rechtsnamen)")
 
+    # Fehlende Rechtsnamen aus der lokalen GLEIF-Liste Level 1 (D-060): für die N-PORT-LEI und
+    # die Töchter in Konzernbeziehungen, damit die Namensprüfung gegen die Kontoinhaber im
+    # EU-Emissionshandel auch offline läuft. Gelesen werden einmal alle bestätigten LEI des
+    # Wertpapierstamms und alle LEI mit Emissionsbeleg (für jeden Fonds dieselbe Menge).
+    level1_info: dict[str, Any] | None = None
+    if nport_reference:
+        snapshot = latest_snapshot(DATA)
+        if snapshot is None:
+            log.info("GLEIF-Liste Level 1 nicht vorhanden: Namen der N-PORT-LEI nur aus dem "
+                     "gespeicherten Abruf.")
+        else:
+            provenance.append(snapshot.as_dict())
+            names_path = DATA / NAMES_CACHE
+            local_names, level1_info = cached_lei_names(
+                DATA / snapshot.path, snapshot.sha256,
+                set(confirmed_leis(args.security_master)) | evidence_leis, names_path)
+            gleif, filled = fill_missing_names(
+                gleif, local_names, set(nport_reference.values()) | linked_children)
+            level1_info = {**level1_info, "filled": len(filled),
+                           "snapshot": snapshot.retrieved}
+            record(names_path, "gleif_lei2_golden_copy",
+                   f"Namen aus {snapshot.path} (SHA-256 {snapshot.sha256[:12]}…), "
+                   "für alle bestätigten LEI des Wertpapierstamms und alle LEI mit Beleg")
+            log.info("GLEIF-Liste Level 1: %d Namen ergänzt (N-PORT-LEI und Töchter; "
+                     "Zwischenspeicher %s).", len(filled),
+                     "neu gelesen" if level1_info["rebuilt"] else "genutzt")
+
     gem: dict[str, Any] | None = None
     if args.gem_dir:
         files = sorted(args.gem_dir.glob(GEM_OWNERSHIP_GLOB))
@@ -331,6 +364,7 @@ def main(argv: list[str] | None = None) -> int:
                         "gleif_rr": args.gleif_rr.name if args.gleif_rr else None,
                         "gem_release": (gem or {}).get("release"),
                         "gem_tracker_files": (gem or {}).get("tracker_files"),
+                        "gleif_level1_names": level1_info,
                         "swissprtr_data_as_of": next(
                             (r[0].get("data_as_of") for r in emissions.values() if r), None)}
     criteria = [{**c.model_dump(mode="json"), "data_status_label": c.data_status_label}

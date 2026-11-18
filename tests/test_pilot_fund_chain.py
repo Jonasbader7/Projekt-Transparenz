@@ -1065,3 +1065,28 @@ def test_report_shows_nport_path_and_wikidata_disagreement():
     markdown = render_markdown(report)
     assert "## N-PORT-Konsens und Wikidata-Kennung" in markdown
     assert f"{LEI_PARENT} (nicht geladen) ← {LEI_CHILD}" in markdown
+
+
+def test_level1_names_fill_only_missing_nport_names():
+    from transparenz.services.fund_chain import fill_missing_names
+
+    gleif = {"names": {LEI_PARENT: gleif_entry("Fiktiv Abruf AG")},
+             "names_checked": [LEI_PARENT], "parents": [link(LEI_CHILD, LEI_PARENT, True)]}
+    local = {LEI_PARENT: gleif_entry("Fiktiv Liste AG"),
+             LEI_CHILD: {**gleif_entry("Fiktiv Tochter AG"), "source": "gleif_lei2_golden_copy"},
+             LEI_OTHER: gleif_entry("Fiktiv Fremd AG")}
+    filled_gleif, filled = fill_missing_names(gleif, local, {LEI_PARENT, LEI_CHILD})
+    # Vorhandener Name bleibt; nur N-PORT-LEI ohne Namen werden ergänzt.
+    assert filled == [LEI_CHILD]
+    assert filled_gleif["names"][LEI_PARENT]["legal_name"] == "Fiktiv Abruf AG"
+    assert LEI_OTHER not in filled_gleif["names"]
+    assert filled_gleif["names_checked"] == sorted([LEI_PARENT, LEI_CHILD])
+    assert filled_gleif["parents"] == gleif["parents"] and LEI_CHILD not in gleif["names"]
+    empty, filled = fill_missing_names(None, local, {LEI_OTHER})
+    assert filled == [LEI_OTHER] and empty["parents"] == []
+    # Mit Namen prüft der Kennungsweg den Kontoinhaber im EU-Emissionshandel wieder.
+    fund = parse_fund(fund_xml(positions=(("Fiktiv Tochter AG", ISIN_A, "100"),)))
+    report = build_chain(fund, {}, {}, filled_gleif, reference={ISIN_A: LEI_CHILD})
+    row = report["positions"][0]
+    assert row["mapping_confidence"] == "confirmed_by_nport"
+    assert row["company"]["name_check"] == "shared_word"

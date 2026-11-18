@@ -161,6 +161,24 @@ def gleif_names(entry: dict[str, Any] | None) -> list[str]:
     return [entry.get("legal_name"), *(o.get("name") for o in entry.get("other_names") or [])]
 
 
+def fill_missing_names(gleif: Mapping[str, Any] | None, local: Mapping[str, dict[str, Any]],
+                       leis: Collection[str]) -> tuple[dict[str, Any], list[str]]:
+    """Ergänzt Rechtsnamen aus der lokalen GLEIF-Liste Level 1 für LEI ohne Namen.
+
+    Nur für die übergebenen ``leis`` (im Pilot: N-PORT-LEI und Töchter in Konzernbeziehungen,
+    D-060) und nur, wo der gespeicherte GLEIF-Abruf keinen Namen hat; ein vorhandener Name
+    wird nie ersetzt. Gibt eine Kopie und die ergänzten LEI zurück. Jeder ergänzte Eintrag
+    trägt ``source = "gleif_lei2_golden_copy"``.
+    """
+    out = {"names": {}, "names_checked": [], "parents": [], **dict(gleif or {})}
+    names = dict(out["names"])
+    filled = sorted(lei for lei in set(leis) if not names.get(lei) and lei in local)
+    names.update({lei: local[lei] for lei in filled})
+    out["names"] = names
+    out["names_checked"] = sorted({*out["names_checked"], *filled})
+    return out, filled
+
+
 def name_check(holder_names: list[str], legal_names: list[str | None] | str | None) -> str:
     """Nur zur Sichtprüfung: beeinflusst nie die Zuordnung (die läuft allein über den LEI)."""
     if isinstance(legal_names, str) or legal_names is None:

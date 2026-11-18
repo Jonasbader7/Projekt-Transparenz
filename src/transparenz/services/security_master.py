@@ -612,3 +612,13 @@ def confirmed_details(db_path: Path, isins: Iterable[str]
         conn.close()
     return found, {"rule_version": info.get("rule_version"),
                    "built_at": info.get("built_at")}, details
+
+
+def confirmed_leis(db_path: Path) -> list[str]:
+    """Alle LEI, die im Stamm für mindestens eine ISIN bestätigt sind (sortiert)."""
+    conn = open_readonly(db_path)
+    try:
+        return [lei for (lei,) in conn.execute(
+            "SELECT DISTINCT lei FROM securities WHERE status = 'confirmed' ORDER BY lei")]
+    finally:
+        conn.close()

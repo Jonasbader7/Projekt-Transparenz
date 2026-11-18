@@ -1,16 +1,16 @@
 # STATUS
 
-Stand: **16.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verlauf steht in
+Stand: **18.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verlauf steht in
 `docs/LOG.md`, die Begründungen in `docs/DECISIONS.md`, der Plan in `docs/ROADMAP.md`.
 
 ## Phase
 
 **Phase 2 (Wertpapierstamm ISIN → LEI) im Pilot umgesetzt:** Stamm gebaut (D-056),
 Pilotverfahren gemessen (D-057), Freigabe der Namenssuche je Region an der N-PORT-Referenz
-(D-058), N-PORT-Konsens als Kennungsweg vor Wikidata (D-059). Phasen 0 und 1 abgeschlossen.
-Ziel laut Auftrag: alle börsenkotierten Aktien und Fonds weltweit, automatisch zugeordnet,
-firmentauglich (D-049). Offen in Phase 2: GLEIF-Namen der N-PORT-LEI offline aus der lokalen
-Liste Level 1.
+(D-058), N-PORT-Konsens als Kennungsweg vor Wikidata (D-059), fehlende GLEIF-Namen offline
+aus der Liste Level 1 (D-060). Phasen 0 und 1 abgeschlossen. Ziel laut Auftrag: alle
+börsenkotierten Aktien und Fonds weltweit, automatisch zugeordnet, firmentauglich (D-049).
+Offen in Phase 2: Herkunftsprüfung im Update-System, N-PORT-Doppelmeldungen.
 
 | Baustein | Stand |
 |---|---|
@@ -21,9 +21,9 @@ Liste Level 1.
 | SEC N-PORT | `2026q3_nport.zip` geladen und geprüft; `nport-update` liest direkt aus dem ZIP in `processed/nport.sqlite`, jeder Lauf in `update_runs` (D-054) |
 | **Wertpapierstamm** | `security-master-build` → `processed/security_master.sqlite` (87 MB, rund 2.5 Minuten), Regelversion 2026-11-16.1 (D-056) |
 | Kriterienmodell | Schema 2, Profil «streng» 1.1, 12 aktive Kriterien, 7 Beziehungstypen (D-045–D-048) |
-| Zuordnung | im Pilot mit `--security-master`: menschlicher Entscheid → **N-PORT-Konsens (D-059)** → Wikidata → Registernummer → GLEIF-Namenssuche (freigegeben in Europa und Asien-Pazifik, D-058, nie gegen den Konsens); ohne Stamm wie bisher |
+| Zuordnung | im Pilot mit `--security-master`: menschlicher Entscheid → **N-PORT-Konsens (D-059)** → Wikidata → Registernummer → GLEIF-Namenssuche (freigegeben in Europa und Asien-Pazifik, D-058, nie gegen den Konsens); ohne Stamm wie bisher. Fehlende GLEIF-Namen der N-PORT-LEI und der Töchter aus der lokalen Liste Level 1 (D-060) |
 | Website (`site/`) | fiktive Demo, unverändert |
-| Tests | **386 bestanden** (4 neu für den Kennungsweg N-PORT), Ruff sauber |
+| Tests | **388 bestanden** (2 neu für die Namen aus der Liste Level 1), Ruff sauber |
 
 ## Wertpapierstamm ISIN → LEI (Phase 2, Messwerte ohne Namen)
 
@@ -43,6 +43,7 @@ GLEIF Level 1 vom 15.11., Level 2 vom 11.11., N-CEN 2025q4–2026q3). Regeln: D-
 | Bestätigt je Anlageart | Anleihen 61.66 %, Aktien 72.54 %, Hypothekenpapiere 31.99 % (je ISIN mit LEI) |
 | Gegenprüfung Pilot (D-057) | Namenssuche 675/679 richtig (untere Grenze 98.66 %; Europa 97.70 %, Asien-Pazifik 98.23 %, Nordamerika und übrige < 100 Fälle); Registernummer 115/116; Wikidata 626/642 (96.24 %) |
 | Kennungsweg im Pilot (D-059) | 2'151 Positionen über den Konsens (546 vorher nicht bestätigt, 23 mit anderem LEI: 16 Papiere, jedes Mal N-PORT = börsenkotierte Gesellschaft); Wikidata gleich 901, anders 21, ohne LEI 348, kein Eintrag 847; bestätigte Abdeckung je Fonds **90–98 %**; Messung unverändert; offene Ja/Nein-Fragen 217 → 14 |
+| GLEIF-Namen offline (D-060) | 457 Namen ergänzt (440 N-PORT-LEI, 17 Töchter); Namensprüfung EU-Emissionshandel: 22 Belege von «nicht geprüft» zu «gemeinsames Wort» (3 direkt, 19 über Töchter), keiner gesperrt; danach kein Beleg mehr ungeprüft; sonst keine Änderung |
 | Freigabe im Pilot (D-058) | Vergleichslauf: unabhängig 645/649, freigegeben Europa (270/272) und Asien-Pazifik (243/244). Sechs Fonds: 689 Positionen neu über den Namen (645 davon von N-PORT bestätigt), 10 gesperrt wegen Widerspruch; bestätigte Abdeckung je Fonds vorher 44–81 %, nachher 70–86 % des Gewichts |
 
 ## SEC N-PORT, Quartal 2026q3 (Messwerte, ohne Namen)
@@ -73,7 +74,7 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
 2. Echte Ergebnisse: `C:\TransparenzDaten\notizen\PILOT_ERGEBNISSE.md` (lokal). Nie in
    versionierte Dateien übernehmen (D-053); vor jedem Push prüfen.
 3. Plan: `docs/ROADMAP.md`. Phase 2: Stamm steht, Freigabe je Region und Kennungsweg
-   N-PORT umgesetzt (D-056–D-059). Downloads brauchen Jonas' Zustimmung, alles andere läuft
+   N-PORT umgesetzt (D-056–D-060). Downloads brauchen Jonas' Zustimmung, alles andere läuft
    ohne Einzelentscheide (D-049).
 4. Jeder Umbau der Fondskette: vorher und nachher `scripts\pilot_regression.py` (D-051).
 5. N-PORT-Regeln ändern = `RULE_VERSION` in `ingestion/sec_nport.py` erhöhen, dann
@@ -95,9 +96,11 @@ Quelle: Qualitätsbericht `C:\TransparenzDaten\processed\nport\quality_report.js
 8. Pilot mit N-PORT-Referenz: `pilot_fund_chain.py … --security-master
    C:\TransparenzDaten\processed\security_master.sqlite`; Vergleichslauf
    `pilot_regression.py run <name> --security-master --passes 2`. Letzte Läufe:
-   `p3_vorher` (Commit 2d7deea, gleich `p2_nport`) und `p3_nachher` (Kennungsweg N-PORT,
-   aktueller Stand). Auswertung der Einzelfälle:
-   `C:\TransparenzDaten\notizen\d059_vergleich_einzelfaelle.md` (lokal, mit Namen).
+   `p4_vorher` (Commit 893a9e2, gleich `p3_nachher`) und `p4_nachher2` (Namen aus der Liste
+   Level 1, aktueller Stand). Auswertung der Einzelfälle:
+   `C:\TransparenzDaten\notizen\d060_vergleich_einzelfaelle.md` (lokal, mit Namen).
+   Namensspeicher: `processed\security_master\gleif_level1_names.json` (rund 6 MB, wird bei
+   neuer Liste oder grösserer LEI-Menge selbst neu gelesen).
    Code nie ändern, während ein Vergleichslauf läuft (jeder Fonds lädt den Code neu).
 
 ## Pilot (sechs echte schwedische Fonds, je 30.06.2026)
@@ -120,9 +123,9 @@ versionierte Dateien). Öffentlich nur die Methode und die Messwerte der Zuordnu
 cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 .venv\Scripts\python -m pytest -q
 # Vergleichslauf: sechs Pilotfonds offline rechnen und mit einem früheren Lauf vergleichen
-# (aktueller Stand: p3_nachher; rund 35 Minuten mit zwei Durchgängen, im Hintergrund)
+# (aktueller Stand: p4_nachher2; rund 35 Minuten mit zwei Durchgängen, im Hintergrund)
 .venv\Scripts\python scripts\pilot_regression.py run neu --security-master --passes 2
-.venv\Scripts\python scripts\pilot_regression.py compare p3_nachher neu --json-only --ignore-key provenance
+.venv\Scripts\python scripts\pilot_regression.py compare p4_nachher2 neu --json-only --ignore-key provenance
 # SEC N-PORT: lokale Archive einlesen, Qualitätsbericht; neues Quartal nur nach Zustimmung
 .venv\Scripts\python -m transparenz nport-update --force
 .venv\Scripts\python -m transparenz nport-download 2026q4            # nennt nur Name und Grösse
@@ -135,8 +138,8 @@ cd "C:\Users\Bader\OneDrive\Desktop\Projekt Transparenz"
 .venv\Scripts\python scripts\pilot_fund_chain.py --zip data\raw\external\fi_se_fondinnehav\2026Q2\Fondinnehav_2026Q2.zip --fund "<exakter Fondsname>" --ets-dir data\raw\external\eu_ets_union_registry\2026-11-11 --gleif-rr data\raw\external\gleif_rr_golden_copy\2026-11-11\gleif-goldencopy-rr.csv.zip --gem-dir data\raw\external\gem\2026-11-11\extracted
 ```
 
-Aktuelle Berichte: `C:\TransparenzDaten\processed\pilot_regression\p3_nachher\*.html`
-(mit Wertpapierstamm als Kennungsweg). Vergleich mit älteren Läufen (`herkunft`) zeigt zusätzlich eine neuere
+Aktuelle Berichte: `C:\TransparenzDaten\processed\pilot_regression\p4_nachher2\*.html`
+(mit Wertpapierstamm als Kennungsweg und Namen aus der Liste Level 1). Vergleich mit älteren Läufen (`herkunft`) zeigt zusätzlich eine neuere
 Schweizer Exportgeneration (täglicher Task), deshalb Ausgangsstand immer frisch rechnen.
 Ältere Berichte mit Herkunftsabschnitt: `C:\TransparenzDaten\processed\pilot_regression\herkunft\*.html`
 (Vorschau: Startkonfiguration `pilot-report`, 127.0.0.1:8611). Die Berichte unter
@@ -144,15 +147,13 @@ Schweizer Exportgeneration (täglicher Task), deshalb Ausgangsstand immer frisch
 
 ## Nächste drei Schritte
 
-1. **GLEIF-Namen offline aus der Liste Level 1:** Für 285 von 2'151 N-PORT-Positionen fehlt im
-   gespeicherten Abruf der GLEIF-Name; dort prüft der Pilot die Kontoinhaber im
-   EU-Emissionshandel nicht (4 Positionen mit Beleg). Namen aus der lokalen, geprüften Liste
-   (`ingestion/gleif_level1.py`, Spalten `Entity.LegalName`, frühere Namen) einmal für alle
-   bestätigten LEI des Stamms zwischenspeichern; mit Vergleichslauf.
-2. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
+1. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
    denselben Prüfweg hat wie N-PORT.
-3. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
+2. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
    vergleichen: nur bei identischen Positionen eine übernehmen, sonst offen lassen.
+3. **Namensvergleich Position ↔ GLEIF** für nicht-lateinische Rechtsnamen messen (42
+   Abweichungen im Bericht, meist chinesische, japanische oder koreanische Rechtsnamen):
+   prüfen, ob die transliterierten GLEIF-Namen sie erklären. Nur Anzeige, entscheidet nichts.
 
 ## Offene Fragen (nur Grundsätzliches)
 

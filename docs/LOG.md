@@ -2,6 +2,28 @@
 
 Neueste Einträge oben.
 
+## 18.11.2026 – Claude (Opus 5.5): GLEIF-Namen offline aus der Liste Level 1 (D-060)
+
+- Auftrag Jonas: «Yes, fill in names», danach «selbstständig weitermachen solange wie du
+  kannst».
+- **Umbau:** `gleif_level1.load_lei_names` liest Rechtsname, weitere und transliterierte
+  Namen, Status und Land aus der lokalen Liste (gemeinsamer Leser `_scan` mit
+  `load_lei_records`); `cached_lei_names` speichert sie für alle bestätigten LEI des Stamms
+  und alle LEI mit Beleg (Prüfsumme der Liste im Speicher). `fund_chain.fill_missing_names`
+  ergänzt nur fehlende Namen der N-PORT-LEI und der Töchter in Konzernbeziehungen, ersetzt nie
+  einen vorhandenen. `security_master.confirmed_leis` neu. Bericht: Eingabe
+  `gleif_level1_names`, Herkunft der Liste und des Speichers.
+- **Vergleichslauf:** `p4_vorher` aus separatem Git-Arbeitsordner (Commit 893a9e2, gleich
+  `p3_nachher`). Erster Nachher-Lauf (nur N-PORT-LEI) zeigte, dass 19 Belege über Töchter
+  weiter ungeprüft blieben; D-059 hatte diese Lücke zu klein gezählt (Berichtigung in D-060).
+  Code erweitert, `p4_nachher2`: 457 Namen ergänzt, 22 Belege neu namensgeprüft (alle
+  «gemeinsames Wort»), keiner gesperrt, Abdeckung und Messung unverändert, sonst keine
+  Zeile anders. Einzelfälle lokal in `d060_vergleich_einzelfaelle.md`.
+- **Geprüft:** pytest 388 bestanden (2 neu, fiktiv), Ruff sauber. Website nicht betroffen.
+- Skills: keine verwendet. Werkzeuge: Shell (Git Bash, PowerShell), Dateiwerkzeuge,
+  Hintergrundläufe mit Benachrichtigung, Git-Arbeitsordner. Keine Downloads, kein Netz, kein
+  Push.
+
 ## 16.11.2026 – Claude (Opus 5.5): N-PORT-Konsens als Kennungsweg im Pilot (D-059)
 
 - Auftrag Jonas: STATUS, ROADMAP, DECISIONS (ab D-054), LOG lesen; nächster Schritt laut

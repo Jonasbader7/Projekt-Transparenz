@@ -486,3 +486,55 @@ def test_gleif_duplicate_lei_is_an_error(tmp_path):
     path = place_gleif(tmp_path, [row, row])
     with pytest.raises(ValueError, match="doppelt"):
         load_lei_records(path, {LEI_ISSUER})
+
+
+def place_gleif_names(tmp_path: Path, rows: list[dict[str, str]]) -> Path:
+    import csv as _csv
+
+    from transparenz.ingestion.gleif_level1 import NAME_COLUMNS
+
+    columns = ["LEI", *NAME_COLUMNS]
+    text_out = io.StringIO()
+    writer = _csv.DictWriter(text_out, fieldnames=columns, quoting=_csv.QUOTE_ALL)
+    writer.writeheader()
+    writer.writerows([{c: r.get(c, "") for c in columns} for r in rows])
+    path = tmp_path / "fiktiv-lei2.csv.zip"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("fiktiv-lei2.csv", text_out.getvalue())
+    return path
+
+
+def test_gleif_names_from_level1_with_cache(tmp_path):
+    from transparenz.ingestion.gleif_level1 import cached_lei_names, load_lei_names
+
+    other = make_lei("FIKT00NPORTOTHER01")
+    path = place_gleif_names(tmp_path, [
+        {"LEI": LEI_ISSUER, "Entity.LegalName": "Fiktiv Emittent AG",
+         "Entity.EntityStatus": "ACTIVE", "Registration.RegistrationStatus": "LAPSED",
+         "Entity.LegalAddress.Country": "ZZ",
+         "Entity.OtherEntityNames.OtherEntityName.1": "Fiktiv Alt AG",
+         "Entity.OtherEntityNames.OtherEntityName.1.type": "PREVIOUS_LEGAL_NAME",
+         "Entity.TransliteratedOtherEntityNames.TransliteratedOtherEntityName.1": "Fiktiv Lat",
+         "Entity.TransliteratedOtherEntityNames.TransliteratedOtherEntityName.1.type":
+             "AUTO_ASCII_TRANSLITERATED_LEGAL_NAME"},
+        {"LEI": other, "Entity.LegalName": "Fiktiv Andere AG", "Entity.EntityStatus": "ACTIVE",
+         "Registration.RegistrationStatus": "ISSUED"}])
+    names, rows = load_lei_names(path, [LEI_ISSUER.lower()])
+    assert rows == 2 and list(names) == [LEI_ISSUER]
+    assert names[LEI_ISSUER] == {
+        "legal_name": "Fiktiv Emittent AG",
+        "other_names": [{"name": "Fiktiv Alt AG", "type": "PREVIOUS_LEGAL_NAME"},
+                        {"name": "Fiktiv Lat", "type": "AUTO_ASCII_TRANSLITERATED_LEGAL_NAME"}],
+        "entity_status": "ACTIVE", "registration_status": "LAPSED", "country": "ZZ",
+        "source": "gleif_lei2_golden_copy"}
+    cache = tmp_path / "cache/names.json"
+    missing = make_lei("FIKT00NPORTMISS001")
+    first, info = cached_lei_names(path, "a" * 64, [LEI_ISSUER, other, missing], cache)
+    assert info["rebuilt"] and (info["requested"], info["found"]) == (3, 2)
+    # Teilmenge, gleiche Prüfsumme: Zwischenspeicher wird genutzt, auch ohne Archiv.
+    path.unlink()
+    again, info = cached_lei_names(path, "a" * 64, [other], cache)
+    assert not info["rebuilt"] and again == {other: first[other]}
+    # Andere Prüfsumme: neu lesen (Archiv fehlt hier → Fehler statt veralteter Namen).
+    with pytest.raises(FileNotFoundError):
+        cached_lei_names(path, "b" * 64, [other], cache)

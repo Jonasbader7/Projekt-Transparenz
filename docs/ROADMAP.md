@@ -57,7 +57,9 @@ GLEIF-Liste Level 1 geprüft (D-055). Messwerte in STATUS.md.
 Stand 16.11.2026: Wertpapierstamm gebaut (D-056), Pilotverfahren gemessen (D-057), Freigabe
 der Namenssuche je Region auf die N-PORT-Referenz umgestellt (D-058): Europa und
 Asien-Pazifik freigegeben. N-PORT-Konsens wirkt im Pilot als Kennungsweg ISIN → LEI vor
-Wikidata (D-059): bestätigte Abdeckung je Fonds 90–98 %.
+Wikidata (D-059): bestätigte Abdeckung je Fonds 90–98 %. Stand 18.11.2026: fehlende
+GLEIF-Namen offline aus der Liste Level 1 (D-060); jeder Beleg aus dem EU-Emissionshandel
+ist jetzt gegen die Kontoinhaber namensgeprüft.
 
 - Konsens: ISIN → LEI gilt als «bestätigt durch Fondsmeldungen», wenn mindestens zwei
   unabhängige Fondsgesellschaften denselben LEI melden und keine widerspricht.

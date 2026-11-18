@@ -1,6 +1,39 @@
 # Entscheidungslog
 
-## 16.11.2026 – Phase 2: Wertpapierstamm ISIN → LEI aus N-PORT (Claude, Auftrag Jonas)
+## 18.11.2026 – Phase 2: GLEIF-Namen der N-PORT-LEI offline (Claude, Auftrag Jonas)
+
+### D-060 Rechtsnamen der N-PORT-LEI aus der lokalen GLEIF-Liste Level 1
+- **Entscheid (Jonas: «Yes, fill in names»):** Fehlt im gespeicherten GLEIF-Abruf der Name
+  eines N-PORT-LEI, ergänzt der Pilot ihn aus der lokalen Liste Level 1 (CC0, D-055, vor
+  jeder Nutzung gegen die Begleitdatei geprüft). Ein vorhandener Name wird nie ersetzt
+  (`fund_chain.fill_missing_names`); jeder ergänzte Eintrag trägt `source =
+  gleif_lei2_golden_copy`. Ergänzt wird für die N-PORT-LEI und für die Töchter in
+  Konzernbeziehungen (GEM), weil die Namensprüfung im EU-Emissionshandel bei Belegen über eine
+  Tochter deren Rechtsnamen braucht. Die übrigen Wege bleiben unverändert.
+- **Gelesen:** Rechtsname, bis zu fünf weitere und fünf transliterierte Namen mit Typ,
+  Rechtsträger- und Registrierungsstatus, Land (`gleif_level1.load_lei_names`, gleiche Form
+  wie der API-Abruf). Die Datei wird einmal für alle bestätigten LEI des Wertpapierstamms und
+  alle LEI mit Beleg gelesen (22'665 LEI, alle gefunden) und in
+  `processed/security_master/gleif_level1_names.json` zwischengespeichert;
+  der Speicher gilt nur für dieselbe Archiv-Prüfsumme und dieselbe oder eine kleinere
+  LEI-Menge, sonst wird neu gelesen. Er steht mit Prüfsumme im Herkunftsabschnitt.
+- **Wirkung:** Die Namen entscheiden keine Zuordnung (der Konsens ist eine Kennung). Sie
+  machen die Namensprüfung gegen die Kontoinhaber im EU-Emissionshandel möglich
+  (Identitätskonflikt sperrt einen Beleg) und zeigen den Rechtsnamen im Bericht.
+- **Zeitpunkt:** GLEIF-Liste vom 15.11.2026, gespeicherter API-Abruf vom 11.–14.11.2026.
+  Für dieselbe LEI gilt der API-Abruf; die Liste füllt nur Lücken.
+- **Vergleichslauf (D-051):** Ausgangsstand gleich dem Nachher-Lauf von D-059 (34/34 JSON).
+  Danach, sechs Fonds, zwei Durchgänge: 457 Namen ergänzt (je Fonds 26–121), davon 440 für
+  N-PORT-LEI und 17 für Töchter. Abdeckung, bestätigte Belege, Identitätskonflikte (einer, schon
+  vorher) und die Messung der Namenssuche unverändert; ausser den Namen ändert sich keine
+  Zeile. Namensprüfung im EU-Emissionshandel: 3 direkte und 19 Belege über Töchter von «nicht
+  geprüft» zu «gemeinsames Wort»; keine Prüfung ergibt «anders», kein Beleg wird gesperrt.
+  Danach ist kein Beleg aus dem EU-Emissionshandel mehr ungeprüft. Ein Namensvorschlag in den
+  Zuordnungsstreitfällen zeigt neu den Rechtsnamen. Der Zwischenspeicher wurde einmal neu
+  gelesen und danach genutzt.
+- **Berichtigung zu D-059:** Die dort genannte Lücke (4 Positionen mit Beleg) war zu klein
+  gezählt. Gezählt waren nur Belege, bei denen der Name des Positions-LEI fehlte; bei 19 Belegen
+  über eine Tochter fehlte deren Name (davon 3 schon vor D-059). Dieser Lauf schliesst beide.
 
 ### D-059 N-PORT-Konsens als Kennungsweg ISIN → LEI im Pilot
 - **Entscheid (Auftrag Jonas: nächster Schritt laut STATUS):** Mit `--security-master` ordnet
@@ -39,7 +72,7 @@
 - **Grenze GLEIF-Namen:** Der Vergleichslauf ist offline; für 285 der 2'151 Positionen liegt
   der GLEIF-Name des N-PORT-LEI nicht im gespeicherten Abruf. Dort ist die Namensprüfung
   gegen die Kontoinhaber im EU-Emissionshandel nicht möglich («nicht geprüft», blockiert
-  nicht): 4 Positionen mit Beleg. Ein Lauf mit `--fetch-gleif` lädt die Namen (das Skript
+  nicht): 4 Positionen mit Beleg (zu klein gezählt, siehe Berichtigung in D-060). Ein Lauf mit `--fetch-gleif` lädt die Namen (das Skript
   fragt die N-PORT-LEI jetzt mit ab); offline schliesst die lokale GLEIF-Liste Level 1 die
   Lücke (eigener Schritt).
 
