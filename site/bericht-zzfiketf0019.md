@@ -1,6 +1,6 @@
 # Projekt Transparenz – Fondsanalyse: Muster Nachhaltigkeit Welt ETF (fiktiv)
 
-ISIN ZZFIKETF0019 · Anbieter Fiktiver ETF-Anbieter (Demo) · Positionen per 30.09.2026 · Auswertung per 15.11.2026
+ISIN ZZFIKETF0019 · Anbieter Fiktiver ETF-Anbieter (Demo) · Positionen per 30.09.2026 · Auswertung per 20.11.2026
 
 > **Fiktive Demodaten.** Fonds, Unternehmen und Quellen sind erfunden.
 

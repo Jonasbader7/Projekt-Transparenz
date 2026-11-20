@@ -47,7 +47,10 @@ METHODOLOGY_DOCS = (
     ("validierung.md", "Belegmodell und Validierung"),
     ("quellen-hierarchie.md", "Quellen-Hierarchie"),
     ("ausschlusskriterien.md", "Ausschlusskriterien"),
+    ("zuordnung.md", "Zuordnung: von der Position zum Unternehmen"),
+    ("herkunft.md", "Herkunft und Prüfsummen"),
 )
+STATUS_DOC = "projektstand.md"  # in docs/, öffentliche Kurzfassung von STATUS.md ohne Namen
 
 STATIC_DIR = Path(__file__).parent / "static"
 STATIC_FILES = ("analytics-config.js", "analytics-client.js")
@@ -199,6 +202,13 @@ def build_site(ctx: AppContext, out_dir: Path, as_of: date | None = None) -> Bui
             **common, page="methodik", title="Methodik", model=model,
             effects=CATEGORY_EFFECTS, decision_labels=DECISION_LABELS,
             documents=[(t, _render_markdown(docs / f)) for f, t in METHODOLOGY_DOCS],
+        ),
+    )
+    write(
+        "projektstand.html",
+        env.get_template("status.html").render(
+            **common, page="projektstand", title="Projektstand",
+            document=_render_markdown(ctx.settings.docs_dir / STATUS_DOC),
         ),
     )
     with ctx.session_factory() as session:

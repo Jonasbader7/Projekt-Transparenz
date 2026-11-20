@@ -2,6 +2,21 @@
 
 Neueste Einträge oben.
 
+## 20.11.2026 – Claude (Opus 5.5): Website auf den aktuellen Stand, Push
+
+- Auftrag Jonas: «Stop, einfach mal wieder pushen bitte… Website verbessern, auf den
+  aktuellen Stand bringen». Die laufende Arbeit an den N-PORT-Doppelmeldungen wurde
+  unterbrochen; die Messung (nur lesend) steht ohne Namen in STATUS, Code unverändert.
+- **Website:** neue Seite «Projektstand» aus `docs/projektstand.md` (Bausteine, Messwerte ohne
+  Namen, nächste Schritte, Grenzen; erklärt, warum nur fiktive Fonds gezeigt werden), neue
+  Methodik-Dokumente `zuordnung.md` und `herkunft.md`, Hinweis auf der Übersicht.
+  Neu erzeugt mit `build-site`; die fiktiven Demoquellen erscheinen mit ihrem wahren Alter.
+- **Vor dem Push geprüft (D-053):** alle 9 bisher ungepushten Commits und die neuen Dateien
+  ohne Fonds- oder Firmennamen, ohne echte ISIN/LEI, ohne Kontaktangaben.
+- **Geprüft:** pytest 399 bestanden, Ruff sauber; Seite im Browser angesehen.
+- Skills: keine verwendet. Werkzeuge: Shell, Dateiwerkzeuge, eingebauter Browser, Git, `gh`.
+  Push auf GitHub mit Zustimmung von Jonas.
+
 ## 20.11.2026 – Claude (Opus 5.5): Herkunftsprüfung im Update-System (D-061)
 
 - Auftrag Jonas: «Ja, weitermachen» (nächster Schritt laut STATUS: Herkunft auf das

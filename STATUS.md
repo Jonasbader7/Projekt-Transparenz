@@ -15,7 +15,7 @@ N-PORT-Doppelmeldungen.
 
 | Baustein | Stand |
 |---|---|
-| Git | `main` auf GitHub bis Phase 0; Phase 1 und 2 in lokalen Commits, **nicht gepusht** |
+| Git | `main` auf GitHub, gepusht am 20.11.2026 (bis D-061 und Website-Stand) |
 | Datenordner | `C:\TransparenzDaten` ausserhalb OneDrive (`TRANSPARENZ_DATA_DIR`, D-050) |
 | Pilot-Code | in Paketmodule zerlegt (D-051); Fondskette in Phase 1 und 2 nicht verändert |
 | Herkunft | jede Eingabedatei wird bei jedem Lauf gegen ihre Begleitdatei geprüft (D-052); gilt auch für N-PORT und seit D-061 für Schweizer Export, SEC-Katalog und Wikidata weltweit (Manifest gegen `dataset_versions`, Originaldateien gegen Manifest und Begleitdatei; Liste im Qualitätsbericht). Echte Daten: 171 von 171 Dateien bestätigt |
@@ -23,8 +23,8 @@ N-PORT-Doppelmeldungen.
 | **Wertpapierstamm** | `security-master-build` → `processed/security_master.sqlite` (87 MB, rund 2.5 Minuten), Regelversion 2026-11-16.1 (D-056) |
 | Kriterienmodell | Schema 2, Profil «streng» 1.1, 12 aktive Kriterien, 7 Beziehungstypen (D-045–D-048) |
 | Zuordnung | im Pilot mit `--security-master`: menschlicher Entscheid → **N-PORT-Konsens (D-059)** → Wikidata → Registernummer → GLEIF-Namenssuche (freigegeben in Europa und Asien-Pazifik, D-058, nie gegen den Konsens); ohne Stamm wie bisher. Fehlende GLEIF-Namen der N-PORT-LEI und der Töchter aus der lokalen Liste Level 1 (D-060) |
-| Website (`site/`) | fiktive Demo, unverändert |
-| Tests | **398 bestanden** (10 neu für die Herkunftsprüfung im Update-System), Ruff sauber |
+| Website (`site/`) | fiktive Demo; neu Seite «Projektstand» (`docs/projektstand.md`, Messwerte ohne Namen) und Methodik «Zuordnung» und «Herkunft» (20.11.2026) |
+| Tests | **399 bestanden** (1 neu für Projektstand und Methodik der Website), Ruff sauber |
 
 ## Wertpapierstamm ISIN → LEI (Phase 2, Messwerte ohne Namen)
 
@@ -149,7 +149,12 @@ Schweizer Exportgeneration (täglicher Task), deshalb Ausgangsstand immer frisch
 ## Nächste drei Schritte
 
 1. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
-   vergleichen: nur bei identischen Positionen eine übernehmen, sonst offen lassen.
+   vergleichen: nur bei identischen Positionen eine übernehmen, sonst offen lassen. Gemessen
+   am 20.11.2026 (nur lesend, noch keine Regel): 15 Meldungen in 6 Gruppen. 3 Gruppen mit je
+   2 Meldungen vollständig identisch; 2 grosse Gruppen ohne Serien-ID mit je einer Meldung,
+   die keine einzige Zeile mit den übrigen (untereinander identischen) teilt; 1 Gruppe
+   Original und Berichtigung am selben Tag, verschieden (59 und 58 Positionen). Regel noch
+   offen: bei teilweise identischen Gruppen nichts übernehmen oder nur die identischen?
 2. **Abfrage-Zwischenspeicher des Pilots** (Wikidata, GLEIF) mit Begleitdatei schreiben, damit
    auch sie gegen eine beim Abruf festgehaltene Prüfsumme geprüft werden (heute nur
    «erzeugt», siehe Grenzen).
@@ -170,6 +175,8 @@ Standard selbst und kennzeichnen sie als unsere Bewertungsentscheidung (D-049).
 
 ## Grenzen
 
+- Website und `docs/projektstand.md` von Hand nachführen, wenn sich Messwerte ändern
+  (Projektstand ist die öffentliche Kurzfassung dieser Datei, ohne Namen).
 - Freigabe der Namenssuche gilt je Region, gemessen an grossen, von US-Fonds gehaltenen
   Titeln. Seit D-059 wirkt sie nur noch dort, wo kein N-PORT-Konsens besteht (44 Positionen),
   also gerade ausserhalb der Referenz. Nordamerika und übrige: zu wenige Fälle.

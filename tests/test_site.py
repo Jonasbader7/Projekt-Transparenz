@@ -34,11 +34,21 @@ def read(out: Path, name: str) -> str:
 
 def test_all_pages_and_downloads_exist(site) -> None:  # type: ignore[no-untyped-def]
     out, result = site
-    expected = {"index.html", "methodik.html", "datenquellen.html", f"fonds-{SLUG}.html",
+    expected = {"index.html", "methodik.html", "datenquellen.html", "projektstand.html",
+                f"fonds-{SLUG}.html",
                 f"bericht-{SLUG}.md", f"belege-{SLUG}.csv",
                 "analytics-config.js", "analytics-client.js"}
     assert expected == {p.name for p in result.files}
     assert all((out / name).stat().st_size > 0 for name in expected)
+
+
+def test_status_page_and_method_docs_are_published(site) -> None:  # type: ignore[no-untyped-def]
+    out, _ = site
+    status = read(out, "projektstand.html")
+    assert "<h1>Projektstand</h1>" in status and "fiktive Fonds" in status
+    assert 'href="projektstand.html"' in read(out, "index.html")
+    methodik = read(out, "methodik.html")
+    assert "Kennungen vor Namen" in methodik and "jede Zahl bis zur Originaldatei" in methodik
 
 
 def test_fund_page_shows_findings_with_source_and_data_version(site) -> None:  # type: ignore[no-untyped-def]

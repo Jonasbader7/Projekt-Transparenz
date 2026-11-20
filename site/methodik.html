@@ -92,6 +92,7 @@ label.filter { display: inline-flex; gap: 8px; align-items: center; margin: 8px 
       <a href="fonds-zzfiketf0019.html" >Fondsanalyse</a>
       <a href="methodik.html" class="active">Methodik</a>
       <a href="datenquellen.html" >Datenquellen &amp; Aktualität</a>
+      <a href="projektstand.html" >Projektstand</a>
     </nav>
   </div>
 </header>
@@ -320,7 +321,7 @@ Es gibt keinen Gesamtwert und keine Verrechnung zwischen Kriterien.</p>
 </table></div>
 
 <p class="caption">Inhalt:
-<a href="#doc-1">Belegmodell und Validierung</a> · <a href="#doc-2">Quellen-Hierarchie</a> · <a href="#doc-3">Ausschlusskriterien</a></p>
+<a href="#doc-1">Belegmodell und Validierung</a> · <a href="#doc-2">Quellen-Hierarchie</a> · <a href="#doc-3">Ausschlusskriterien</a> · <a href="#doc-4">Zuordnung: von der Position zum Unternehmen</a> · <a href="#doc-5">Herkunft und Prüfsummen</a></p>
 <section class="prose" id="doc-1">
   <hr>
   <h1>Belegmodell und Validierung</h1>
@@ -704,11 +705,95 @@ eine eigene, offengelegte Regel; sie ist noch nicht festgelegt.</p>
 <p>Ölsand, Arktis und Fracking · Tabak · Irreführende Umweltaussagen (Greenwashing) · Tierwohl.
 Sie werden nicht ausgewertet, bis ein Entscheid vorliegt.</p>
 </section>
+<section class="prose" id="doc-4">
+  <hr>
+  <h1>Zuordnung: von der Fondsposition zum Unternehmen</h1>
+<p>Ein Fonds meldet Wertpapiere, keine Unternehmen. Bevor ein Beleg (zum Beispiel ein
+Emissionswert) einer Position zugeordnet werden kann, muss feststehen, welcher Rechtsträger
+das Wertpapier ausgegeben hat. Diese Seite beschreibt, wie das geschieht und wo die Grenzen
+liegen.</p>
+<h2>Grundsatz: Kennungen vor Namen</h2>
+<ul>
+<li><strong>ISIN</strong> bezeichnet ein Wertpapier, <strong>LEI</strong> einen Rechtsträger. Die beiden werden nie
+  verwechselt.</li>
+<li>Ein Name ist nie ein Schlüssel. Gleiche Namen kommen bei verschiedenen Firmen vor, und
+  dieselbe Firma erscheint unter verschiedenen Schreibweisen.</li>
+<li>Jede Zuordnung nennt ihren Weg. Präzision (wie oft ein Weg richtig liegt) und Abdeckung
+  (wie viel Fondsgewicht zugeordnet ist) werden immer getrennt ausgewiesen.</li>
+</ul>
+<h2>Reihenfolge der Wege</h2>
+<ol>
+<li><strong>Menschlicher Entscheid.</strong> Wurde ein Fall einmal von Hand mit Ja oder Nein entschieden,
+   gilt dieser Entscheid und dient zugleich als Referenzfall.</li>
+<li><strong>Fondsmeldungen an die US-Aufsicht (SEC N-PORT).</strong> US-registrierte Fonds melden je Position
+   ISIN und LEI des Emittenten. Gilt nur, wenn mindestens zwei voneinander unabhängige
+   Fondsgesellschaften denselben LEI melden, keine widerspricht und der LEI bei GLEIF
+   existiert. «Unabhängig» heisst verschiedene Beratergruppen, nicht bloss verschiedene
+   Fonds derselben Gruppe. Widersprüche bleiben offen und werden nie nach Mehrheit entschieden.</li>
+<li><strong>Wikidata ISIN → LEI.</strong> Gemeinschaftlich gepflegte Kennungen. Nennt Wikidata einen
+   anderen LEI als die Fondsmeldungen, gilt die Fondsmeldung; die Abweichung wird angezeigt.</li>
+<li><strong>Registernummer.</strong> Dieselbe Handelsregisternummer bei Wikidata und GLEIF.</li>
+<li><strong>GLEIF-Namenssuche</strong> (gleicher Name, gleiches Sitzland, aktiver Rechtsträger, eindeutiger
+   Treffer). Sie wirkt nur, wenn ihre an Referenzfällen gemessene Präzision die Freigabe
+   erreicht: mindestens 100 Fälle und eine untere 95-%-Grenze von mindestens 97 %, gemessen
+   <strong>je Region</strong>. Sie wirkt nie gegen einen bestätigten LEI aus den Fondsmeldungen.</li>
+</ol>
+<p>Erreicht kein Weg ein Ergebnis, bleibt die Position «nicht zugeordnet». Das ist eine
+Informationslücke, keine Entwarnung.</p>
+<h2>Messung statt Annahme</h2>
+<p>Die Fondsmeldungen dienen als unabhängige Referenz: An ihnen wird gemessen, wie oft die
+übrigen Wege richtig liegen. Die Messung ist von der Zuordnung getrennt; sie ändert sich
+nicht dadurch, welcher Weg eine Position am Ende zuordnet. Sinkt die gemessene Präzision
+unter die Schwelle, wird die Namenssuche für diese Region automatisch wieder gesperrt.</p>
+<h2>Konzernbeziehungen</h2>
+<p>Belege betreffen oft eine Tochtergesellschaft, nicht die börsenkotierte Mutter. Eine
+Verbindung über den Konzern zählt nur, wenn die Beziehung aus einer Quelle mit Kennungen
+stammt (GLEIF-Beziehungsdaten) und nach Beziehungstyp eingeordnet ist: Nur Eigentum auf
+eigene Rechnung gilt als Beteiligung; Vermögensverwaltung, Verwahrung, Finanzierung oder
+Lieferverträge haben eigene Regeln.</p>
+<p>Vor einem Beleg aus dem EU-Emissionshandel wird geprüft, ob der Name des Kontoinhabers zum
+Rechtsnamen bei GLEIF passt. Weicht er klar ab, wird der Beleg gesperrt statt gezeigt.</p>
+<h2>Grenzen</h2>
+<ul>
+<li>Die Fondsmeldungen decken nur Papiere ab, die US-registrierte Fonds halten.</li>
+<li>Ein Konsens heisst «mehrere Gesellschaften melden dasselbe», nicht «geprüfte Wahrheit». Ein
+  gemeinsam übernommener Fehler eines Datenlieferanten ist nicht erkennbar.</li>
+<li>Die Freigabe der Namenssuche gilt nur für Regionen mit genügend Referenzfällen.</li>
+</ul>
+</section>
+<section class="prose" id="doc-5">
+  <hr>
+  <h1>Herkunft: jede Zahl bis zur Originaldatei</h1>
+<p>Jede Aussage soll sich bis zur Datei zurückverfolgen lassen, aus der sie stammt. Deshalb
+werden Rohdaten nie still verändert oder ersetzt.</p>
+<h2>Wie das geprüft wird</h2>
+<ul>
+<li><strong>Beim Herunterladen</strong> wird jede Originaldatei unverändert abgelegt, zusammen mit einer
+  Begleitdatei: Quelle, Adresse, Abrufzeit, Lizenzangaben und SHA-256-Prüfsumme.</li>
+<li><strong>Bei jeder Verwendung</strong> wird die Datei neu gehasht und mit dieser Prüfsumme verglichen.
+  Entpackte Dateien werden gegen den Eintrag im geprüften Archiv verglichen.</li>
+<li><strong>Im Update-System</strong> gilt zusätzlich: Das Verzeichnis eines Datenstands (Manifest) muss die
+  Prüfsumme tragen, die beim Aktivieren gespeichert wurde, und jede darin genannte
+  Originaldatei muss mit Manifest und Begleitdatei übereinstimmen.</li>
+<li><strong>Weicht etwas ab, bricht die Verarbeitung ab.</strong> Der letzte gültige Stand bleibt aktiv.</li>
+<li>Fehlt eine Begleitdatei, steht «nicht erfasst». Es wird nichts ergänzt oder erraten.</li>
+</ul>
+<h2>Was ausgewiesen wird</h2>
+<p>Berichte und Qualitätsberichte führen jede Eingabe mit Pfad, Grösse, Prüfsumme, Status
+(geprüft, aus geprüftem Archiv, von uns erzeugt, nicht erfasst), Lizenzangabe und Abrufdatum.</p>
+<h2>Lizenzen</h2>
+<p>Verwendet wird nur, was an der Originalseite eine benannte Lizenz oder eine ausdrückliche
+Gemeinfreiheit trägt. «Öffentlich abrufbar» genügt nicht. Im Update-System werden Quellen
+ohne geprüfte Lizenz gar nicht erst abgerufen. Quellen, die nur im lokalen Pilot dienen und
+keine benannte Lizenz tragen, sind im Bericht so gekennzeichnet und werden nicht
+veröffentlicht. Details stehen auf der Seite «Datenquellen &amp; Aktualität» und in
+<code>docs/DATA_SOURCES.md</code>.</p>
+</section>
 </main>
 <footer>
   <div class="wrap">
     Forschungsprototyp · nur Information, keine Anlageempfehlung · nicht rechtlich geprüft<br>
-    Statischer Schnappschuss, erzeugt am 15.11.2026 20:51 UTC. Aktualisieren:
+    Statischer Schnappschuss, erzeugt am 20.11.2026 20:44 UTC. Aktualisieren:
     <code>python -m transparenz update</code>, danach <code>python -m transparenz build-site</code>.<br>
     Cookielose, zusammengefasste Besuchszählung: <a href="https://jonasbader7.github.io/Portfoliopage/analytics/datenschutz.html">Datenschutz &amp; Analytics</a>
   </div>
