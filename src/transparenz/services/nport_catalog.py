@@ -17,7 +17,12 @@ from typing import Any
 
 from sqlalchemy import select, text
 
-from transparenz.config.settings import CONFIG_DIR, get_settings, resolve_data_path
+from transparenz.config.settings import (
+    CONFIG_DIR,
+    get_settings,
+    local_data_dir,
+    resolve_data_path,
+)
 from transparenz.database.models import DatasetVersion, UpdateRun
 from transparenz.database.repository import active_versions
 from transparenz.entities.enums import UpdateStatus
@@ -25,6 +30,7 @@ from transparenz.ingestion.external import atomic_json
 from transparenz.ingestion.gleif_level1 import latest_snapshot, load_lei_records
 from transparenz.ingestion.sec_nport import SOURCE_KEY
 from transparenz.services.context import AppContext, create_context
+from transparenz.services.provenance import verified_manifest
 from transparenz.services.swiss_foundation import foundation_lock
 
 REPORT_SCHEMA = 2
@@ -139,8 +145,17 @@ def quality_report(ctx: AppContext, data_dir: Path | None = None,
                     "last_message": last.message if last else None}
         v = version.id
         conn = session.connection()
-        manifest = (json.loads(resolve_data_path(version.raw_path).read_bytes())
-                    if version.raw_path else {})
+        manifest = {}
+        base = data_dir or local_data_dir()
+        if version.raw_path:
+            # Manifest gegen den aktiven Datenstand prüfen (D-061); die Archive selbst prüft
+            # der Import bei jedem Lauf gegen ihre Begleitdatei (D-054).
+            content, _ = verified_manifest(
+                resolve_data_path(version.raw_path), base, SOURCE_KEY,
+                version.content_hash,
+                f"nport.sqlite: dataset_versions.content_hash, Datenstand {version.id}",
+                base / "raw/external" / SOURCE_KEY)
+            manifest = json.loads(content)
         load_stats = [
             {"quarter": q, "table": t, "read": r, "accepted": a, **json.loads(j)}
             for q, t, r, a, j in _rows(conn, "SELECT quarter, table_name, rows_read, "

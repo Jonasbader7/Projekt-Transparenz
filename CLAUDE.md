@@ -124,7 +124,9 @@ Erstinstallation: `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1`.
 ## Update-System
 `python -m transparenz update [--source KEY] [--force]` oder Button auf «Datenquellen &
 Aktualität». Fehlerhafte Daten werden abgelehnt, der letzte gültige Stand bleibt aktiv; jeder
-Versuch steht in `update_runs`. GitHub-Workflow `update-data.yml` nur manuell, kein dauerhafter
+Versuch steht in `update_runs`. Wer einen aktiven Stand wieder liest, prüft ihn mit
+`provenance.verified_manifest` (Manifest gegen `content_hash`, Originaldateien gegen Manifest
+und Begleitdatei, D-061). GitHub-Workflow `update-data.yml` nur manuell, kein dauerhafter
 Speicher.
 
 ## Umgebung

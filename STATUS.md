@@ -1,6 +1,6 @@
 # STATUS
 
-Stand: **18.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verlauf steht in
+Stand: **20.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verlauf steht in
 `docs/LOG.md`, die Begründungen in `docs/DECISIONS.md`, der Plan in `docs/ROADMAP.md`.
 
 ## Phase
@@ -8,22 +8,23 @@ Stand: **18.11.2026**. Diese Datei beschreibt nur den aktuellen Stand. Der Verla
 **Phase 2 (Wertpapierstamm ISIN → LEI) im Pilot umgesetzt:** Stamm gebaut (D-056),
 Pilotverfahren gemessen (D-057), Freigabe der Namenssuche je Region an der N-PORT-Referenz
 (D-058), N-PORT-Konsens als Kennungsweg vor Wikidata (D-059), fehlende GLEIF-Namen offline
-aus der Liste Level 1 (D-060). Phasen 0 und 1 abgeschlossen. Ziel laut Auftrag: alle
-börsenkotierten Aktien und Fonds weltweit, automatisch zugeordnet, firmentauglich (D-049).
-Offen in Phase 2: Herkunftsprüfung im Update-System, N-PORT-Doppelmeldungen.
+aus der Liste Level 1 (D-060), Herkunftsprüfung jedes aktiven Datenstands im
+Update-System (D-061). Phasen 0 und 1 abgeschlossen. Ziel laut Auftrag: alle börsenkotierten
+Aktien und Fonds weltweit, automatisch zugeordnet, firmentauglich (D-049). Offen in Phase 2:
+N-PORT-Doppelmeldungen.
 
 | Baustein | Stand |
 |---|---|
 | Git | `main` auf GitHub bis Phase 0; Phase 1 und 2 in lokalen Commits, **nicht gepusht** |
 | Datenordner | `C:\TransparenzDaten` ausserhalb OneDrive (`TRANSPARENZ_DATA_DIR`, D-050) |
 | Pilot-Code | in Paketmodule zerlegt (D-051); Fondskette in Phase 1 und 2 nicht verändert |
-| Herkunft | jede Eingabedatei wird bei jedem Lauf gegen ihre Begleitdatei geprüft (D-052); gilt auch für N-PORT |
+| Herkunft | jede Eingabedatei wird bei jedem Lauf gegen ihre Begleitdatei geprüft (D-052); gilt auch für N-PORT und seit D-061 für Schweizer Export, SEC-Katalog und Wikidata weltweit (Manifest gegen `dataset_versions`, Originaldateien gegen Manifest und Begleitdatei; Liste im Qualitätsbericht). Echte Daten: 171 von 171 Dateien bestätigt |
 | SEC N-PORT | `2026q3_nport.zip` geladen und geprüft; `nport-update` liest direkt aus dem ZIP in `processed/nport.sqlite`, jeder Lauf in `update_runs` (D-054) |
 | **Wertpapierstamm** | `security-master-build` → `processed/security_master.sqlite` (87 MB, rund 2.5 Minuten), Regelversion 2026-11-16.1 (D-056) |
 | Kriterienmodell | Schema 2, Profil «streng» 1.1, 12 aktive Kriterien, 7 Beziehungstypen (D-045–D-048) |
 | Zuordnung | im Pilot mit `--security-master`: menschlicher Entscheid → **N-PORT-Konsens (D-059)** → Wikidata → Registernummer → GLEIF-Namenssuche (freigegeben in Europa und Asien-Pazifik, D-058, nie gegen den Konsens); ohne Stamm wie bisher. Fehlende GLEIF-Namen der N-PORT-LEI und der Töchter aus der lokalen Liste Level 1 (D-060) |
 | Website (`site/`) | fiktive Demo, unverändert |
-| Tests | **388 bestanden** (2 neu für die Namen aus der Liste Level 1), Ruff sauber |
+| Tests | **398 bestanden** (10 neu für die Herkunftsprüfung im Update-System), Ruff sauber |
 
 ## Wertpapierstamm ISIN → LEI (Phase 2, Messwerte ohne Namen)
 
@@ -147,10 +148,11 @@ Schweizer Exportgeneration (täglicher Task), deshalb Ausgangsstand immer frisch
 
 ## Nächste drei Schritte
 
-1. **Herkunft auf das Update-System ausweiten** (Schweiz, SEC-Katalog), damit jede Quelle
-   denselben Prüfweg hat wie N-PORT.
-2. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
+1. **Doppelmeldungen** (gleicher Tag, gleicher Stichtag, gleiches Nettovermögen) inhaltlich
    vergleichen: nur bei identischen Positionen eine übernehmen, sonst offen lassen.
+2. **Abfrage-Zwischenspeicher des Pilots** (Wikidata, GLEIF) mit Begleitdatei schreiben, damit
+   auch sie gegen eine beim Abruf festgehaltene Prüfsumme geprüft werden (heute nur
+   «erzeugt», siehe Grenzen).
 3. **Namensvergleich Position ↔ GLEIF** für nicht-lateinische Rechtsnamen messen (42
    Abweichungen im Bericht, meist chinesische, japanische oder koreanische Rechtsnamen):
    prüfen, ob die transliterierten GLEIF-Namen sie erklären. Nur Anzeige, entscheidet nichts.

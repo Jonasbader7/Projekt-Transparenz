@@ -5,6 +5,7 @@ exchange labels/countries are pre-seeded offline so tests never touch the networ
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -26,10 +27,12 @@ def write_snapshot(tmp_path: Path, bindings: list[dict]) -> None:
     folder = tmp_path / "data" / gc.SNAPSHOT_DIR  # Zeiger im alten Format "data/raw/…"
     raw = folder / "objects" / "fiktiv.json"
     raw.parent.mkdir(parents=True, exist_ok=True)
-    raw.write_text(json.dumps({"results": {"bindings": bindings}}), encoding="utf-8")
+    content = json.dumps({"results": {"bindings": bindings}}).encode("utf-8")
+    raw.write_bytes(content)
     pointer = {
         "source": "wikidata_global", "source_url": "https://query.wikidata.org/sparql",
-        "retrieved_at": "2026-11-11T00:00:00+00:00", "sha256": "fiktiv", "bytes": 1,
+        "retrieved_at": "2026-11-11T00:00:00+00:00",
+        "sha256": hashlib.sha256(content).hexdigest(), "bytes": len(content),
         "rows": len(bindings), "license": "CC0 structured data",
         "license_url": "https://www.wikidata.org/wiki/Wikidata:Licensing",
         "file": str(raw.relative_to(tmp_path)), "status": "unverified_research_snapshot",
@@ -130,6 +133,16 @@ def test_country_and_exchange_filters(project):
     assert [h["name"] for h in by_country] == ["Südfirma AG (fiktiv)"]
     by_exchange = gc.search("firma", exchange="Qex_a")
     assert [h["name"] for h in by_exchange] == ["Nordfirma AG (fiktiv)"]
+
+
+def test_changed_snapshot_is_rejected(project):
+    from transparenz.services.provenance import ProvenanceError
+
+    write_snapshot(project, [binding("Qfiktiv1", "Muster AG (fiktiv)", "Qex_a", "MUST")])
+    raw = project / "data" / gc.SNAPSHOT_DIR / "objects" / "fiktiv.json"
+    raw.write_bytes(raw.read_bytes().replace(b"MUST", b"MUSX"))
+    with pytest.raises(ProvenanceError, match="weicht"):
+        gc.load_snapshot_rows()
 
 
 def test_missing_snapshot_raises_clear_error(project):

@@ -11,16 +11,17 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 
 from transparenz.config.licensing import license_block_reasons
-from transparenz.config.settings import CONFIG_DIR, get_settings
+from transparenz.config.settings import CONFIG_DIR, get_settings, resolve_data_path
 from transparenz.database.models import MarketRecordRow, UpdateRun
 from transparenz.database.repository import active_versions
 from transparenz.entities.enums import UpdateStatus
 from transparenz.entities.markets import MarketObservation
 from transparenz.ingestion.external import atomic_json, atomic_write, encoded
 from transparenz.services.context import AppContext, create_context
+from transparenz.services.provenance import verified_manifest
 from transparenz.services.swiss_foundation import foundation_lock
 
-EXPORT_SCHEMA = 3  # Increase when parsing, identity, classification or viewer semantics change.
+EXPORT_SCHEMA = 4  # Increase when parsing, identity, classification or viewer semantics change.
 
 
 def create_market_context() -> AppContext:
@@ -133,7 +134,16 @@ def export_market(ctx: AppContext) -> dict:
                 "license_block_reasons": license_block_reasons(cfg, datetime.now(UTC).date()),
                 "last_run": last.status if last else "never_run",
                 "last_message": last.message if last else None,
-                "attribution": cfg.attribution}
+                "attribution": cfg.attribution, "provenance": []}
+            if version is not None:
+                # Die Beobachtungen kommen aus der Datenbank; geprüft wird trotzdem, dass
+                # Manifest und Originaldateien des aktiven Stands unverändert sind (D-061).
+                _, provenance = verified_manifest(
+                    resolve_data_path(version.raw_path, ctx.settings.project_root),
+                    ctx.settings.data_dir, cfg.key, version.content_hash,
+                    f"markets.sqlite: dataset_versions.content_hash, Datenstand {version.id}",
+                    ctx.settings.data_dir / "raw/external" / cfg.key)
+                source_status[cfg.key]["provenance"] = [r.as_dict() for r in provenance]
             payloads = session.scalars(select(MarketRecordRow.payload_json).where(
                 MarketRecordRow.dataset_version_id == version.id)) if version else []
             records[cfg.key] = [MarketObservation.model_validate_json(r).model_dump(mode="json")

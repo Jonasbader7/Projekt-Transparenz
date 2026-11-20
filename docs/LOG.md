@@ -2,6 +2,28 @@
 
 Neueste Einträge oben.
 
+## 20.11.2026 – Claude (Opus 5.5): Herkunftsprüfung im Update-System (D-061)
+
+- Auftrag Jonas: «Ja, weitermachen» (nächster Schritt laut STATUS: Herkunft auf das
+  Update-System ausweiten).
+- **Vorher gelesen (nur lesend):** Die Einlesung prüfte jede Originaldatei schon gegen das
+  Manifest; nicht geprüft waren das Manifest selbst beim Export (Schweiz), die Rohdaten beim
+  SEC-Katalog-Export, das N-PORT-Manifest im Qualitätsbericht und der Wikidata-Weltbestand
+  gegen seine Prüfsumme. Prüfung der echten Daten vorab: alles stimmte.
+- **Umbau:** `provenance.verified_manifest` und `verify_recorded`; Lizenz und Bedingungen aus
+  der Quellenkonfiguration in Begleitdateien, Abrufzeit aus `downloaded_at`. Eingebaut in
+  `swiss_foundation.export_foundation`, `market_catalog.export_market`,
+  `nport_catalog.quality_report`, `global_candidates.load_snapshot_rows`. Schemaversionen
+  Schweiz 3, Katalog 4. Testvorlage Wikidata weltweit mit echter Prüfsumme statt «fiktiv».
+- **Echte Daten:** Schweizer und SEC-Export neu, Wikidata-Bestand gelesen, N-PORT-Bericht neu
+  (ohne Netz). 171 von 171 Dateien bestätigt; Datendateien bytegleich, nur Qualitätsberichte
+  mit Herkunft. Fondskette unverändert, deshalb kein Vergleichslauf.
+- **Geprüft:** pytest 398 bestanden (10 neu, fiktiv: veränderte Manifeste, veränderte,
+  fehlende und ausserhalb liegende Originaldateien, falsche Begleitdatei), Ruff sauber.
+  Website nicht betroffen.
+- Skills: keine verwendet. Werkzeuge: Shell (Git Bash, PowerShell), Dateiwerkzeuge,
+  Hintergrundlauf mit Benachrichtigung. Keine Downloads, kein Netz, kein Push.
+
 ## 18.11.2026 – Claude (Opus 5.5): GLEIF-Namen offline aus der Liste Level 1 (D-060)
 
 - Auftrag Jonas: «Yes, fill in names», danach «selbstständig weitermachen solange wie du

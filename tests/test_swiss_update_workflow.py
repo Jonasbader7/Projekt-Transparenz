@@ -143,3 +143,23 @@ def test_export_only_explicitly_requests_full_rebuild(context, monkeypatch):
     monkeypatch.setattr(swiss, "export_foundation", export)
     swiss._update_foundation(False, None, True)
     assert calls == [{"reuse_existing": False}]
+
+
+def test_export_checks_manifest_against_active_version(context, tmp_path):
+    from sqlalchemy import select
+
+    from transparenz.config.settings import resolve_data_path
+    from transparenz.database.models import DatasetVersion
+    from transparenz.services.provenance import ProvenanceError
+
+    import_synthetic(context, tmp_path)
+    report = swiss.export_foundation(context)
+    records = report["sources"]["gleif_ch"]["provenance"]
+    assert [r["status"] for r in records] == ["verified", "unrecorded"]
+    assert "Datenstand" in records[0]["recorded_in"]
+    with context.session_factory() as session:
+        raw = session.scalars(select(DatasetVersion.raw_path)).one()
+    manifest = resolve_data_path(raw, tmp_path)
+    manifest.write_bytes(manifest.read_bytes().replace(b"2026-11-07", b"2026-11-08"))
+    with pytest.raises(ProvenanceError, match="aktiven Datenstand"):
+        swiss.export_foundation(context, reuse_existing=False)

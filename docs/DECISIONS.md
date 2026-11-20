@@ -1,5 +1,41 @@
 # Entscheidungslog
 
+## 20.11.2026 – Phase 2: Herkunftsprüfung im Update-System (Claude, Auftrag Jonas)
+
+### D-061 Jeder aktive Datenstand wird vor der Nutzung gegen seine Prüfsummen geprüft
+- **Entscheid (Jonas: «Ja, weitermachen», nächster Schritt laut STATUS):** Wo das
+  Update-System einen gespeicherten Datenstand wieder liest, gilt derselbe Weg wie bei N-PORT
+  und im Pilot (D-052): Das Manifest muss die beim Aktivieren gespeicherte Prüfsumme
+  (`dataset_versions.content_hash`) tragen, jede darin genannte Originaldatei die Prüfsumme
+  aus Manifest und eigener Begleitdatei (`provenance.verified_manifest`). Abweichung =
+  `ProvenanceError`, Abbruch; der Export wird nicht geschrieben, der bisherige bleibt.
+- **Stellen:** Schweizer Export (`swiss_foundation.export_foundation`, liest genau die
+  geprüften Bytes), SEC-Katalog (`market_catalog.export_market`, Beobachtungen aus der
+  Datenbank, Rohdaten trotzdem geprüft), N-PORT-Qualitätsbericht (Manifest; die Archive prüft
+  der Import schon, D-054), weltweiter Wikidata-Bestand (`global_candidates.load_snapshot_rows`
+  gegen die Prüfsumme in `current.json`, `provenance.verify_recorded`).
+- **Ausweis:** Qualitätsbericht je Quelle neu mit `provenance` (Pfad, Grösse, SHA-256, Status,
+  Lizenz, Bedingungen, Abrufzeit) in derselben Form wie im Pilotbericht. Begleitdateien des
+  Update-Systems tragen die ganze Quellenkonfiguration unter `license`; Lizenz und Bedingungen
+  werden daraus gelesen, die Abrufzeit aus `downloaded_at`. Originaldateien ohne Begleitdatei
+  heissen «nicht erfasst», werden aber gegen das Manifest geprüft. Die Dateigrösse wird
+  geprüft, wenn das Manifest sie nennt (SEC-Manifeste nennen sie nicht).
+- **Schemaversionen:** Schweizer Export 2 → 3, SEC-Katalog 3 → 4, damit der nächste Export
+  den neuen Bericht schreibt. Die Wiederverwendung eines unveränderten Schweizer Exports
+  bleibt eine Frische-, keine Rohdatenprüfung: Sie liest keine Rohdaten, also gibt es nichts
+  zu prüfen.
+- **Geprüft an echten Daten (nur lokal, ohne Netz):** alle 171 Dateien der aktiven
+  Datenstände bestätigt (Schweiz 4 Manifeste und 158 Originaldateien, rund 613 MB; SEC
+  3 Manifeste und 6 Originaldateien, rund 40 MB), jede Originaldatei mit Begleitdatei,
+  Lizenz und Abrufzeit. Wikidata weltweit (15'642 Zeilen) und N-PORT-Manifest stimmen. Neue
+  Exportgenerationen: alle Datendateien bytegleich mit den vorherigen, nur der
+  Qualitätsbericht (Herkunft, Status des letzten Laufs) und beim Katalog die HTML-Seite
+  (Status des letzten Laufs) anders. N-PORT-Bericht unverändert. Schweizer Export rund
+  3 Minuten.
+- **Fondskette:** unverändert, kein Vergleichslauf nötig. Der Pilot liest die Schweizer
+  Datendateien, die bytegleich blieben. Die bessere Lizenzlesung kann im Herkunftsabschnitt
+  des Pilotberichts Lizenzangaben ergänzen; der Vergleichslauf ignoriert diesen Abschnitt.
+
 ## 18.11.2026 – Phase 2: GLEIF-Namen der N-PORT-LEI offline (Claude, Auftrag Jonas)
 
 ### D-060 Rechtsnamen der N-PORT-LEI aus der lokalen GLEIF-Liste Level 1

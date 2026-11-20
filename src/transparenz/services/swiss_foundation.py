@@ -21,9 +21,10 @@ from transparenz.entities.enums import UpdateStatus
 from transparenz.entities.identifiers import normalize_company_name
 from transparenz.ingestion.external import atomic_json, atomic_write, encoded, normalize_uid
 from transparenz.services.context import AppContext, create_context
+from transparenz.services.provenance import verified_manifest
 
 log = logging.getLogger(__name__)
-EXPORT_SCHEMA_VERSION = 2  # Increase when parsing/merging changes exported data semantics.
+EXPORT_SCHEMA_VERSION = 3  # Increase when parsing/merging changes exported data semantics.
 EXPORT_FILES = (
     "companies", "identified_companies", "securities", "security_candidates", "funds",
     "facilities", "emissions", "possible_duplicates", "identifier_conflicts",
@@ -165,7 +166,13 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
             if version is None:
                 continue
             raw_file = resolve_data_path(version.raw_path, ctx.settings.project_root)
-            parsed = ctx.updates.adapter(cfg.key).parse(raw_file.read_bytes())
+            # Manifest gegen den aktiven Datenstand, Originaldateien gegen Manifest und
+            # Begleitdatei (D-061); ProvenanceError bricht den Export ab.
+            content, provenance = verified_manifest(
+                raw_file, ctx.settings.data_dir, cfg.key, version.content_hash,
+                f"swiss.sqlite: dataset_versions.content_hash, Datenstand {version.id}",
+                ctx.settings.data_dir / "raw/external" / cfg.key)
+            parsed = ctx.updates.adapter(cfg.key).parse(content)
             if not parsed.is_valid:
                 raise ValueError(f"Aktive Rohdaten beschädigt: {cfg.key}: {parsed.errors}")
             extra = parsed.extra
@@ -181,7 +188,8 @@ def export_foundation(ctx: AppContext, *, reuse_existing: bool = True) -> dict:
             source_reports[cfg.key].update(
                 active_version=version.id, manifest_sha256=version.content_hash,
                 manifest_path=version.raw_path,
-                original_files=json.loads(raw_file.read_bytes())["pages"],
+                original_files=json.loads(content)["pages"],
+                provenance=[record.as_dict() for record in provenance],
                 data_as_of=str(parsed.data_as_of) if parsed.data_as_of else None,
                 fetched_at=version.fetched_at.isoformat(), coverage=parsed.coverage,
                 companies=len(parsed.records["companies"]),

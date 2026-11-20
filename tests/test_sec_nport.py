@@ -267,6 +267,19 @@ def test_quality_report_counts_current_filings_only(tmp_path, manager, session_f
     assert report["gleif_check"]["status"] == "not_measured"
 
 
+def test_quality_report_refuses_changed_manifest(tmp_path, manager, session_factory):
+    from transparenz.config.settings import resolve_data_path
+    from transparenz.services.provenance import ProvenanceError
+
+    place(tmp_path, zip_bytes(default_tables()))
+    assert manager.run_source("sec_nport", force=True).status == UpdateStatus.ERFOLGREICH
+    with session_factory() as s:
+        manifest = resolve_data_path(s.scalars(select(DatasetVersion.raw_path)).one(), tmp_path)
+    manifest.write_bytes(manifest.read_bytes() + b" ")
+    with pytest.raises(ProvenanceError, match="aktiven Datenstand"):
+        quality_report(SimpleNamespace(session_factory=session_factory))
+
+
 def test_invalid_rows_are_rejected_and_counted(tmp_path, manager, session_factory):
     tables = default_tables()
     tables["FUND_REPORTED_HOLDING.tsv"] += [holding(A3, 22 + i) for i in range(300)]

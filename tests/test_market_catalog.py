@@ -252,3 +252,35 @@ def test_search_prioritizes_exact_ticker_over_funds_mentioning_it(tmp_path, monk
         {"name": "Synthetic TEST leveraged fund", "tickers": ["TEST2"]},
         {"name": "Synthetic issuer", "tickers": ["TEST"]}]))
     assert search_market("TEST", limit=1)[0]["name"] == "Synthetic issuer"
+
+
+def test_export_checks_manifest_and_originals_of_active_version(
+        tmp_path, market_catalog, session_factory):
+    from transparenz.config.settings import resolve_data_path
+    from transparenz.services.provenance import ProvenanceError
+
+    cfg = market_catalog.source("sec_exchange_tickers")
+    adapter = build_market_adapter(cfg, market_catalog, tmp_path, "")
+    raw = encoded({"fields": ["cik", "name", "ticker", "exchange"],
+                   "data": [[1, "Synthetic issuer", "TEST", "NYSE"]]})
+    adapter.fetcher.fetch = lambda **_: FetchResult(origin="test",
+                                                    content=bundle(tmp_path, cfg, raw))
+    manager = DataUpdateManager(session_factory, market_catalog, tmp_path, tmp_path / "manifests",
+                                adapters={cfg.key: adapter}, clock=lambda: datetime(2026, 11, 8))
+    assert manager.run_source(cfg.key, force=True).status == UpdateStatus.ERFOLGREICH
+    ctx = AppContext(replace(get_settings(), project_root=tmp_path), market_catalog,
+                     session_factory.kw["bind"], session_factory, manager)
+    report = export_market(ctx)
+    records = report["sources"][cfg.key]["provenance"]
+    assert [r["status"] for r in records] == ["verified", "unrecorded"]
+    page = tmp_path / "data/raw/external" / cfg.key / "objects" / (
+        hashlib.sha256(raw).hexdigest() + ".json")
+    page.write_bytes(raw.replace(b"TEST", b"TSET"))
+    with pytest.raises(ProvenanceError, match="Manifest"):
+        export_market(ctx)
+    with session_factory() as s:
+        manifest = resolve_data_path(s.scalars(select(DatasetVersion.raw_path)).one(), tmp_path)
+    page.write_bytes(raw)
+    manifest.write_bytes(manifest.read_bytes() + b" ")
+    with pytest.raises(ProvenanceError, match="aktiven Datenstand"):
+        export_market(ctx)

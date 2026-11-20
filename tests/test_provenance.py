@@ -75,3 +75,73 @@ def test_generated_file_keeps_origin(tmp_path: Path) -> None:
     record = describe_generated(out, tmp_path, "swiss_export", "Generation 2099")
     assert record.status == "generated" and record.sha256 == _sha(b"[]")
     assert record.path == "processed/export.json"
+
+
+def _manifest(tmp_path: Path, content: bytes, sidecar: dict | None = None) -> tuple[Path, Path]:
+    """Fiktiver Datenstand wie im Update-System: Originaldatei, Begleitdatei, Manifest."""
+    folder = tmp_path / "raw/external/fiktiv"
+    page = folder / "objects" / f"{_sha(content)}.json"
+    page.parent.mkdir(parents=True)
+    page.write_bytes(content)
+    if sidecar is not None:
+        page.with_name(page.name + ".metadata.json").write_text(json.dumps(sidecar))
+    manifest = tmp_path / "raw/external/manifests/fiktiv/20990101T000000_x.json"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_bytes(json.dumps({"pages": [
+        {"path": f"objects/{page.name}", "sha256": _sha(content), "bytes": len(content)}]})
+        .encode())
+    return manifest, page
+
+
+def test_manifest_and_pages_verified_with_licence_from_source_config(tmp_path: Path) -> None:
+    from transparenz.services.provenance import verified_manifest
+
+    content = b'{"fiktiv": true}'
+    manifest, _ = _manifest(tmp_path, content, {
+        "sha256": _sha(content), "downloaded_at": "2099-01-02T00:00:00+00:00",
+        "license": {"license": "CC0 1.0 (fiktiv)", "terms_url": "https://example.org/agb"}})
+    raw, records = verified_manifest(manifest, tmp_path, "fiktiv", _sha(manifest.read_bytes()),
+                                     "fiktiv.sqlite: Datenstand 1",
+                                     tmp_path / "raw/external/fiktiv")
+    assert raw == manifest.read_bytes()
+    assert [r.status for r in records] == ["verified", "verified"]
+    assert records[0].recorded_in == "fiktiv.sqlite: Datenstand 1"
+    assert records[1].licence == "CC0 1.0 (fiktiv)"
+    assert records[1].terms_url == "https://example.org/agb"
+    assert records[1].retrieved == "2099-01-02T00:00:00+00:00"
+
+
+def test_page_without_sidecar_is_unrecorded_but_still_checked(tmp_path: Path) -> None:
+    from transparenz.services.provenance import verified_manifest
+
+    manifest, page = _manifest(tmp_path, b"{}")
+    expected = _sha(manifest.read_bytes())
+    folder = tmp_path / "raw/external/fiktiv"
+    _, records = verified_manifest(manifest, tmp_path, "fiktiv", expected, "x", folder)
+    assert records[1].status == "unrecorded"
+    page.write_bytes(b"[]")
+    with pytest.raises(ProvenanceError, match="Manifest"):
+        verified_manifest(manifest, tmp_path, "fiktiv", expected, "x", folder)
+
+
+@pytest.mark.parametrize("change", ["manifest", "sidecar", "missing", "outside"])
+def test_changed_data_version_stops_processing(tmp_path: Path, change: str) -> None:
+    from transparenz.services.provenance import verified_manifest
+
+    content = b'{"fiktiv": 1}'
+    manifest, page = _manifest(tmp_path, content, {"sha256": _sha(content)})
+    expected = _sha(manifest.read_bytes())
+    if change == "manifest":
+        manifest.write_bytes(manifest.read_bytes() + b" ")
+    elif change == "sidecar":
+        page.with_name(page.name + ".metadata.json").write_text(json.dumps({"sha256": "0" * 64}))
+    elif change == "missing":
+        page.unlink()
+    else:
+        bundle = {"pages": [{"path": "../../ausserhalb.json", "sha256": _sha(content),
+                             "bytes": len(content)}]}
+        manifest.write_bytes(json.dumps(bundle).encode())
+        expected = _sha(manifest.read_bytes())
+    with pytest.raises(ProvenanceError):
+        verified_manifest(manifest, tmp_path, "fiktiv", expected, "x",
+                          tmp_path / "raw/external/fiktiv")

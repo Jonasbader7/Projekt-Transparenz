@@ -27,6 +27,7 @@ import httpx
 from transparenz.config.settings import get_settings, resolve_data_path
 from transparenz.entities.identifiers import normalize_company_name
 from transparenz.ingestion.external import atomic_json, atomic_write
+from transparenz.services.provenance import ProvenanceError, verify_recorded
 
 EXPORT_SCHEMA_VERSION = 1
 SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
@@ -65,7 +66,13 @@ def load_snapshot_rows() -> tuple[dict, list[dict]]:
     raw_path = resolve_data_path(pointer["file"], settings.project_root).resolve()
     if not raw_path.is_relative_to((settings.data_dir / SNAPSHOT_DIR).resolve()):
         raise ValueError("Rohdatenpfad ausserhalb des Quellenarchivs")
-    body = json.loads(raw_path.read_bytes())
+    if not pointer.get("sha256"):
+        raise ProvenanceError(f"{SNAPSHOT_DIR}/current.json: keine Prüfsumme – nicht verwendet.")
+    # Die beim Download in current.json festgehaltene Prüfsumme gilt (D-061).
+    content, _ = verify_recorded(raw_path, settings.data_dir, "wikidata_global",
+                                 pointer["sha256"], settings.data_dir / SNAPSHOT_DIR /
+                                 "current.json", pointer)
+    body = json.loads(content)
     bindings = body["results"]["bindings"]
     rows = []
     for binding in bindings:
